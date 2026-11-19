@@ -1,0 +1,9 @@
+.claude/
+AGENTS.md
+LOOP.md
+STATE.md
+loop-budget.md
+loop-constraints.md
+loop-run-log.md
+__pycache__/
+*.pyc
