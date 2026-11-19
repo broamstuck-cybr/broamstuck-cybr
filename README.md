@@ -21,6 +21,6 @@
 
 <div align="center">
 
-<img src="assets/specs.svg" alt="System specs and language stack" width="880" />
+<img src="assets/specs.svg" alt="System specs, language stack and totals" width="880" />
 
 </div>

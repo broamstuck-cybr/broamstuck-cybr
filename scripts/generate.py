@@ -124,13 +124,15 @@ def collect():
         "repos": 0,
         "langs": [],
         "events": [],
+        "bytes": 0,
+        "disk": 0,
     }
     query = (
         "query($login:String!){user(login:$login){"
         "contributionsCollection{totalCommitContributions "
         "contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}"
         "repositories(first:100,ownerAffiliations:OWNER,isFork:false,privacy:PUBLIC){totalCount "
-        "nodes{stargazerCount languages(first:10,orderBy:{field:SIZE,direction:DESC})"
+        "nodes{stargazerCount diskUsage languages(first:20,orderBy:{field:SIZE,direction:DESC})"
         "{edges{size node{name}}}}}}}"
     )
     result = request_json(GQL, {"query": query, "variables": {"login": USERNAME}})
@@ -147,11 +149,13 @@ def collect():
         data["repos"] = int(repos.get("totalCount") or 0)
         sizes = {}
         for node in repos.get("nodes") or []:
-            data["stars"] += int(node.get("stargazerCount") or 0)
-            for edge in (node.get("languages") or {}).get("edges") or []:
-                name = ((edge.get("node") or {}).get("name")) or ""
-                if name:
-                    sizes[name] = sizes.get(name, 0) + int(edge.get("size") or 0)
+                data["stars"] += int(node.get("stargazerCount") or 0)
+                data["disk"] += int(node.get("diskUsage") or 0) * 1024
+                for edge in (node.get("languages") or {}).get("edges") or []:
+                    name = ((edge.get("node") or {}).get("name")) or ""
+                    if name:
+                        data["bytes"] += int(edge.get("size") or 0)
+                        sizes[name] = sizes.get(name, 0) + int(edge.get("size") or 0)
         data["langs"] = sorted(sizes.items(), key=lambda item: item[1], reverse=True)
     data["events"] = collect_events()
     return data
@@ -608,11 +612,18 @@ def write(name, content):
     print("wrote %s (%d bytes)" % (name, len(content.encode("utf-8"))))
 
 
-def specs_svg(langs):
+def compact(value):
+    for suffix, scale in (("B", 1000000000.0), ("M", 1000000.0), ("K", 1000.0)):
+        if value >= scale:
+            return "%.1f%s" % (value / scale, suffix)
+    return str(int(value))
+
+
+def specs_svg(langs, chars, disk, repos):
     width = 880
-    height = 218
+    height = 256
     parts = [
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 218" width="880" height="218" role="img">',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 256" width="880" height="256" role="img">',
     ]
     parts.extend(window_frame(width, height, "./specs.sh", "fastfetch"))
     parts.append(text(26, 56, "[system]", MUTED, 9.5, "start", "600", ' letter-spacing="0.6"'))
@@ -655,8 +666,15 @@ def specs_svg(langs):
     parts.append(
         '<line x1="1" y1="196" x2="%s" y2="196" stroke="%s" stroke-width="1"/>' % (num(width - 1), BORDER)
     )
-    parts.append(text(26, 208, "arch 6.12 LTS / hyprland / kitty", MUTED, 9.5))
-    parts.append(text(854, 208, "%d languages indexed" % len(langs), MUTED, 9.5, "end"))
+    totals = [
+        (26, compact(chars), "characters of code", TERM),
+        (316, "%.2f GB" % (disk / 1073741824.0), "repository disk", ARCH),
+        (606, str(repos), "public repos", AMBER),
+    ]
+    for x, value, label, color in totals:
+        parts.append(text(x, 228, value, color, 17, "start", "700"))
+        parts.append(text(x, 244, label, MUTED, 9))
+    parts.append(text(854, 244, "%d languages indexed" % len(langs), MUTED, 9, "end"))
     parts.append("</svg>")
     return "\n".join(parts)
 
@@ -684,7 +702,7 @@ def main():
     write("header-whoami.svg", header_svg("whoami"))
     write("portrait.svg", portrait_svg(load_portrait()))
     write("dashboard.svg", dashboard_svg(data["langs"], data["stars"], data["repos"], data["commits"], data["events"]))
-    write("specs.svg", specs_svg(data["langs"]))
+    write("specs.svg", specs_svg(data["langs"], data["bytes"], data["disk"], data["repos"]))
     print(
         "synced %s: %d contributions, %d commits, %d stars, %d repos, %d languages, %d events"
         % (
