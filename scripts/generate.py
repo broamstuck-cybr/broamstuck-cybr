@@ -593,6 +593,8 @@ def load_portrait():
 def main():
     os.makedirs(ASSETS, exist_ok=True)
     data = collect()
+    if not data["days"] and not data["total"] and not data["repos"]:
+        raise SystemExit("error: GitHub API returned no profile data, assets left untouched")
     write("header-contributions.svg", header_svg("./contributions.sh"))
     write("contributions.svg", contributions_svg(data["days"], data["total"]))
     write("header-whoami.svg", header_svg("whoami"))
