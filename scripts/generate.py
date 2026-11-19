@@ -608,6 +608,55 @@ def write(name, content):
     print("wrote %s (%d bytes)" % (name, len(content.encode("utf-8"))))
 
 
+def specs_svg(langs):
+    width = 880
+    height = 218
+    parts = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 218" width="880" height="218" role="img">',
+    ]
+    parts.extend(window_frame(width, height, "./specs.sh", "fastfetch"))
+    parts.append(text(26, 56, "[system]", MUTED, 9.5, "start", "600", ' letter-spacing="0.6"'))
+    parts.append(text(450, 56, "[stack]", MUTED, 9.5, "start", "600", ' letter-spacing="0.6"'))
+    parts.append(
+        '<line x1="26" y1="64" x2="854" y2="64" stroke="%s" stroke-width="1" stroke-dasharray="3 4"/>' % BORDER
+    )
+    parts.append(
+        '<line x1="424" y1="46" x2="424" y2="190" stroke="%s" stroke-width="1" stroke-dasharray="2 5"/>' % BORDER
+    )
+    system = [
+        ("os", "Arch Linux 6.12 LTS"),
+        ("wm", "Hyprland / Wayland"),
+        ("shell", "zsh 5.9 / tmux"),
+        ("editor", "neovim 0.10"),
+        ("terminal", "kitty / jetbrains mono"),
+        ("uptime", "412d 06h"),
+    ]
+    for index, (key, value) in enumerate(system):
+        baseline = 86 + index * 20
+        parts.append(text(26, baseline, key, MUTED, 10))
+        parts.append(text(150, baseline, value, TEXT, 10, "start", "600"))
+    total = sum(size for _, size in langs) or 1
+    shades = (TERM, TERM, "#26a641", "#26a641", ARCH, ARCH)
+    for index, (name, size) in enumerate(langs[:6]):
+        baseline = 86 + index * 20
+        share = size / float(total)
+        parts.append(text(450, baseline, name, TEXT, 10, "start", "600"))
+        parts.append('<rect x="556" y="%s" width="238" height="6" rx="3" fill="%s"/>' % (num(baseline - 4.4), BORDER))
+        parts.append(
+            '<rect x="556" y="%s" width="%s" height="6" rx="3" fill="%s"/>'
+            % (num(baseline - 4.4), num(max(6.0, 238 * share)), shades[index])
+        )
+        label = "<1%" if share * 100 < 0.5 else "%d%%" % round(share * 100)
+        parts.append(text(854, baseline, label, MUTED, 9.5, "end"))
+    parts.append(
+        '<line x1="1" y1="196" x2="%s" y2="196" stroke="%s" stroke-width="1"/>' % (num(width - 1), BORDER)
+    )
+    parts.append(text(26, 208, "arch 6.12 LTS / hyprland / kitty", MUTED, 9.5))
+    parts.append(text(854, 208, "%d languages indexed" % len(langs), MUTED, 9.5, "end"))
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def load_portrait():
     path = os.path.join(ASSETS, "portrait.txt")
     if not os.path.exists(path):
@@ -631,6 +680,7 @@ def main():
     write("header-whoami.svg", header_svg("whoami"))
     write("portrait.svg", portrait_svg(load_portrait()))
     write("dashboard.svg", dashboard_svg(data["langs"], data["stars"], data["repos"], data["commits"], data["events"]))
+    write("specs.svg", specs_svg(data["langs"]))
     print(
         "synced %s: %d contributions, %d commits, %d stars, %d repos, %d languages, %d events"
         % (

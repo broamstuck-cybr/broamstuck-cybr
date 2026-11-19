@@ -18,3 +18,9 @@
     </td>
   </tr>
 </table>
+
+<div align="center">
+
+<img src="assets/specs.svg" alt="System specs and language stack" width="880" />
+
+</div>
