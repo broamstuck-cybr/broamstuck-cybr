@@ -315,6 +315,27 @@ def window_frame(width, height, script, badge, gradient_stops=None):
     return parts
 
 
+RAMP = " .:-=+*#%@"
+DEPTH = (1.0, 0.6, 0.6, 0.7, 0.7, 0.82, 0.82, 0.93, 0.93, 1.0)
+
+
+def depth_runs(line):
+    runs = []
+    buffer = []
+    current = None
+    for char in line:
+        index = RAMP.find(char)
+        level = DEPTH[index] if index >= 0 else 1.0
+        if current is not None and level != current:
+            runs.append((current, "".join(buffer)))
+            buffer = []
+        current = level
+        buffer.append(char)
+    if buffer:
+        runs.append((current, "".join(buffer)))
+    return runs
+
+
 def portrait_svg(lines):
     width = 490
     height = 520
@@ -339,15 +360,23 @@ def portrait_svg(lines):
         '<stop offset="0.55" stop-color="#26a641"/>',
         '<stop offset="1" stop-color="%s"/>' % ARCH,
         "</linearGradient>",
+        '<filter id="bloom" x="-15%" y="-15%" width="130%" height="130%">',
+        '<feGaussianBlur stdDeviation="1.8"/>',
+        "</filter>",
         "</defs>",
     ]
     parts.extend(window_frame(width, height, "./portrait.sh", "hyprland"))
+    art = []
     for index, line in enumerate(lines):
-        parts.append(
-            text(
+        spans = "".join(
+            '<tspan fill-opacity="%s">%s</tspan>' % (num(level), esc(chunk))
+            for level, chunk in depth_runs(line)
+        )
+        art.append(
+            raw_text(
                 x0,
                 first + index * size * 1.16,
-                line,
+                spans,
                 "url(#ascii)",
                 size,
                 "start",
@@ -355,6 +384,8 @@ def portrait_svg(lines):
                 ' xml:space="preserve"',
             )
         )
+    parts.append('<g filter="url(#bloom)" opacity="0.32">%s</g>' % "".join(art))
+    parts.extend(art)
     parts.append(
         '<line x1="1" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1"/>'
         % (num(status_line), num(width - 1), num(status_line), BORDER)
