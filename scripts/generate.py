@@ -636,6 +636,11 @@ def specs_svg(langs):
         parts.append(text(26, baseline, key, MUTED, 10))
         parts.append(text(150, baseline, value, TEXT, 10, "start", "600"))
     total = sum(size for _, size in langs) or 1
+    raw = [size * 100.0 / total for _, size in langs]
+    counts = [int(value) for value in raw]
+    order = sorted(range(len(raw)), key=lambda index: raw[index] - counts[index], reverse=True)
+    for index in order[: max(0, 100 - sum(counts))]:
+        counts[index] += 1
     shades = (TERM, TERM, "#26a641", "#26a641", ARCH, ARCH)
     for index, (name, size) in enumerate(langs[:6]):
         baseline = 86 + index * 20
@@ -646,8 +651,7 @@ def specs_svg(langs):
             '<rect x="556" y="%s" width="%s" height="6" rx="3" fill="%s"/>'
             % (num(baseline - 4.4), num(max(6.0, 238 * share)), shades[index])
         )
-        label = "<1%" if share * 100 < 0.5 else "%d%%" % round(share * 100)
-        parts.append(text(854, baseline, label, MUTED, 9.5, "end"))
+        parts.append(text(854, baseline, "%d%%" % counts[index] if counts[index] else "<1%", MUTED, 9.5, "end"))
     parts.append(
         '<line x1="1" y1="196" x2="%s" y2="196" stroke="%s" stroke-width="1"/>' % (num(width - 1), BORDER)
     )
