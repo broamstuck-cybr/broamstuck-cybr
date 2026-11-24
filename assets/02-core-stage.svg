@@ -1,0 +1,978 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 548" width="1200" height="548" role="img" aria-label="Character Portrait, 3D Stack Radar, Telemetry and GitHub Console">
+<style>@media (prefers-reduced-motion: reduce) { animate, animateTransform, animateMotion { display: none; } }</style>
+<defs>
+<linearGradient id="core-bg" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#0c111d"/>
+<stop offset="100%" stop-color="#080c15"/>
+</linearGradient>
+<linearGradient id="core-sheen" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0%" stop-color="#fde68a" stop-opacity="0"/>
+<stop offset="35%" stop-color="#fde68a" stop-opacity="0.28"/>
+<stop offset="65%" stop-color="#7dd3fc" stop-opacity="0.18"/>
+<stop offset="100%" stop-color="#fde68a" stop-opacity="0"/>
+</linearGradient>
+<radialGradient id="core-ff-gold" cx="50%" cy="50%" r="50%">
+<stop offset="0%" stop-color="#fefce8" stop-opacity="0.95"/>
+<stop offset="28%" stop-color="#fbbf24" stop-opacity="0.55"/>
+<stop offset="68%" stop-color="#f59e0b" stop-opacity="0.14"/>
+<stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="core-ff-white" cx="50%" cy="50%" r="50%">
+<stop offset="0%%" stop-color="#ffffff" stop-opacity="0.95"/>
+<stop offset="32%" stop-color="#fde68a" stop-opacity="0.42"/>
+<stop offset="100%" stop-color="#fde68a" stop-opacity="0"/>
+</radialGradient>
+<filter id="core-bloom" x="-40%" y="-40%" width="180%" height="180%">
+<feGaussianBlur stdDeviation="2.4" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<clipPath id="core-clip"><rect x="1" y="1" width="1198" height="546" rx="16"/></clipPath>
+<radialGradient id="core-aura-left" cx="21%%" cy="46%%" r="32%%">
+<stop offset="0%" stop-color="#fde68a" stop-opacity="0.10"/>
+<stop offset="100%" stop-color="#070a12" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="core-aura-3d" cx="60%%" cy="36%%" r="30%%">
+<stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.10"/>
+<stop offset="55%" stop-color="#fbbf24" stop-opacity="0.06"/>
+<stop offset="100%" stop-color="#070a12" stop-opacity="0"/>
+</radialGradient>
+<filter id="core-atmos-blur" x="-15%%" y="-15%%" width="130%%" height="130%%">
+<feGaussianBlur stdDeviation="8.2"/>
+</filter>
+<clipPath id="core-avatar-clip"><circle cx="246" cy="248" r="198"/></clipPath>
+</defs>
+<rect x="1" y="1" width="1198" height="546" rx="16" fill="url(#core-bg)" stroke="#172033" stroke-width="1"/>
+<line x1="36" y1="1.5" x2="1164" y2="1.5" stroke="url(#core-sheen)" stroke-width="1"/>
+<g clip-path="url(#core-clip)">
+<rect x="1" y="1" width="1198" height="546" fill="url(#core-aura-left)"/>
+<rect x="1" y="1" width="1198" height="546" fill="url(#core-aura-3d)"/>
+<circle cx="246" cy="248" r="204" fill="#0d1320" stroke="#273249" stroke-width="1.2"/>
+<circle cx="246" cy="248" r="198" fill="#0b101b"/>
+<g clip-path="url(#core-avatar-clip)">
+<g filter="url(#core-atmos-blur)" opacity="0.52">
+<circle cx="213" cy="56.6" r="11.2" fill="#cfedf4"/>
+<circle cx="226.2" cy="56.6" r="11.2" fill="#d7f1f8"/>
+<circle cx="239.4" cy="56.6" r="11.2" fill="#e0f3fb"/>
+<circle cx="252.6" cy="56.6" r="11.2" fill="#d0edf4"/>
+<circle cx="265.8" cy="56.6" r="11.2" fill="#c9e9f2"/>
+<circle cx="279" cy="56.6" r="11.2" fill="#c5e8f1"/>
+<circle cx="173.4" cy="69.8" r="11.2" fill="#b5e0e4"/>
+<circle cx="186.6" cy="69.8" r="11.2" fill="#bae3e8"/>
+<circle cx="199.8" cy="69.8" r="11.2" fill="#b6e1e5"/>
+<circle cx="213" cy="69.8" r="11.2" fill="#bee4ea"/>
+<circle cx="226.2" cy="69.8" r="11.2" fill="#cfedf4"/>
+<circle cx="239.4" cy="69.8" r="11.2" fill="#ecf6fb"/>
+<circle cx="252.6" cy="69.8" r="11.2" fill="#dcf1f8"/>
+<circle cx="265.8" cy="69.8" r="11.2" fill="#c6e8f0"/>
+<circle cx="279" cy="69.8" r="11.2" fill="#c2e5ee"/>
+<circle cx="292.2" cy="69.8" r="11.2" fill="#c2e4eb"/>
+<circle cx="305.4" cy="69.8" r="11.2" fill="#c3e6ed"/>
+<circle cx="318.6" cy="69.8" r="11.2" fill="#bfe3e9"/>
+<circle cx="147" cy="83" r="11.2" fill="#b0d9de"/>
+<circle cx="160.2" cy="83" r="11.2" fill="#afdade"/>
+<circle cx="173.4" cy="83" r="11.2" fill="#b5dfe4"/>
+<circle cx="186.6" cy="83" r="11.2" fill="#c6e8ef"/>
+<circle cx="199.8" cy="83" r="11.2" fill="#bae3e8"/>
+<circle cx="213" cy="83" r="11.2" fill="#bce4ea"/>
+<circle cx="226.2" cy="83" r="11.2" fill="#d6f0f8"/>
+<circle cx="239.4" cy="83" r="11.2" fill="#e3f4fb"/>
+<circle cx="252.6" cy="83" r="11.2" fill="#e1f4fb"/>
+<circle cx="265.8" cy="83" r="11.2" fill="#c8ebf0"/>
+<circle cx="279" cy="83" r="11.2" fill="#c1e7ed"/>
+<circle cx="292.2" cy="83" r="11.2" fill="#bde4ea"/>
+<circle cx="305.4" cy="83" r="11.2" fill="#bee6ec"/>
+<circle cx="318.6" cy="83" r="11.2" fill="#bee4ea"/>
+<circle cx="331.8" cy="83" r="11.2" fill="#bae1e7"/>
+<circle cx="345" cy="83" r="11.2" fill="#b6dee3"/>
+<circle cx="133.8" cy="96.2" r="11.2" fill="#afdadf"/>
+<circle cx="147" cy="96.2" r="11.2" fill="#aedade"/>
+<circle cx="160.2" cy="96.2" r="11.2" fill="#b4dee3"/>
+<circle cx="173.4" cy="96.2" r="11.2" fill="#b7e1e6"/>
+<circle cx="186.6" cy="96.2" r="11.2" fill="#c9e9f1"/>
+<circle cx="199.8" cy="96.2" r="11.2" fill="#d3eff7"/>
+<circle cx="213" cy="96.2" r="11.2" fill="#d5f1f8"/>
+<circle cx="226.2" cy="96.2" r="11.2" fill="#d9f0f9"/>
+<circle cx="239.4" cy="96.2" r="11.2" fill="#ddf2f9"/>
+<circle cx="252.6" cy="96.2" r="11.2" fill="#dbf1fa"/>
+<circle cx="265.8" cy="96.2" r="11.2" fill="#d0eef5"/>
+<circle cx="279" cy="96.2" r="11.2" fill="#c8e9f1"/>
+<circle cx="292.2" cy="96.2" r="11.2" fill="#c5ebf1"/>
+<circle cx="305.4" cy="96.2" r="11.2" fill="#c5e9ef"/>
+<circle cx="318.6" cy="96.2" r="11.2" fill="#bfe5eb"/>
+<circle cx="331.8" cy="96.2" r="11.2" fill="#bbe1e5"/>
+<circle cx="345" cy="96.2" r="11.2" fill="#bbdfe3"/>
+<circle cx="358.2" cy="96.2" r="11.2" fill="#badee2"/>
+<circle cx="120.6" cy="109.4" r="11.2" fill="#acd3d9"/>
+<circle cx="133.8" cy="109.4" r="11.2" fill="#abd6da"/>
+<circle cx="147" cy="109.4" r="11.2" fill="#abd9dc"/>
+<circle cx="160.2" cy="109.4" r="11.2" fill="#b8e1e6"/>
+<circle cx="173.4" cy="109.4" r="11.2" fill="#c5e9ef"/>
+<circle cx="186.6" cy="109.4" r="11.2" fill="#cdecf4"/>
+<circle cx="199.8" cy="109.4" r="11.2" fill="#d2eef7"/>
+<circle cx="213" cy="109.4" r="11.2" fill="#d3eff8"/>
+<circle cx="226.2" cy="109.4" r="11.2" fill="#d4f1f9"/>
+<circle cx="239.4" cy="109.4" r="11.2" fill="#def3fc"/>
+<circle cx="252.6" cy="109.4" r="11.2" fill="#e1f4fc"/>
+<circle cx="265.8" cy="109.4" r="11.2" fill="#dcf3fa"/>
+<circle cx="279" cy="109.4" r="11.2" fill="#d3f0f8"/>
+<circle cx="292.2" cy="109.4" r="11.2" fill="#cbedf4"/>
+<circle cx="305.4" cy="109.4" r="11.2" fill="#cfedf5"/>
+<circle cx="318.6" cy="109.4" r="11.2" fill="#cbeaf1"/>
+<circle cx="331.8" cy="109.4" r="11.2" fill="#bee2e6"/>
+<circle cx="345" cy="109.4" r="11.2" fill="#b3dbe0"/>
+<circle cx="358.2" cy="109.4" r="11.2" fill="#aed8dd"/>
+<circle cx="371.4" cy="109.4" r="11.2" fill="#afd6dc"/>
+<circle cx="107.4" cy="122.6" r="11.2" fill="#a9d3d8"/>
+<circle cx="120.6" cy="122.6" r="11.2" fill="#aad2d7"/>
+<circle cx="133.8" cy="122.6" r="11.2" fill="#acd7db"/>
+<circle cx="147" cy="122.6" r="11.2" fill="#aedade"/>
+<circle cx="160.2" cy="122.6" r="11.2" fill="#b4dde2"/>
+<circle cx="173.4" cy="122.6" r="11.2" fill="#b7dfe5"/>
+<circle cx="186.6" cy="122.6" r="11.2" fill="#b7e0e5"/>
+<circle cx="199.8" cy="122.6" r="11.2" fill="#bce3e9"/>
+<circle cx="213" cy="122.6" r="11.2" fill="#c4e8ee"/>
+<circle cx="226.2" cy="122.6" r="11.2" fill="#c8eef4"/>
+<circle cx="239.4" cy="122.6" r="11.2" fill="#d5f2f9"/>
+<circle cx="252.6" cy="122.6" r="11.2" fill="#d9f2f9"/>
+<circle cx="265.8" cy="122.6" r="11.2" fill="#cbecf1"/>
+<circle cx="279" cy="122.6" r="11.2" fill="#c0e4e8"/>
+<circle cx="292.2" cy="122.6" r="11.2" fill="#bee2e6"/>
+<circle cx="305.4" cy="122.6" r="11.2" fill="#c2e4e9"/>
+<circle cx="318.6" cy="122.6" r="11.2" fill="#b6dce0"/>
+<circle cx="331.8" cy="122.6" r="11.2" fill="#afd9dd"/>
+<circle cx="345" cy="122.6" r="11.2" fill="#afd9de"/>
+<circle cx="358.2" cy="122.6" r="11.2" fill="#b2dadf"/>
+<circle cx="371.4" cy="122.6" r="11.2" fill="#b0d8de"/>
+<circle cx="384.6" cy="122.6" r="11.2" fill="#aed5db"/>
+<circle cx="94.2" cy="135.8" r="11.2" fill="#c3e6ed"/>
+<circle cx="107.4" cy="135.8" r="11.2" fill="#bbe3e8"/>
+<circle cx="120.6" cy="135.8" r="11.2" fill="#b1dbe0"/>
+<circle cx="133.8" cy="135.8" r="11.2" fill="#a8d4d8"/>
+<circle cx="147" cy="135.8" r="11.2" fill="#abd9dd"/>
+<circle cx="160.2" cy="135.8" r="11.2" fill="#b6e1e5"/>
+<circle cx="173.4" cy="135.8" r="11.2" fill="#bfe6eb"/>
+<circle cx="186.6" cy="135.8" r="11.2" fill="#bde4ea"/>
+<circle cx="199.8" cy="135.8" r="11.2" fill="#b8e0e6"/>
+<circle cx="213" cy="135.8" r="11.2" fill="#bce4e9"/>
+<circle cx="226.2" cy="135.8" r="11.2" fill="#bde5ea"/>
+<circle cx="239.4" cy="135.8" r="11.2" fill="#c0e6ed"/>
+<circle cx="252.6" cy="135.8" r="11.2" fill="#bae0e7"/>
+<circle cx="265.8" cy="135.8" r="11.2" fill="#b1dbdf"/>
+<circle cx="279" cy="135.8" r="11.2" fill="#aad6da"/>
+<circle cx="292.2" cy="135.8" r="11.2" fill="#add6da"/>
+<circle cx="305.4" cy="135.8" r="11.2" fill="#add6d9"/>
+<circle cx="318.6" cy="135.8" r="11.2" fill="#acd6da"/>
+<circle cx="331.8" cy="135.8" r="11.2" fill="#aed8dc"/>
+<circle cx="345" cy="135.8" r="11.2" fill="#b3dbdf"/>
+<circle cx="358.2" cy="135.8" r="11.2" fill="#b2d9df"/>
+<circle cx="371.4" cy="135.8" r="11.2" fill="#afd7dc"/>
+<circle cx="384.6" cy="135.8" r="11.2" fill="#add3d9"/>
+<circle cx="397.8" cy="135.8" r="11.2" fill="#abcfd4"/>
+<circle cx="81" cy="149" r="11.2" fill="#d9f0f7"/>
+<circle cx="94.2" cy="149" r="11.2" fill="#d3eff6"/>
+<circle cx="107.4" cy="149" r="11.2" fill="#cdecf3"/>
+<circle cx="120.6" cy="149" r="11.2" fill="#caebf3"/>
+<circle cx="133.8" cy="149" r="11.2" fill="#c1e5ec"/>
+<circle cx="147" cy="149" r="11.2" fill="#b9e2e7"/>
+<circle cx="160.2" cy="149" r="11.2" fill="#bae3e7"/>
+<circle cx="173.4" cy="149" r="11.2" fill="#c5e8ed"/>
+<circle cx="186.6" cy="149" r="11.2" fill="#cdeef4"/>
+<circle cx="199.8" cy="149" r="11.2" fill="#c9edf3"/>
+<circle cx="213" cy="149" r="11.2" fill="#c8ecf2"/>
+<circle cx="226.2" cy="149" r="11.2" fill="#c4e7ed"/>
+<circle cx="239.4" cy="149" r="11.2" fill="#b8e1e5"/>
+<circle cx="252.6" cy="149" r="11.2" fill="#b3dee0"/>
+<circle cx="265.8" cy="149" r="11.2" fill="#b1dcdf"/>
+<circle cx="279" cy="149" r="11.2" fill="#b0dbde"/>
+<circle cx="292.2" cy="149" r="11.2" fill="#b2dade"/>
+<circle cx="305.4" cy="149" r="11.2" fill="#b0d8dc"/>
+<circle cx="318.6" cy="149" r="11.2" fill="#aed6dc"/>
+<circle cx="331.8" cy="149" r="11.2" fill="#abd3d9"/>
+<circle cx="345" cy="149" r="11.2" fill="#a9d1d7"/>
+<circle cx="358.2" cy="149" r="11.2" fill="#a8d0d5"/>
+<circle cx="371.4" cy="149" r="11.2" fill="#a8ced4"/>
+<circle cx="384.6" cy="149" r="11.2" fill="#a7ced2"/>
+<circle cx="397.8" cy="149" r="11.2" fill="#a9cdd1"/>
+<circle cx="411" cy="149" r="11.2" fill="#a8ccd0"/>
+<circle cx="81" cy="162.2" r="11.2" fill="#e6f4fb"/>
+<circle cx="94.2" cy="162.2" r="11.2" fill="#dbf1f8"/>
+<circle cx="107.4" cy="162.2" r="11.2" fill="#d4f0f7"/>
+<circle cx="120.6" cy="162.2" r="11.2" fill="#d4f0f8"/>
+<circle cx="133.8" cy="162.2" r="11.2" fill="#cdeef5"/>
+<circle cx="147" cy="162.2" r="11.2" fill="#c7eaf0"/>
+<circle cx="160.2" cy="162.2" r="11.2" fill="#c4e7ec"/>
+<circle cx="173.4" cy="162.2" r="11.2" fill="#b9e1e2"/>
+<circle cx="186.6" cy="162.2" r="11.2" fill="#b6dfe0"/>
+<circle cx="199.8" cy="162.2" r="11.2" fill="#bae4e7"/>
+<circle cx="213" cy="162.2" r="11.2" fill="#bce4e8"/>
+<circle cx="226.2" cy="162.2" r="11.2" fill="#bfe6e9"/>
+<circle cx="239.4" cy="162.2" r="11.2" fill="#bce3e6"/>
+<circle cx="252.6" cy="162.2" r="11.2" fill="#bce2e6"/>
+<circle cx="265.8" cy="162.2" r="11.2" fill="#b8e0e1"/>
+<circle cx="279" cy="162.2" r="11.2" fill="#b5dcdf"/>
+<circle cx="292.2" cy="162.2" r="11.2" fill="#afd6db"/>
+<circle cx="305.4" cy="162.2" r="11.2" fill="#add4d9"/>
+<circle cx="318.6" cy="162.2" r="11.2" fill="#aad1d7"/>
+<circle cx="331.8" cy="162.2" r="11.2" fill="#a8cfd5"/>
+<circle cx="345" cy="162.2" r="11.2" fill="#a6cdd2"/>
+<circle cx="358.2" cy="162.2" r="11.2" fill="#a6cdd3"/>
+<circle cx="371.4" cy="162.2" r="11.2" fill="#a9cfd6"/>
+<circle cx="384.6" cy="162.2" r="11.2" fill="#a8cfd3"/>
+<circle cx="397.8" cy="162.2" r="11.2" fill="#abcfd3"/>
+<circle cx="411" cy="162.2" r="11.2" fill="#abcfd3"/>
+<circle cx="67.8" cy="175.4" r="11.2" fill="#ceebef"/>
+<circle cx="81" cy="175.4" r="11.2" fill="#cce9ef"/>
+<circle cx="94.2" cy="175.4" r="11.2" fill="#c8e8ed"/>
+<circle cx="107.4" cy="175.4" r="11.2" fill="#c4e5e8"/>
+<circle cx="120.6" cy="175.4" r="11.2" fill="#c0e3e5"/>
+<circle cx="133.8" cy="175.4" r="11.2" fill="#bae2e5"/>
+<circle cx="147" cy="175.4" r="11.2" fill="#b7e1e1"/>
+<circle cx="160.2" cy="175.4" r="11.2" fill="#b5e0e3"/>
+<circle cx="173.4" cy="175.4" r="11.2" fill="#afdbde"/>
+<circle cx="186.6" cy="175.4" r="11.2" fill="#abd7db"/>
+<circle cx="199.8" cy="175.4" r="11.2" fill="#acd8dc"/>
+<circle cx="213" cy="175.4" r="11.2" fill="#abd9da"/>
+<circle cx="226.2" cy="175.4" r="11.2" fill="#aedcdc"/>
+<circle cx="239.4" cy="175.4" r="11.2" fill="#b1dcde"/>
+<circle cx="252.6" cy="175.4" r="11.2" fill="#add6d9"/>
+<circle cx="265.8" cy="175.4" r="11.2" fill="#acd4d8"/>
+<circle cx="279" cy="175.4" r="11.2" fill="#aad2d6"/>
+<circle cx="292.2" cy="175.4" r="11.2" fill="#a8cfd4"/>
+<circle cx="305.4" cy="175.4" r="11.2" fill="#a7cfd3"/>
+<circle cx="318.6" cy="175.4" r="11.2" fill="#a9d0d5"/>
+<circle cx="331.8" cy="175.4" r="11.2" fill="#a9d0d3"/>
+<circle cx="345" cy="175.4" r="11.2" fill="#a8d0d3"/>
+<circle cx="358.2" cy="175.4" r="11.2" fill="#aad1d7"/>
+<circle cx="371.4" cy="175.4" r="11.2" fill="#acd3d8"/>
+<circle cx="384.6" cy="175.4" r="11.2" fill="#acd0d4"/>
+<circle cx="397.8" cy="175.4" r="11.2" fill="#a9cfd3"/>
+<circle cx="411" cy="175.4" r="11.2" fill="#a8ced0"/>
+<circle cx="424.2" cy="175.4" r="11.2" fill="#a8cccd"/>
+<circle cx="67.8" cy="188.6" r="11.2" fill="#a9d5d9"/>
+<circle cx="81" cy="188.6" r="11.2" fill="#aad4d8"/>
+<circle cx="94.2" cy="188.6" r="11.2" fill="#a8d2d6"/>
+<circle cx="107.4" cy="188.6" r="11.2" fill="#a6d0d4"/>
+<circle cx="120.6" cy="188.6" r="11.2" fill="#a4d0d4"/>
+<circle cx="133.8" cy="188.6" r="11.2" fill="#a4d2d3"/>
+<circle cx="147" cy="188.6" r="11.2" fill="#a4ced0"/>
+<circle cx="160.2" cy="188.6" r="11.2" fill="#a5d1d3"/>
+<circle cx="173.4" cy="188.6" r="11.2" fill="#a7d1d5"/>
+<circle cx="186.6" cy="188.6" r="11.2" fill="#a6cfd3"/>
+<circle cx="199.8" cy="188.6" r="11.2" fill="#a4ced1"/>
+<circle cx="213" cy="188.6" r="11.2" fill="#a1cbce"/>
+<circle cx="226.2" cy="188.6" r="11.2" fill="#a4ced0"/>
+<circle cx="239.4" cy="188.6" r="11.2" fill="#a6cfd2"/>
+<circle cx="252.6" cy="188.6" r="11.2" fill="#a5ced1"/>
+<circle cx="265.8" cy="188.6" r="11.2" fill="#a4cccd"/>
+<circle cx="279" cy="188.6" r="11.2" fill="#a1c9ca"/>
+<circle cx="292.2" cy="188.6" r="11.2" fill="#9dc6c9"/>
+<circle cx="305.4" cy="188.6" r="11.2" fill="#9bc4c7"/>
+<circle cx="318.6" cy="188.6" r="11.2" fill="#9ec6c9"/>
+<circle cx="331.8" cy="188.6" r="11.2" fill="#a1cccc"/>
+<circle cx="345" cy="188.6" r="11.2" fill="#a5ced2"/>
+<circle cx="358.2" cy="188.6" r="11.2" fill="#a9d1d5"/>
+<circle cx="371.4" cy="188.6" r="11.2" fill="#aad2d3"/>
+<circle cx="384.6" cy="188.6" r="11.2" fill="#abd1d3"/>
+<circle cx="397.8" cy="188.6" r="11.2" fill="#b0d3d7"/>
+<circle cx="411" cy="188.6" r="11.2" fill="#b1d4d6"/>
+<circle cx="424.2" cy="188.6" r="11.2" fill="#b3d5d8"/>
+<circle cx="67.8" cy="201.8" r="11.2" fill="#afd8db"/>
+<circle cx="81" cy="201.8" r="11.2" fill="#aad3d7"/>
+<circle cx="94.2" cy="201.8" r="11.2" fill="#a9d2d7"/>
+<circle cx="107.4" cy="201.8" r="11.2" fill="#a9d2d7"/>
+<circle cx="120.6" cy="201.8" r="11.2" fill="#a9d4d8"/>
+<circle cx="133.8" cy="201.8" r="11.2" fill="#a7d0d4"/>
+<circle cx="147" cy="201.8" r="11.2" fill="#a6cdce"/>
+<circle cx="160.2" cy="201.8" r="11.2" fill="#a3cbcc"/>
+<circle cx="173.4" cy="201.8" r="11.2" fill="#a3cccd"/>
+<circle cx="186.6" cy="201.8" r="11.2" fill="#a4cccd"/>
+<circle cx="199.8" cy="201.8" r="11.2" fill="#a4cbce"/>
+<circle cx="213" cy="201.8" r="11.2" fill="#a1cacd"/>
+<circle cx="226.2" cy="201.8" r="11.2" fill="#a1cacb"/>
+<circle cx="239.4" cy="201.8" r="11.2" fill="#a2cacd"/>
+<circle cx="252.6" cy="201.8" r="11.2" fill="#a5cdce"/>
+<circle cx="265.8" cy="201.8" r="11.2" fill="#acd3d4"/>
+<circle cx="279" cy="201.8" r="11.2" fill="#b3d6d8"/>
+<circle cx="292.2" cy="201.8" r="11.2" fill="#bbdadb"/>
+<circle cx="305.4" cy="201.8" r="11.2" fill="#bedcde"/>
+<circle cx="318.6" cy="201.8" r="11.2" fill="#c9e2e5"/>
+<circle cx="331.8" cy="201.8" r="11.2" fill="#cbe4e6"/>
+<circle cx="345" cy="201.8" r="11.2" fill="#cce6e8"/>
+<circle cx="358.2" cy="201.8" r="11.2" fill="#d5eaee"/>
+<circle cx="371.4" cy="201.8" r="11.2" fill="#d7ebf1"/>
+<circle cx="384.6" cy="201.8" r="11.2" fill="#dbecf2"/>
+<circle cx="397.8" cy="201.8" r="11.2" fill="#dbebf2"/>
+<circle cx="411" cy="201.8" r="11.2" fill="#d9e9f2"/>
+<circle cx="424.2" cy="201.8" r="11.2" fill="#d8e9f1"/>
+<circle cx="54.6" cy="215" r="11.2" fill="#b8dbdc"/>
+<circle cx="67.8" cy="215" r="11.2" fill="#badddf"/>
+<circle cx="81" cy="215" r="11.2" fill="#bcdfe0"/>
+<circle cx="94.2" cy="215" r="11.2" fill="#bfe0e0"/>
+<circle cx="107.4" cy="215" r="11.2" fill="#bcdfde"/>
+<circle cx="120.6" cy="215" r="11.2" fill="#bee0df"/>
+<circle cx="133.8" cy="215" r="11.2" fill="#bddfe0"/>
+<circle cx="147" cy="215" r="11.2" fill="#bbddde"/>
+<circle cx="160.2" cy="215" r="11.2" fill="#b6d9da"/>
+<circle cx="173.4" cy="215" r="11.2" fill="#b6d9da"/>
+<circle cx="186.6" cy="215" r="11.2" fill="#b5dada"/>
+<circle cx="199.8" cy="215" r="11.2" fill="#b5dad9"/>
+<circle cx="213" cy="215" r="11.2" fill="#b8dbd9"/>
+<circle cx="226.2" cy="215" r="11.2" fill="#bddedd"/>
+<circle cx="239.4" cy="215" r="11.2" fill="#c7e8e6"/>
+<circle cx="252.6" cy="215" r="11.2" fill="#cae7e7"/>
+<circle cx="265.8" cy="215" r="11.2" fill="#cde7ea"/>
+<circle cx="279" cy="215" r="11.2" fill="#d6ebf0"/>
+<circle cx="292.2" cy="215" r="11.2" fill="#d9edf0"/>
+<circle cx="305.4" cy="215" r="11.2" fill="#d9edf0"/>
+<circle cx="318.6" cy="215" r="11.2" fill="#d6edee"/>
+<circle cx="331.8" cy="215" r="11.2" fill="#cfe9ea"/>
+<circle cx="345" cy="215" r="11.2" fill="#c9e6e7"/>
+<circle cx="358.2" cy="215" r="11.2" fill="#c9e6e9"/>
+<circle cx="371.4" cy="215" r="11.2" fill="#c4e4e7"/>
+<circle cx="384.6" cy="215" r="11.2" fill="#bee0e3"/>
+<circle cx="397.8" cy="215" r="11.2" fill="#bcdce1"/>
+<circle cx="411" cy="215" r="11.2" fill="#badbe0"/>
+<circle cx="424.2" cy="215" r="11.2" fill="#b7d9dc"/>
+<circle cx="437.4" cy="215" r="11.2" fill="#b4d7d9"/>
+<circle cx="54.6" cy="228.2" r="11.2" fill="#bddede"/>
+<circle cx="67.8" cy="228.2" r="11.2" fill="#c8e3e4"/>
+<circle cx="81" cy="228.2" r="11.2" fill="#d1e8e8"/>
+<circle cx="94.2" cy="228.2" r="11.2" fill="#d0e8e9"/>
+<circle cx="107.4" cy="228.2" r="11.2" fill="#cee7e5"/>
+<circle cx="120.6" cy="228.2" r="11.2" fill="#cee7e7"/>
+<circle cx="133.8" cy="228.2" r="11.2" fill="#cee7e4"/>
+<circle cx="147" cy="228.2" r="11.2" fill="#cfe6e3"/>
+<circle cx="160.2" cy="228.2" r="11.2" fill="#d2e6e4"/>
+<circle cx="173.4" cy="228.2" r="11.2" fill="#dae9e8"/>
+<circle cx="186.6" cy="228.2" r="11.2" fill="#e2efee"/>
+<circle cx="199.8" cy="228.2" r="11.2" fill="#e5f0f0"/>
+<circle cx="213" cy="228.2" r="11.2" fill="#e6f1f2"/>
+<circle cx="226.2" cy="228.2" r="11.2" fill="#e3f2f2"/>
+<circle cx="239.4" cy="228.2" r="11.2" fill="#c8d8d9"/>
+<circle cx="252.6" cy="228.2" r="11.2" fill="#d1e8e6"/>
+<circle cx="265.8" cy="228.2" r="11.2" fill="#d6f1f1"/>
+<circle cx="279" cy="228.2" r="11.2" fill="#cae4e6"/>
+<circle cx="292.2" cy="228.2" r="11.2" fill="#c2e2e0"/>
+<circle cx="305.4" cy="228.2" r="11.2" fill="#bde1df"/>
+<circle cx="318.6" cy="228.2" r="11.2" fill="#bce0dd"/>
+<circle cx="331.8" cy="228.2" r="11.2" fill="#bde1e0"/>
+<circle cx="345" cy="228.2" r="11.2" fill="#b7ddde"/>
+<circle cx="358.2" cy="228.2" r="11.2" fill="#b4dcdb"/>
+<circle cx="371.4" cy="228.2" r="11.2" fill="#b7dcdc"/>
+<circle cx="384.6" cy="228.2" r="11.2" fill="#bddede"/>
+<circle cx="397.8" cy="228.2" r="11.2" fill="#bddddf"/>
+<circle cx="411" cy="228.2" r="11.2" fill="#bcdddb"/>
+<circle cx="424.2" cy="228.2" r="11.2" fill="#c0dfdb"/>
+<circle cx="437.4" cy="228.2" r="11.2" fill="#beddd9"/>
+<circle cx="54.6" cy="241.4" r="11.2" fill="#acdcdf"/>
+<circle cx="67.8" cy="241.4" r="11.2" fill="#aedee0"/>
+<circle cx="81" cy="241.4" r="11.2" fill="#b0e0e3"/>
+<circle cx="94.2" cy="241.4" r="11.2" fill="#b1e1e4"/>
+<circle cx="107.4" cy="241.4" r="11.2" fill="#b6e0e5"/>
+<circle cx="120.6" cy="241.4" r="11.2" fill="#bae1e6"/>
+<circle cx="133.8" cy="241.4" r="11.2" fill="#bde3e4"/>
+<circle cx="147" cy="241.4" r="11.2" fill="#c6e6e8"/>
+<circle cx="160.2" cy="241.4" r="11.2" fill="#c9e8ea"/>
+<circle cx="173.4" cy="241.4" r="11.2" fill="#cdecee"/>
+<circle cx="186.6" cy="241.4" r="11.2" fill="#d1eef0"/>
+<circle cx="199.8" cy="241.4" r="11.2" fill="#cceaed"/>
+<circle cx="213" cy="241.4" r="11.2" fill="#ceeef0"/>
+<circle cx="226.2" cy="241.4" r="11.2" fill="#7e979e"/>
+<circle cx="239.4" cy="241.4" r="11.2" fill="#233b4b"/>
+<circle cx="252.6" cy="241.4" r="11.2" fill="#38525e"/>
+<circle cx="265.8" cy="241.4" r="11.2" fill="#a2bfc2"/>
+<circle cx="279" cy="241.4" r="11.2" fill="#cef1f2"/>
+<circle cx="292.2" cy="241.4" r="11.2" fill="#c8e7e8"/>
+<circle cx="305.4" cy="241.4" r="11.2" fill="#c8e9e8"/>
+<circle cx="318.6" cy="241.4" r="11.2" fill="#c6e9e8"/>
+<circle cx="331.8" cy="241.4" r="11.2" fill="#c4e5ea"/>
+<circle cx="345" cy="241.4" r="11.2" fill="#c2e4e6"/>
+<circle cx="358.2" cy="241.4" r="11.2" fill="#c2e3e8"/>
+<circle cx="371.4" cy="241.4" r="11.2" fill="#c6e4ea"/>
+<circle cx="384.6" cy="241.4" r="11.2" fill="#cce6e6"/>
+<circle cx="397.8" cy="241.4" r="11.2" fill="#cce5e8"/>
+<circle cx="411" cy="241.4" r="11.2" fill="#cee7e8"/>
+<circle cx="424.2" cy="241.4" r="11.2" fill="#cee5e6"/>
+<circle cx="437.4" cy="241.4" r="11.2" fill="#cadfde"/>
+<circle cx="54.6" cy="254.6" r="11.2" fill="#9bc6ba"/>
+<circle cx="67.8" cy="254.6" r="11.2" fill="#9cc8bc"/>
+<circle cx="81" cy="254.6" r="11.2" fill="#9dc8ba"/>
+<circle cx="94.2" cy="254.6" r="11.2" fill="#9eccbd"/>
+<circle cx="107.4" cy="254.6" r="11.2" fill="#98c8ba"/>
+<circle cx="120.6" cy="254.6" r="11.2" fill="#9bc7b9"/>
+<circle cx="133.8" cy="254.6" r="11.2" fill="#9ec8ba"/>
+<circle cx="147" cy="254.6" r="11.2" fill="#9fc5b9"/>
+<circle cx="160.2" cy="254.6" r="11.2" fill="#9fc5b7"/>
+<circle cx="173.4" cy="254.6" r="11.2" fill="#a0c3b8"/>
+<circle cx="186.6" cy="254.6" r="11.2" fill="#9ec2b7"/>
+<circle cx="199.8" cy="254.6" r="11.2" fill="#a1c7b8"/>
+<circle cx="213" cy="254.6" r="11.2" fill="#98bcad"/>
+<circle cx="226.2" cy="254.6" r="11.2" fill="#0f2a3d"/>
+<circle cx="239.4" cy="254.6" r="11.2" fill="#000e24"/>
+<circle cx="252.6" cy="254.6" r="11.2" fill="#00041b"/>
+<circle cx="265.8" cy="254.6" r="11.2" fill="#395059"/>
+<circle cx="279" cy="254.6" r="11.2" fill="#a6c9bb"/>
+<circle cx="292.2" cy="254.6" r="11.2" fill="#9bbdb2"/>
+<circle cx="305.4" cy="254.6" r="11.2" fill="#a4c5b6"/>
+<circle cx="318.6" cy="254.6" r="11.2" fill="#a5c4b4"/>
+<circle cx="331.8" cy="254.6" r="11.2" fill="#a4c6b1"/>
+<circle cx="345" cy="254.6" r="11.2" fill="#a3c4b4"/>
+<circle cx="358.2" cy="254.6" r="11.2" fill="#a1c2ae"/>
+<circle cx="371.4" cy="254.6" r="11.2" fill="#a6c2b0"/>
+<circle cx="384.6" cy="254.6" r="11.2" fill="#a3bfb2"/>
+<circle cx="397.8" cy="254.6" r="11.2" fill="#a2c3af"/>
+<circle cx="411" cy="254.6" r="11.2" fill="#a4c5b4"/>
+<circle cx="424.2" cy="254.6" r="11.2" fill="#a3c0b1"/>
+<circle cx="437.4" cy="254.6" r="11.2" fill="#a1bbaf"/>
+<circle cx="54.6" cy="267.8" r="11.2" fill="#9ac489"/>
+<circle cx="67.8" cy="267.8" r="11.2" fill="#9ac38a"/>
+<circle cx="81" cy="267.8" r="11.2" fill="#99c388"/>
+<circle cx="94.2" cy="267.8" r="11.2" fill="#9dbc88"/>
+<circle cx="107.4" cy="267.8" r="11.2" fill="#bbbe7f"/>
+<circle cx="120.6" cy="267.8" r="11.2" fill="#acc68e"/>
+<circle cx="133.8" cy="267.8" r="11.2" fill="#9fc59e"/>
+<circle cx="147" cy="267.8" r="11.2" fill="#98b98c"/>
+<circle cx="160.2" cy="267.8" r="11.2" fill="#a4c38d"/>
+<circle cx="173.4" cy="267.8" r="11.2" fill="#aac08f"/>
+<circle cx="186.6" cy="267.8" r="11.2" fill="#92a985"/>
+<circle cx="199.8" cy="267.8" r="11.2" fill="#9cb98b"/>
+<circle cx="213" cy="267.8" r="11.2" fill="#aed58d"/>
+<circle cx="226.2" cy="267.8" r="11.2" fill="#2b3c41"/>
+<circle cx="239.4" cy="267.8" r="11.2" fill="#020116"/>
+<circle cx="252.6" cy="267.8" r="11.2" fill="#000012"/>
+<circle cx="265.8" cy="267.8" r="11.2" fill="#495b49"/>
+<circle cx="279" cy="267.8" r="11.2" fill="#afcd8f"/>
+<circle cx="292.2" cy="267.8" r="11.2" fill="#a3c290"/>
+<circle cx="305.4" cy="267.8" r="11.2" fill="#9db68c"/>
+<circle cx="318.6" cy="267.8" r="11.2" fill="#9cc085"/>
+<circle cx="331.8" cy="267.8" r="11.2" fill="#a2c688"/>
+<circle cx="345" cy="267.8" r="11.2" fill="#a0bf8b"/>
+<circle cx="358.2" cy="267.8" r="11.2" fill="#a0bb8a"/>
+<circle cx="371.4" cy="267.8" r="11.2" fill="#91ae80"/>
+<circle cx="384.6" cy="267.8" r="11.2" fill="#98bf83"/>
+<circle cx="397.8" cy="267.8" r="11.2" fill="#98bf7c"/>
+<circle cx="411" cy="267.8" r="11.2" fill="#97b97e"/>
+<circle cx="424.2" cy="267.8" r="11.2" fill="#9cbe87"/>
+<circle cx="437.4" cy="267.8" r="11.2" fill="#9bbc8f"/>
+<circle cx="54.6" cy="281" r="11.2" fill="#97b584"/>
+<circle cx="67.8" cy="281" r="11.2" fill="#98b984"/>
+<circle cx="81" cy="281" r="11.2" fill="#9ec581"/>
+<circle cx="94.2" cy="281" r="11.2" fill="#a6c188"/>
+<circle cx="107.4" cy="281" r="11.2" fill="#8e9f78"/>
+<circle cx="120.6" cy="281" r="11.2" fill="#8cad79"/>
+<circle cx="133.8" cy="281" r="11.2" fill="#91b47a"/>
+<circle cx="147" cy="281" r="11.2" fill="#95b781"/>
+<circle cx="160.2" cy="281" r="11.2" fill="#92b37f"/>
+<circle cx="173.4" cy="281" r="11.2" fill="#8eac81"/>
+<circle cx="186.6" cy="281" r="11.2" fill="#9bb388"/>
+<circle cx="199.8" cy="281" r="11.2" fill="#a1c182"/>
+<circle cx="213" cy="281" r="11.2" fill="#a0be83"/>
+<circle cx="226.2" cy="281" r="11.2" fill="#6e705a"/>
+<circle cx="239.4" cy="281" r="11.2" fill="#00000f"/>
+<circle cx="252.6" cy="281" r="11.2" fill="#000716"/>
+<circle cx="265.8" cy="281" r="11.2" fill="#8b8c6b"/>
+<circle cx="279" cy="281" r="11.2" fill="#a8a188"/>
+<circle cx="292.2" cy="281" r="11.2" fill="#9a7e84"/>
+<circle cx="305.4" cy="281" r="11.2" fill="#969782"/>
+<circle cx="318.6" cy="281" r="11.2" fill="#91b175"/>
+<circle cx="331.8" cy="281" r="11.2" fill="#a2d175"/>
+<circle cx="345" cy="281" r="11.2" fill="#a0ce73"/>
+<circle cx="358.2" cy="281" r="11.2" fill="#a0cf74"/>
+<circle cx="371.4" cy="281" r="11.2" fill="#9ecb74"/>
+<circle cx="384.6" cy="281" r="11.2" fill="#9ac471"/>
+<circle cx="397.8" cy="281" r="11.2" fill="#99c16e"/>
+<circle cx="411" cy="281" r="11.2" fill="#9ac270"/>
+<circle cx="424.2" cy="281" r="11.2" fill="#9bc371"/>
+<circle cx="437.4" cy="281" r="11.2" fill="#97c172"/>
+<circle cx="67.8" cy="294.2" r="11.2" fill="#a9c66a"/>
+<circle cx="81" cy="294.2" r="11.2" fill="#c8d66d"/>
+<circle cx="94.2" cy="294.2" r="11.2" fill="#8ba472"/>
+<circle cx="107.4" cy="294.2" r="11.2" fill="#6d8a65"/>
+<circle cx="120.6" cy="294.2" r="11.2" fill="#8e9c66"/>
+<circle cx="133.8" cy="294.2" r="11.2" fill="#80986a"/>
+<circle cx="147" cy="294.2" r="11.2" fill="#80996f"/>
+<circle cx="160.2" cy="294.2" r="11.2" fill="#869d73"/>
+<circle cx="173.4" cy="294.2" r="11.2" fill="#94a978"/>
+<circle cx="186.6" cy="294.2" r="11.2" fill="#96ac75"/>
+<circle cx="199.8" cy="294.2" r="11.2" fill="#8ca370"/>
+<circle cx="213" cy="294.2" r="11.2" fill="#799165"/>
+<circle cx="226.2" cy="294.2" r="11.2" fill="#90a970"/>
+<circle cx="239.4" cy="294.2" r="11.2" fill="#99635b"/>
+<circle cx="252.6" cy="294.2" r="11.2" fill="#926057"/>
+<circle cx="265.8" cy="294.2" r="11.2" fill="#b1b89a"/>
+<circle cx="279" cy="294.2" r="11.2" fill="#9baf6f"/>
+<circle cx="292.2" cy="294.2" r="11.2" fill="#a6a776"/>
+<circle cx="305.4" cy="294.2" r="11.2" fill="#978574"/>
+<circle cx="318.6" cy="294.2" r="11.2" fill="#8e826f"/>
+<circle cx="331.8" cy="294.2" r="11.2" fill="#8ca26a"/>
+<circle cx="345" cy="294.2" r="11.2" fill="#a0c66c"/>
+<circle cx="358.2" cy="294.2" r="11.2" fill="#9eb96a"/>
+<circle cx="371.4" cy="294.2" r="11.2" fill="#97b167"/>
+<circle cx="384.6" cy="294.2" r="11.2" fill="#9dc866"/>
+<circle cx="397.8" cy="294.2" r="11.2" fill="#9fd464"/>
+<circle cx="411" cy="294.2" r="11.2" fill="#9cce63"/>
+<circle cx="424.2" cy="294.2" r="11.2" fill="#9bc963"/>
+<circle cx="67.8" cy="307.4" r="11.2" fill="#ced165"/>
+<circle cx="81" cy="307.4" r="11.2" fill="#bbbb58"/>
+<circle cx="94.2" cy="307.4" r="11.2" fill="#a1aa5f"/>
+<circle cx="107.4" cy="307.4" r="11.2" fill="#898c58"/>
+<circle cx="120.6" cy="307.4" r="11.2" fill="#7b8b56"/>
+<circle cx="133.8" cy="307.4" r="11.2" fill="#7c9859"/>
+<circle cx="147" cy="307.4" r="11.2" fill="#779557"/>
+<circle cx="160.2" cy="307.4" r="11.2" fill="#829d62"/>
+<circle cx="173.4" cy="307.4" r="11.2" fill="#839d65"/>
+<circle cx="186.6" cy="307.4" r="11.2" fill="#748f5c"/>
+<circle cx="199.8" cy="307.4" r="11.2" fill="#74925a"/>
+<circle cx="213" cy="307.4" r="11.2" fill="#92a074"/>
+<circle cx="226.2" cy="307.4" r="11.2" fill="#d79f97"/>
+<circle cx="239.4" cy="307.4" r="11.2" fill="#fd7488"/>
+<circle cx="252.6" cy="307.4" r="11.2" fill="#f06d7e"/>
+<circle cx="265.8" cy="307.4" r="11.2" fill="#ed9cab"/>
+<circle cx="279" cy="307.4" r="11.2" fill="#aa8a8b"/>
+<circle cx="292.2" cy="307.4" r="11.2" fill="#9a9f64"/>
+<circle cx="305.4" cy="307.4" r="11.2" fill="#b1d172"/>
+<circle cx="318.6" cy="307.4" r="11.2" fill="#b1c479"/>
+<circle cx="331.8" cy="307.4" r="11.2" fill="#9d9d6c"/>
+<circle cx="345" cy="307.4" r="11.2" fill="#848d62"/>
+<circle cx="358.2" cy="307.4" r="11.2" fill="#90a466"/>
+<circle cx="371.4" cy="307.4" r="11.2" fill="#99b069"/>
+<circle cx="384.6" cy="307.4" r="11.2" fill="#909069"/>
+<circle cx="397.8" cy="307.4" r="11.2" fill="#919865"/>
+<circle cx="411" cy="307.4" r="11.2" fill="#97b55f"/>
+<circle cx="424.2" cy="307.4" r="11.2" fill="#9ac25e"/>
+<circle cx="67.8" cy="320.6" r="11.2" fill="#939943"/>
+<circle cx="81" cy="320.6" r="11.2" fill="#b8bf4e"/>
+<circle cx="94.2" cy="320.6" r="11.2" fill="#cbd164"/>
+<circle cx="107.4" cy="320.6" r="11.2" fill="#7a8148"/>
+<circle cx="120.6" cy="320.6" r="11.2" fill="#90a547"/>
+<circle cx="133.8" cy="320.6" r="11.2" fill="#b7be4f"/>
+<circle cx="147" cy="320.6" r="11.2" fill="#abb549"/>
+<circle cx="160.2" cy="320.6" r="11.2" fill="#768f46"/>
+<circle cx="173.4" cy="320.6" r="11.2" fill="#788d51"/>
+<circle cx="186.6" cy="320.6" r="11.2" fill="#869550"/>
+<circle cx="199.8" cy="320.6" r="11.2" fill="#bdae88"/>
+<circle cx="213" cy="320.6" r="11.2" fill="#ffa0be"/>
+<circle cx="226.2" cy="320.6" r="11.2" fill="#ff7d94"/>
+<circle cx="239.4" cy="320.6" r="11.2" fill="#f07387"/>
+<circle cx="252.6" cy="320.6" r="11.2" fill="#ef7486"/>
+<circle cx="265.8" cy="320.6" r="11.2" fill="#fb798d"/>
+<circle cx="279" cy="320.6" r="11.2" fill="#ffa3b9"/>
+<circle cx="292.2" cy="320.6" r="11.2" fill="#bd9191"/>
+<circle cx="305.4" cy="320.6" r="11.2" fill="#838a55"/>
+<circle cx="318.6" cy="320.6" r="11.2" fill="#a4cc64"/>
+<circle cx="331.8" cy="320.6" r="11.2" fill="#a1b167"/>
+<circle cx="345" cy="320.6" r="11.2" fill="#8c8c56"/>
+<circle cx="358.2" cy="320.6" r="11.2" fill="#7d8545"/>
+<circle cx="371.4" cy="320.6" r="11.2" fill="#6f8a41"/>
+<circle cx="384.6" cy="320.6" r="11.2" fill="#779647"/>
+<circle cx="397.8" cy="320.6" r="11.2" fill="#7f8456"/>
+<circle cx="411" cy="320.6" r="11.2" fill="#7c7755"/>
+<circle cx="424.2" cy="320.6" r="11.2" fill="#7c8550"/>
+<circle cx="81" cy="333.8" r="11.2" fill="#8d9a8a"/>
+<circle cx="94.2" cy="333.8" r="11.2" fill="#abbd91"/>
+<circle cx="107.4" cy="333.8" r="11.2" fill="#a6b896"/>
+<circle cx="120.6" cy="333.8" r="11.2" fill="#b5c091"/>
+<circle cx="133.8" cy="333.8" r="11.2" fill="#acb88b"/>
+<circle cx="147" cy="333.8" r="11.2" fill="#a6b58c"/>
+<circle cx="160.2" cy="333.8" r="11.2" fill="#9db18d"/>
+<circle cx="173.4" cy="333.8" r="11.2" fill="#b3bd8e"/>
+<circle cx="186.6" cy="333.8" r="11.2" fill="#b8c595"/>
+<circle cx="199.8" cy="333.8" r="11.2" fill="#f09c9e"/>
+<circle cx="213" cy="333.8" r="11.2" fill="#fb7187"/>
+<circle cx="226.2" cy="333.8" r="11.2" fill="#ed6c77"/>
+<circle cx="239.4" cy="333.8" r="11.2" fill="#e86572"/>
+<circle cx="252.6" cy="333.8" r="11.2" fill="#dd5969"/>
+<circle cx="265.8" cy="333.8" r="11.2" fill="#ec6a76"/>
+<circle cx="279" cy="333.8" r="11.2" fill="#f06877"/>
+<circle cx="292.2" cy="333.8" r="11.2" fill="#de868d"/>
+<circle cx="305.4" cy="333.8" r="11.2" fill="#8b9287"/>
+<circle cx="318.6" cy="333.8" r="11.2" fill="#98a88a"/>
+<circle cx="331.8" cy="333.8" r="11.2" fill="#9dbc8f"/>
+<circle cx="345" cy="333.8" r="11.2" fill="#9eb492"/>
+<circle cx="358.2" cy="333.8" r="11.2" fill="#979f8e"/>
+<circle cx="371.4" cy="333.8" r="11.2" fill="#8b9089"/>
+<circle cx="384.6" cy="333.8" r="11.2" fill="#829785"/>
+<circle cx="397.8" cy="333.8" r="11.2" fill="#96b78c"/>
+<circle cx="411" cy="333.8" r="11.2" fill="#9cbd8e"/>
+<circle cx="81" cy="347" r="11.2" fill="#667d7a"/>
+<circle cx="94.2" cy="347" r="11.2" fill="#4f6e7b"/>
+<circle cx="107.4" cy="347" r="11.2" fill="#536e6a"/>
+<circle cx="120.6" cy="347" r="11.2" fill="#577974"/>
+<circle cx="133.8" cy="347" r="11.2" fill="#5f7f72"/>
+<circle cx="147" cy="347" r="11.2" fill="#4b7175"/>
+<circle cx="160.2" cy="347" r="11.2" fill="#50686c"/>
+<circle cx="173.4" cy="347" r="11.2" fill="#4c6272"/>
+<circle cx="186.6" cy="347" r="11.2" fill="#6c777c"/>
+<circle cx="199.8" cy="347" r="11.2" fill="#d76e79"/>
+<circle cx="213" cy="347" r="11.2" fill="#f06674"/>
+<circle cx="226.2" cy="347" r="11.2" fill="#ea6f7c"/>
+<circle cx="239.4" cy="347" r="11.2" fill="#dc5b68"/>
+<circle cx="252.6" cy="347" r="11.2" fill="#e15b6c"/>
+<circle cx="265.8" cy="347" r="11.2" fill="#e96371"/>
+<circle cx="279" cy="347" r="11.2" fill="#d44c59"/>
+<circle cx="292.2" cy="347" r="11.2" fill="#e9869a"/>
+<circle cx="305.4" cy="347" r="11.2" fill="#566663"/>
+<circle cx="318.6" cy="347" r="11.2" fill="#2c5258"/>
+<circle cx="331.8" cy="347" r="11.2" fill="#436162"/>
+<circle cx="345" cy="347" r="11.2" fill="#396466"/>
+<circle cx="358.2" cy="347" r="11.2" fill="#446f6d"/>
+<circle cx="371.4" cy="347" r="11.2" fill="#3d6f6c"/>
+<circle cx="384.6" cy="347" r="11.2" fill="#58857a"/>
+<circle cx="397.8" cy="347" r="11.2" fill="#67848e"/>
+<circle cx="411" cy="347" r="11.2" fill="#6e888d"/>
+<circle cx="94.2" cy="360.2" r="11.2" fill="#66775a"/>
+<circle cx="107.4" cy="360.2" r="11.2" fill="#737e31"/>
+<circle cx="120.6" cy="360.2" r="11.2" fill="#758952"/>
+<circle cx="133.8" cy="360.2" r="11.2" fill="#a2a940"/>
+<circle cx="147" cy="360.2" r="11.2" fill="#5f8145"/>
+<circle cx="160.2" cy="360.2" r="11.2" fill="#87962e"/>
+<circle cx="173.4" cy="360.2" r="11.2" fill="#839150"/>
+<circle cx="186.6" cy="360.2" r="11.2" fill="#c9b95a"/>
+<circle cx="199.8" cy="360.2" r="11.2" fill="#da4c48"/>
+<circle cx="213" cy="360.2" r="11.2" fill="#cd4340"/>
+<circle cx="226.2" cy="360.2" r="11.2" fill="#ed7081"/>
+<circle cx="239.4" cy="360.2" r="11.2" fill="#e15b6b"/>
+<circle cx="252.6" cy="360.2" r="11.2" fill="#e45e6e"/>
+<circle cx="265.8" cy="360.2" r="11.2" fill="#d0465f"/>
+<circle cx="279" cy="360.2" r="11.2" fill="#bb3d47"/>
+<circle cx="292.2" cy="360.2" r="11.2" fill="#ce5867"/>
+<circle cx="305.4" cy="360.2" r="11.2" fill="#989156"/>
+<circle cx="318.6" cy="360.2" r="11.2" fill="#355f2b"/>
+<circle cx="331.8" cy="360.2" r="11.2" fill="#7f7155"/>
+<circle cx="345" cy="360.2" r="11.2" fill="#77886b"/>
+<circle cx="358.2" cy="360.2" r="11.2" fill="#7b694a"/>
+<circle cx="371.4" cy="360.2" r="11.2" fill="#6a7a5a"/>
+<circle cx="384.6" cy="360.2" r="11.2" fill="#8da051"/>
+<circle cx="397.8" cy="360.2" r="11.2" fill="#647e57"/>
+<circle cx="107.4" cy="373.4" r="11.2" fill="#9eb493"/>
+<circle cx="120.6" cy="373.4" r="11.2" fill="#8ba68d"/>
+<circle cx="133.8" cy="373.4" r="11.2" fill="#b2c485"/>
+<circle cx="147" cy="373.4" r="11.2" fill="#9bb194"/>
+<circle cx="160.2" cy="373.4" r="11.2" fill="#c3d38a"/>
+<circle cx="173.4" cy="373.4" r="11.2" fill="#a2c18d"/>
+<circle cx="186.6" cy="373.4" r="11.2" fill="#c5cb97"/>
+<circle cx="199.8" cy="373.4" r="11.2" fill="#b46364"/>
+<circle cx="213" cy="373.4" r="11.2" fill="#b84b42"/>
+<circle cx="226.2" cy="373.4" r="11.2" fill="#f4757f"/>
+<circle cx="239.4" cy="373.4" r="11.2" fill="#de5b69"/>
+<circle cx="252.6" cy="373.4" r="11.2" fill="#d65464"/>
+<circle cx="265.8" cy="373.4" r="11.2" fill="#cf3f5c"/>
+<circle cx="279" cy="373.4" r="11.2" fill="#ba484e"/>
+<circle cx="292.2" cy="373.4" r="11.2" fill="#953434"/>
+<circle cx="305.4" cy="373.4" r="11.2" fill="#96827c"/>
+<circle cx="318.6" cy="373.4" r="11.2" fill="#5f8b6b"/>
+<circle cx="331.8" cy="373.4" r="11.2" fill="#84867a"/>
+<circle cx="345" cy="373.4" r="11.2" fill="#8c9d94"/>
+<circle cx="358.2" cy="373.4" r="11.2" fill="#999a83"/>
+<circle cx="371.4" cy="373.4" r="11.2" fill="#889c8a"/>
+<circle cx="384.6" cy="373.4" r="11.2" fill="#999980"/>
+<circle cx="120.6" cy="386.6" r="11.2" fill="#749289"/>
+<circle cx="133.8" cy="386.6" r="11.2" fill="#7a9580"/>
+<circle cx="147" cy="386.6" r="11.2" fill="#708d81"/>
+<circle cx="160.2" cy="386.6" r="11.2" fill="#89a48a"/>
+<circle cx="173.4" cy="386.6" r="11.2" fill="#718e84"/>
+<circle cx="186.6" cy="386.6" r="11.2" fill="#7c927d"/>
+<circle cx="199.8" cy="386.6" r="11.2" fill="#5e8a73"/>
+<circle cx="213" cy="386.6" r="11.2" fill="#c58a82"/>
+<circle cx="226.2" cy="386.6" r="11.2" fill="#f36d77"/>
+<circle cx="239.4" cy="386.6" r="11.2" fill="#d75c6b"/>
+<circle cx="252.6" cy="386.6" r="11.2" fill="#ce425a"/>
+<circle cx="265.8" cy="386.6" r="11.2" fill="#cf4762"/>
+<circle cx="279" cy="386.6" r="11.2" fill="#ae3541"/>
+<circle cx="292.2" cy="386.6" r="11.2" fill="#463b3d"/>
+<circle cx="305.4" cy="386.6" r="11.2" fill="#698989"/>
+<circle cx="318.6" cy="386.6" r="11.2" fill="#577475"/>
+<circle cx="331.8" cy="386.6" r="11.2" fill="#496866"/>
+<circle cx="345" cy="386.6" r="11.2" fill="#4c6a70"/>
+<circle cx="358.2" cy="386.6" r="11.2" fill="#4b6d6c"/>
+<circle cx="371.4" cy="386.6" r="11.2" fill="#4e7873"/>
+<circle cx="133.8" cy="399.8" r="11.2" fill="#979d32"/>
+<circle cx="147" cy="399.8" r="11.2" fill="#728749"/>
+<circle cx="160.2" cy="399.8" r="11.2" fill="#b3d14c"/>
+<circle cx="173.4" cy="399.8" r="11.2" fill="#87a151"/>
+<circle cx="186.6" cy="399.8" r="11.2" fill="#bcc547"/>
+<circle cx="199.8" cy="399.8" r="11.2" fill="#92ad5e"/>
+<circle cx="213" cy="399.8" r="11.2" fill="#f2b38e"/>
+<circle cx="226.2" cy="399.8" r="11.2" fill="#ea6579"/>
+<circle cx="239.4" cy="399.8" r="11.2" fill="#d75e6c"/>
+<circle cx="252.6" cy="399.8" r="11.2" fill="#ca3d55"/>
+<circle cx="265.8" cy="399.8" r="11.2" fill="#c94d66"/>
+<circle cx="279" cy="399.8" r="11.2" fill="#c13b47"/>
+<circle cx="292.2" cy="399.8" r="11.2" fill="#85545b"/>
+<circle cx="305.4" cy="399.8" r="11.2" fill="#b6bc87"/>
+<circle cx="318.6" cy="399.8" r="11.2" fill="#829168"/>
+<circle cx="331.8" cy="399.8" r="11.2" fill="#9a965e"/>
+<circle cx="345" cy="399.8" r="11.2" fill="#595f51"/>
+<circle cx="358.2" cy="399.8" r="11.2" fill="#53553b"/>
+<circle cx="147" cy="413" r="11.2" fill="#8dab5d"/>
+<circle cx="160.2" cy="413" r="11.2" fill="#c5d96a"/>
+<circle cx="173.4" cy="413" r="11.2" fill="#94a675"/>
+<circle cx="186.6" cy="413" r="11.2" fill="#c8ce96"/>
+<circle cx="199.8" cy="413" r="11.2" fill="#7e9a7f"/>
+<circle cx="213" cy="413" r="11.2" fill="#dda596"/>
+<circle cx="226.2" cy="413" r="11.2" fill="#eb677b"/>
+<circle cx="239.4" cy="413" r="11.2" fill="#d75e6d"/>
+<circle cx="252.6" cy="413" r="11.2" fill="#c64253"/>
+<circle cx="265.8" cy="413" r="11.2" fill="#cc5769"/>
+<circle cx="279" cy="413" r="11.2" fill="#d03e53"/>
+<circle cx="292.2" cy="413" r="11.2" fill="#8f5861"/>
+<circle cx="305.4" cy="413" r="11.2" fill="#88a25f"/>
+<circle cx="318.6" cy="413" r="11.2" fill="#657b58"/>
+<circle cx="331.8" cy="413" r="11.2" fill="#96a668"/>
+<circle cx="345" cy="413" r="11.2" fill="#768c71"/>
+<circle cx="173.4" cy="426.2" r="11.2" fill="#769390"/>
+<circle cx="186.6" cy="426.2" r="11.2" fill="#8da894"/>
+<circle cx="199.8" cy="426.2" r="11.2" fill="#4e7e70"/>
+<circle cx="213" cy="426.2" r="11.2" fill="#c28a8c"/>
+<circle cx="226.2" cy="426.2" r="11.2" fill="#e36174"/>
+<circle cx="239.4" cy="426.2" r="11.2" fill="#d66271"/>
+<circle cx="252.6" cy="426.2" r="11.2" fill="#c44052"/>
+<circle cx="265.8" cy="426.2" r="11.2" fill="#c7566a"/>
+<circle cx="279" cy="426.2" r="11.2" fill="#d9475f"/>
+<circle cx="292.2" cy="426.2" r="11.2" fill="#935162"/>
+<circle cx="305.4" cy="426.2" r="11.2" fill="#669278"/>
+<circle cx="318.6" cy="426.2" r="11.2" fill="#55776a"/>
+<circle cx="213" cy="439.4" r="11.2" fill="#ec99b3"/>
+<circle cx="226.2" cy="439.4" r="11.2" fill="#df5069"/>
+<circle cx="239.4" cy="439.4" r="11.2" fill="#cf5d6d"/>
+<circle cx="252.6" cy="439.4" r="11.2" fill="#c4455b"/>
+<circle cx="265.8" cy="439.4" r="11.2" fill="#c84c64"/>
+<circle cx="279" cy="439.4" r="11.2" fill="#d5536c"/>
+</g>
+<text x="246" y="55.46" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                                                   <tspan fill="#f2ffff">*****</tspan><tspan fill="#e5ffff">***</tspan><tspan fill="#e1ffff">**</tspan>                                                   </text>
+<text x="246" y="62.29" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                                         <tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#e1ffff">+*</tspan><tspan fill="#e5ffff">***</tspan><tspan fill="#f2ffff">***</tspan><tspan fill="#ffffff">***</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">**</tspan><tspan fill="#e1ffff">+++++++</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#e1ffff">+*</tspan>                                         </text>
+<text x="246" y="69.12" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                                   <tspan fill="#c4f8fd">+</tspan><tspan fill="#c8feff">++++++++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#e1ffff">+*</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#ffffff">*****</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">**</tspan><tspan fill="#e1ffff">+++</tspan><tspan fill="#d9ffff">+++++</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">++</tspan>                                   </text>
+<text x="246" y="75.94" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                               <tspan fill="#bef4fa">++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c8feff">++++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#ffffff">******</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">++++++</tspan><tspan fill="#d3ffff">+++++++</tspan><tspan fill="#d9ffff">++++++</tspan>                               </text>
+<text x="246" y="82.77" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                           <tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">+++</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+*</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c8feff">+++++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#ffffff">******</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">++++</tspan><tspan fill="#d3ffff">++++++++</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#d1fdff">+</tspan>                           </text>
+<text x="246" y="89.6" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                        <tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">++++++</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f8fd">++++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">+++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#ffffff">*</tspan><tspan fill="#f2ffff">***</tspan><tspan fill="#ffffff">****</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">*++</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#d3ffff">++++</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">++++</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">++++</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#d7fdff">+</tspan><tspan fill="#d1fdff">+</tspan>                        </text>
+<text x="246" y="96.43" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                      <tspan fill="#c4f8fd">+++</tspan><tspan fill="#bef4fa">+++++</tspan><tspan fill="#c4f8fd">+++</tspan><tspan fill="#c7faff">++++</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#e5ffff">****</tspan><tspan fill="#f2ffff">************</tspan><tspan fill="#ffffff">**</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">*****</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">++++</tspan><tspan fill="#e1ffff">++++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">++++</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d7fdff">++</tspan><tspan fill="#c7faff">++</tspan>                      </text>
+<text x="246" y="103.26" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                   <tspan fill="#beeff5">=</tspan><tspan fill="#bff0f8">=+</tspan><tspan fill="#bef4fa">+++++++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">*************************</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">++**</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">*+*+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">++*</tspan><tspan fill="#deffff">+</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d1fdff">++++</tspan><tspan fill="#c7faff">+++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">+</tspan>                   </text>
+<text x="246" y="110.08" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                 <tspan fill="#bdeaf4">=</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bff0f8">==</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bef4fa">++++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+**</tspan><tspan fill="#e5ffff">*****</tspan><tspan fill="#f2ffff">***********</tspan><tspan fill="#ffffff">*****</tspan><tspan fill="#f2ffff">*******</tspan><tspan fill="#e5ffff">*****</tspan><tspan fill="#e1ffff">*+</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d1fdff">+++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">++++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">=</tspan>                 </text>
+<text x="246" y="116.91" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">               <tspan fill="#bce8f2">====</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bff0f8">==</tspan><tspan fill="#bef4fa">++++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">+++++</tspan><tspan fill="#e1ffff">++*</tspan><tspan fill="#e5ffff">*******</tspan><tspan fill="#f2ffff">****</tspan><tspan fill="#ffffff">******</tspan><tspan fill="#f2ffff">****</tspan><tspan fill="#e5ffff">**</tspan><tspan fill="#e1ffff">+++*</tspan><tspan fill="#e5ffff">*****</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#bff0f8">+==++=</tspan><tspan fill="#bdeaf4">==</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">==</tspan>               </text>
+<text x="246" y="123.74" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">              <tspan fill="#b9e8ee">==</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#beeff5">===</tspan><tspan fill="#bef4fa">++++++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c7faff">+++</tspan><tspan fill="#c8feff">+++</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#c8feff">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#e1ffff">+++*</tspan><tspan fill="#e5ffff">***</tspan><tspan fill="#f2ffff">*******</tspan><tspan fill="#e5ffff">**</tspan><tspan fill="#e1ffff">*++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d1fdff">++++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">+++++</tspan><tspan fill="#bff0f8">=+</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#bff0f8">++++==</tspan>              </text>
+<text x="246" y="130.57" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">            <tspan fill="#c4f8fd">+++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#beeff5">====</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bff0f8">=</tspan><tspan fill="#bef4fa">++++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">+++++++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c7faff">+++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">+++++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">*</tspan><tspan fill="#e5ffff">******</tspan><tspan fill="#e1ffff">*</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#beeff5">====</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c7faff">+++++++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bff0f8">+===</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">==</tspan>            </text>
+<text x="246" y="137.39" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">           <tspan fill="#d9ffff">+++++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#b9e8ee">==</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">+++</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#c8feff">++++</tspan><tspan fill="#d1fdff">+++</tspan><tspan fill="#d3ffff">+++++</tspan><tspan fill="#d9ffff">++++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#beeff5">=========</tspan><tspan fill="#bff0f8">++++</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+++</tspan><tspan fill="#bff0f8">++++=</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">==</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">==</tspan><tspan fill="#b9e6ee">=</tspan>           </text>
+<text x="246" y="144.22" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">         <tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">***</tspan><tspan fill="#e1ffff">*++</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">+++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">*</tspan><tspan fill="#e5ffff">****</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">++++</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">+++++</tspan><tspan fill="#d1fdff">+++</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bff0f8">==+</tspan><tspan fill="#beeff5">++</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#bef4fa">+++++</tspan><tspan fill="#bff0f8">+++=====</tspan><tspan fill="#beeff5">===</tspan><tspan fill="#bdeaf4">==</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">====</tspan><tspan fill="#b9e6ee">======</tspan>         </text>
+<text x="246" y="151.05" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">        <tspan fill="#f2ffff">***</tspan><tspan fill="#e5ffff">******</tspan><tspan fill="#e1ffff">***+*++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#c8feff">++++++++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#e1ffff">+**</tspan><tspan fill="#e5ffff">******</tspan><tspan fill="#e1ffff">****+</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#c8feff">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">++++</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#bff0f8">++===</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">===</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">======</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">==</tspan><tspan fill="#b9e6ee">=========</tspan>        </text>
+<text x="246" y="157.88" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">       <tspan fill="#ffffff">****</tspan><tspan fill="#f2ffff">****</tspan><tspan fill="#e5ffff">*****</tspan><tspan fill="#f2ffff">***</tspan><tspan fill="#e5ffff">***</tspan><tspan fill="#e1ffff">****+</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d3ffff">+++++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#deffff">+</tspan><tspan fill="#e1ffff">+++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#e1ffff">++*</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e1ffff">*</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c8feff">++</tspan><tspan fill="#d1fdff">++++</tspan><tspan fill="#c8feff">+++++</tspan><tspan fill="#c7faff">++++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">++++</tspan><tspan fill="#bff0f8">++=</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e6ee">====</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e6ee">=====</tspan><tspan fill="#b0e1e6">==</tspan><tspan fill="#b9e6ee">========</tspan>       </text>
+<text x="246" y="164.7" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">      <tspan fill="#ffffff">******</tspan><tspan fill="#f2ffff">*********</tspan><tspan fill="#e5ffff">**</tspan><tspan fill="#e1ffff">***+</tspan><tspan fill="#d9ffff">+++++++</tspan><tspan fill="#d3ffff">+</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c8feff">+++++++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">++++++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#d3ffff">+++++</tspan><tspan fill="#d1fdff">+</tspan><tspan fill="#c8feff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bff0f8">+=</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">=====</tspan><tspan fill="#bce8f2">=====</tspan><tspan fill="#b9e6ee">=====</tspan><tspan fill="#b0e1e6">=</tspan><tspan fill="#b9e6ee">======</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">=====</tspan><tspan fill="#bce8f2">=====</tspan><tspan fill="#bdeaf4">=</tspan>      </text>
+<text x="246" y="171.53" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">     <tspan fill="#ffffff">***</tspan><tspan fill="#f2ffff">******</tspan><tspan fill="#e5ffff">*******</tspan><tspan fill="#e1ffff">*+</tspan><tspan fill="#d9ffff">+++++</tspan><tspan fill="#d3ffff">+++</tspan><tspan fill="#d1fdff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c4f8fd">+++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c8feff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bff0f8">+++</tspan><tspan fill="#beeff5">====</tspan><tspan fill="#bff0f8">=</tspan><tspan fill="#bdeaf4">===========</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#b9e6ee">===</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">==========</tspan><tspan fill="#b9e6ee">==</tspan>     </text>
+<text x="246" y="178.36" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">    <tspan fill="#e1ffff">*****+</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#e1ffff">+</tspan><tspan fill="#deffff">++</tspan><tspan fill="#d9ffff">+++++</tspan><tspan fill="#d1fdff">++++</tspan><tspan fill="#c8feff">++</tspan><tspan fill="#c7faff">++++++</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f8fd">++</tspan><tspan fill="#bef4fa">++++++++++++++++</tspan><tspan fill="#c4f8fd">+++</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#beeff5">===</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#bce8f2">===</tspan><tspan fill="#b9e8ee">==</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">===============</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#bff0f8">=</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">==</tspan><tspan fill="#b9e6ee">=====</tspan><tspan fill="#b0e1e6">====</tspan>    </text>
+<text x="246" y="185.19" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">    <tspan fill="#c4f8fd">++</tspan><tspan fill="#c4f5fb">++++++</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#beeff5">===++++====</tspan><tspan fill="#bef4fa">++++</tspan><tspan fill="#beeff5">===</tspan><tspan fill="#bdeaf4">==</tspan><tspan fill="#b9e8ee">============</tspan><tspan fill="#beeff5">==</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#beeff5">=======</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#b9e6ee">==</tspan><tspan fill="#b0e1e6">===========</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">======</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#bce8f2">=======</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#b9e8ee">=</tspan>    </text>
+<text x="246" y="192.01" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">   <tspan fill="#beeff5">====</tspan><tspan fill="#bce8f2">==</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#b9e8ee">================</tspan><tspan fill="#b0e1e6">=====</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e6ee">===</tspan><tspan fill="#b9e8ee">===</tspan><tspan fill="#b0e1e6">==============</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b0e1e6">=======================</tspan><tspan fill="#b9e8ee">=======</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b9e8ee">===</tspan><tspan fill="#bdeaf4">==</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">====</tspan><tspan fill="#beeff5">====</tspan>   </text>
+<text x="246" y="198.84" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">  <tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">=================</tspan><tspan fill="#b0e1e6">======================================================</tspan><tspan fill="#b9e8ee">=====</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d7fdff">+++++++++</tspan><tspan fill="#deffff">+</tspan><tspan fill="#e4ffff">+++++++++*</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">*</tspan>  </text>
+<text x="246" y="205.67" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">  <tspan fill="#d7fdff">++</tspan><tspan fill="#c8feff">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f5fb">+++</tspan><tspan fill="#bff0f8">+++++</tspan><tspan fill="#beeff5">===</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bff0f8">+++</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">===</tspan><tspan fill="#b9e6ee">==</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b9e6ee">==</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#b9e6ee">====</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b0e1e6">===========</tspan><tspan fill="#b9e6ee">==</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#beeff5">+</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#c4f5fb">++++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d7fdff">++++++</tspan><tspan fill="#e4ffff">+*</tspan><tspan fill="#f2ffff">*********</tspan><tspan fill="#ffffff">*****************</tspan><tspan fill="#f2ffff">*******</tspan>  </text>
+<text x="246" y="212.5" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">  <tspan fill="#c4f5fb">+++</tspan><tspan fill="#bff0f8">+==</tspan><tspan fill="#beeff5">===</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#beeff5">==+=</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">+++</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">=</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">====</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">======</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#b9e8ee">=====</tspan><tspan fill="#beeff5">====+</tspan><tspan fill="#bff0f8">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c7faff">+++</tspan><tspan fill="#d7fdff">++</tspan><tspan fill="#deffff">+</tspan><tspan fill="#e4ffff">*</tspan><tspan fill="#f2ffff">***</tspan><tspan fill="#ffffff">****************</tspan><tspan fill="#f2ffff">***</tspan><tspan fill="#ffffff">**</tspan><tspan fill="#f2ffff">*******</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e4ffff">*++++++</tspan><tspan fill="#d9ffff">+</tspan><tspan fill="#d7fdff">++++++</tspan><tspan fill="#c7faff">+</tspan>  </text>
+<text x="246" y="219.32" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#bff0f8">++</tspan><tspan fill="#c4f5fb">+++</tspan><tspan fill="#c7faff">++++</tspan><tspan fill="#d7fdff">+++++++++++++++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d7fdff">++++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#d7fdff">+++++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d7fdff">+++</tspan><tspan fill="#c7faff">++++</tspan><tspan fill="#d7fdff">+++++</tspan><tspan fill="#deffff">+++++</tspan><tspan fill="#e4ffff">***+++++**+++***+*+++</tspan><tspan fill="#d7fdff">++++++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d7fdff">+</tspan><tspan fill="#c7faff">+++++++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#bef4fa">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#bef4fa">++</tspan><tspan fill="#bff0f8">++</tspan><tspan fill="#beeff5">++</tspan><tspan fill="#bff0f8">++++</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#bdeaf4">===</tspan><tspan fill="#beeff5">==</tspan> </text>
+<text x="246" y="226.15" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#d7fdff">+</tspan><tspan fill="#deffff">+</tspan><tspan fill="#e4ffff">+**</tspan><tspan fill="#f2ffff">****</tspan><tspan fill="#ffffff">**</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#f7fffd">****</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#f7fffd">*</tspan><tspan fill="#e4ffff">**</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#e4ffff">*****++</tspan><tspan fill="#deffff">++</tspan><tspan fill="#e4ffff">++++*</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#f7fffd">*</tspan><tspan fill="#e4ffff">*</tspan><tspan fill="#f7fffd">*****</tspan><tspan fill="#f2ffff">******</tspan><tspan fill="#ffffff">**</tspan><tspan fill="#f2ffff">**</tspan><tspan fill="#ffffff">*</tspan><tspan fill="#f2ffff">****</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#e4ffff">*+++</tspan><tspan fill="#d7fdff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#c4f5fb">++++</tspan><tspan fill="#c7faff">++++++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">+++++++++++</tspan><tspan fill="#bff0f8">++</tspan><tspan fill="#c4f5fb">+</tspan><tspan fill="#bff0f8">++</tspan><tspan fill="#c4f5fb">+++</tspan><tspan fill="#c7faff">+</tspan><tspan fill="#d7fdff">++</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#d7fdff">++</tspan> </text>
+<text x="246" y="232.98" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#c4f5fb">+</tspan><tspan fill="#c7faff">++</tspan><tspan fill="#d7fdff">++++++</tspan><tspan fill="#e4ffff">++</tspan><tspan fill="#d9ffff">+++</tspan><tspan fill="#d7fdff">+++++++</tspan><tspan fill="#deffff">+</tspan><tspan fill="#d7fdff">++++</tspan><tspan fill="#deffff">+++</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#f7fffd">+****</tspan><tspan fill="#ffffff">****************</tspan><tspan fill="#d7fdff">+</tspan><tspan fill="#b5e0d8">~=</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#d7fdff">++</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#e5ffff">*</tspan><tspan fill="#deffff">++</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#deffff">++</tspan><tspan fill="#d7fdff">++++++++</tspan><tspan fill="#deffff">++</tspan><tspan fill="#d7fdff">+</tspan><tspan fill="#deffff">+++</tspan><tspan fill="#d9ffff">++</tspan><tspan fill="#d7fdff">++++</tspan><tspan fill="#c7faff">+++++</tspan><tspan fill="#d7fdff">++++</tspan><tspan fill="#e4ffff">++*+++</tspan><tspan fill="#d7fdff">++++++++++</tspan> </text>
+<text x="246" y="239.81" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#beeff5">+</tspan><tspan fill="#bef4fa">+++</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c4f5fb">++</tspan><tspan fill="#c4f8fd">+</tspan><tspan fill="#c7faff">+++++</tspan><tspan fill="#d7fdff">+++++++++++</tspan><tspan fill="#e4ffff">++++**</tspan><tspan fill="#f7fffd">*</tspan><tspan fill="#e4ffff">*</tspan><tspan fill="#f7fffd">*</tspan><tspan fill="#f2ffff">******</tspan><tspan fill="#f7fffd">*</tspan><tspan fill="#e4ffff">****+</tspan><tspan fill="#deffff">+</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#bce8f2">=</tspan><tspan fill="#82a583">-</tspan><tspan fill="#2c525b">===</tspan><tspan fill="#688d98">:</tspan><tspan fill="#577568">·</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#577568">=</tspan><tspan fill="#82a583">-</tspan><tspan fill="#d7fdff">+</tspan><tspan fill="#f2ffff">*</tspan><tspan fill="#deffff">+++*</tspan><tspan fill="#e4ffff">+***</tspan><tspan fill="#f7fffd">*</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#deffff">+*++</tspan><tspan fill="#d7fdff">++++++++++++++++</tspan><tspan fill="#e4ffff">+</tspan><tspan fill="#d7fdff">++++++++++++++++++</tspan> </text>
+<text x="246" y="246.63" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#c4f8fd">%%</tspan><tspan fill="#c8feff">%</tspan><tspan fill="#bef4fa">%</tspan><tspan fill="#c8feff">%%%%%%%</tspan><tspan fill="#bef4fa">%</tspan><tspan fill="#c8feff">%%%%%%%%%</tspan><tspan fill="#d3ffff">=%%==</tspan><tspan fill="#deffff">===</tspan><tspan fill="#d3ffff">==</tspan><tspan fill="#deffff">=====</tspan><tspan fill="#e1ffff">===</tspan><tspan fill="#deffff">=</tspan><tspan fill="#e1ffff">=</tspan><tspan fill="#deffff">==</tspan><tspan fill="#d3ffff">====</tspan><tspan fill="#deffff">\</tspan><tspan fill="#82a583">\</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#20464f">=</tspan><tspan fill="#0e141f">====</tspan><tspan fill="#2c525b">==</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#2c525b">/</tspan><tspan fill="#b0cfac">/</tspan><tspan fill="#f2ffff">/</tspan><tspan fill="#deffff">=</tspan><tspan fill="#e1ffff">===</tspan><tspan fill="#deffff">=====</tspan><tspan fill="#e1ffff">=</tspan><tspan fill="#d3ffff">==</tspan><tspan fill="#deffff">=========</tspan><tspan fill="#e1ffff">===</tspan><tspan fill="#deffff">==</tspan><tspan fill="#e1ffff">====</tspan><tspan fill="#e4ffff">===</tspan><tspan fill="#deffff">==</tspan><tspan fill="#e5ffff">=</tspan><tspan fill="#e4ffff">=%</tspan><tspan fill="#f2ffff">@======</tspan><tspan fill="#f7fffd">==</tspan><tspan fill="#d7fdff">=</tspan> </text>
+<text x="246" y="253.46" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#b0e1e6">===</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b0e1e6">=====</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b0e1e6">=</tspan><tspan fill="#bef4fa">==</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b0e1e6">=====</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b0e1e6">============</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b0e1e6">===</tspan><tspan fill="#b9e8ee">=</tspan><tspan fill="#b5e0d8">==</tspan><tspan fill="#b0e1e6">=======</tspan><tspan fill="#bce8f2">\</tspan><tspan fill="#688d98">\</tspan><tspan fill="#0e141f">\=\==%=%/==//</tspan><tspan fill="#a4d2ae">/</tspan><tspan fill="#beeff5">=</tspan><tspan fill="#b5e0d8">========================</tspan><tspan fill="#a4d2ae">=</tspan><tspan fill="#b5e0d8">========</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#b5e0d8">=</tspan><tspan fill="#b9e6ee">=</tspan><tspan fill="#b5e0d8">======</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#b5e0d8">=</tspan><tspan fill="#a4d2ae">=</tspan> </text>
+<text x="246" y="260.29" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#a4d2ae">##########################</tspan><tspan fill="#b0cfac">#=</tspan><tspan fill="#a4d2ae">=</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#a4d2ae">###=##</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#b0cfac">==</tspan><tspan fill="#a4d2ae">=</tspan><tspan fill="#b0cfac">==#</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#b0cfac">##</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#0e141f">|#%#%#%#%#%#|</tspan><tspan fill="#688d98">|</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#9bbd9a">****</tspan><tspan fill="#a4d2ae">####</tspan><tspan fill="#b0cfac">##=</tspan><tspan fill="#b6e9b7">=</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#b6e9b7">#</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#b6e9b7">#</tspan><tspan fill="#aede96">#</tspan><tspan fill="#b0cfac">##</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#b0cfac">###</tspan><tspan fill="#aede96">##</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#b6e9b7">=</tspan><tspan fill="#b0cfac">##</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#a4d2ae">########</tspan><tspan fill="#9bbd9a">#</tspan><tspan fill="#a4d2ae">##</tspan><tspan fill="#b0cfac">##</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#a4d2ae">##</tspan> </text>
+<text x="246" y="267.12" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#aede96">####################</tspan><tspan fill="#a4d2ae">##</tspan><tspan fill="#9bbd9a">#</tspan><tspan fill="#a4d2ae">##</tspan><tspan fill="#b5e0d8">#</tspan><tspan fill="#9bbd9a">|</tspan><tspan fill="#82a583">+|</tspan><tspan fill="#b0cfac">##</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#c8b695">*</tspan><tspan fill="#b0cfac">###</tspan><tspan fill="#9bbd9a">|</tspan><tspan fill="#8b9776">++</tspan><tspan fill="#9bbd9a">***</tspan><tspan fill="#aede96">###</tspan><tspan fill="#cedeb0">#|</tspan><tspan fill="#0e141f">//#%#%#%#%#%|</tspan><tspan fill="#cedeb0">\</tspan><tspan fill="#aede96">=#</tspan><tspan fill="#cedeb0">=#</tspan><tspan fill="#aede96">###</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#aede96">###</tspan><tspan fill="#b0cfac">##</tspan><tspan fill="#cedeb0">##</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#b0cfac">####</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#8b9776">/</tspan><tspan fill="#aede96">/############</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#aede96">##</tspan><tspan fill="#b0cfac">###</tspan> </text>
+<text x="246" y="273.94" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#aede96">#=</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#aede96">=</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#aede96">######</tspan><tspan fill="#9bbd9a">#*</tspan><tspan fill="#c8b695">###</tspan><tspan fill="#cfcf9b">###</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#b0cfac">####</tspan><tspan fill="#aede96">#</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#9bbd9a">|</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#b0cfac">\</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#aede96">##</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#aede96">#</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#aede96">==</tspan><tspan fill="#9bbd9a">|</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#b0cfac">\##</tspan><tspan fill="#aede96">###=</tspan><tspan fill="#e2f6bd">\</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#0e141f">/%#%#%#%#%\</tspan><tspan fill="#894447">\</tspan><tspan fill="#cedeb0">|</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#aede96">===</tspan><tspan fill="#b0cfac">===</tspan><tspan fill="#aede96">=</tspan><tspan fill="#9bbd9a">#</tspan><tspan fill="#b0cfac">#</tspan><tspan fill="#9bbd9a">**</tspan><tspan fill="#aede96">###</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#aede96">##</tspan><tspan fill="#a2d76b">##</tspan><tspan fill="#aede96">#</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#9bbd9a">##</tspan><tspan fill="#aede96">###</tspan><tspan fill="#82a583">/=</tspan><tspan fill="#9bbd9a">\**</tspan><tspan fill="#aede96">#</tspan><tspan fill="#a2d76b">*</tspan><tspan fill="#9bbd9a">**#</tspan><tspan fill="#a2d76b">**</tspan><tspan fill="#9bbd9a">**</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#aede96">#</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#a4d2ae">#</tspan><tspan fill="#82a583">*</tspan><tspan fill="#9bbd9a">*</tspan> </text>
+<text x="246" y="280.77" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve"> <tspan fill="#9bbd9a">**</tspan><tspan fill="#8b9776">+</tspan><tspan fill="#b0cfac">####</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#aede96">######</tspan><tspan fill="#9bbd9a">==</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#82a583">=</tspan><tspan fill="#a2d76b">======</tspan><tspan fill="#aede96">=</tspan><tspan fill="#a2d76b">==</tspan><tspan fill="#aede96">##</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#aede96">=</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#82a583">=</tspan><tspan fill="#9bbd9a">**###</tspan><tspan fill="#aede96">##</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#aede96">=</tspan><tspan fill="#9bbd9a">===</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#894447">/</tspan><tspan fill="#0e141f">//#%#%#\\</tspan><tspan fill="#20464f">\</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#8b9776">++</tspan><tspan fill="#8e7d64">+=</tspan><tspan fill="#8b9776">===</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#99aa7e">**/</tspan><tspan fill="#aede96">/=######</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#aede96">#</tspan><tspan fill="#a2d76b">#####=#</tspan><tspan fill="#aede96">##</tspan><tspan fill="#a2d76b">########</tspan><tspan fill="#aede96">#</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#aede96">###</tspan><tspan fill="#a2d76b">###</tspan> </text>
+<text x="246" y="287.6" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">  <tspan fill="#aede96">###</tspan><tspan fill="#a2d76b">##</tspan><tspan fill="#aede96">#</tspan><tspan fill="#a2d76b">#==#</tspan><tspan fill="#aede96">|</tspan><tspan fill="#9bbd9a">\</tspan><tspan fill="#82a583">==</tspan><tspan fill="#6c8e5b">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#82a583">*+</tspan><tspan fill="#8b9776">+</tspan><tspan fill="#82a583">=</tspan><tspan fill="#8b9776">==</tspan><tspan fill="#82a583">===</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#82a583">====**</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#aede96">#</tspan><tspan fill="#9bbd9a">****</tspan><tspan fill="#aede96">#=</tspan><tspan fill="#99aa7e">\=**</tspan><tspan fill="#82a583">*</tspan><tspan fill="#99aa7e">*|</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#0e141f">=====\</tspan><tspan fill="#577568">\</tspan><tspan fill="#cedeb0">\=</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8e7d64">/</tspan><tspan fill="#8b9776">++</tspan><tspan fill="#8e7d64">+=</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#82a583">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#a2d76b">==</tspan><tspan fill="#aede96">=</tspan><tspan fill="#a2d76b">#############################</tspan>  </text>
+<text x="246" y="294.43" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">  <tspan fill="#a2d76b">#*###</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#e2f6bd">%</tspan><tspan fill="#cfcf9b">%</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#b0cfac">\</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#82a583">*</tspan><tspan fill="#6c8e5b">++</tspan><tspan fill="#8b9776">+</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#99aa7e">**</tspan><tspan fill="#82a583">*</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">**</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">***</tspan><tspan fill="#8b9776">**</tspan><tspan fill="#99aa7e">*****</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#99aa7e">******==</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#82a583">*</tspan><tspan fill="#8b9776">**</tspan><tspan fill="#82a583">*</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#8e7d64">/</tspan><tspan fill="#894447">=</tspan><tspan fill="#0e141f">==</tspan><tspan fill="#894447">=</tspan><tspan fill="#8e7d64">\</tspan><tspan fill="#e2f6bd">\</tspan><tspan fill="#82a583">=</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#8b9776">|=</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#e2f6bd">/%</tspan><tspan fill="#cfcf9b">/</tspan><tspan fill="#8e7d64">====+++++</tspan><tspan fill="#8b9776">+/==</tspan><tspan fill="#a2d76b">==</tspan><tspan fill="#aede96">=====</tspan><tspan fill="#a2d76b">=====#################</tspan>  </text>
+<text x="246" y="301.26" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">  <tspan fill="#a2d76b">#</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#cedeb0">%</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#a2d76b">*</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#e2f6bd">%</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#8b9776">==\</tspan><tspan fill="#6c8e5b">++</tspan><tspan fill="#8b9776">+</tspan><tspan fill="#6c8e5b">+*</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#8e7d64">+/</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#8b9776">*****</tspan><tspan fill="#99aa7e">****</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#99aa7e">****</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">**</tspan><tspan fill="#8b9776">*******</tspan><tspan fill="#6c8e5b">+*\</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#e2f6bd">#</tspan><tspan fill="#ff8199">\|</tspan><tspan fill="#f35d72">/=\</tspan><tspan fill="#ff8199">|/</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#e2f6bd">%</tspan><tspan fill="#b0cfac">|</tspan><tspan fill="#894447">|</tspan><tspan fill="#8e7d64">/</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#aede96">=</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#cfcf9b">#=</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#8e7d64">=+</tspan><tspan fill="#99aa7e">**</tspan><tspan fill="#8b9776">*==</tspan><tspan fill="#99aa7e">===</tspan><tspan fill="#8e7d64">==++=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#a2d76b">====############</tspan>  </text>
+<text x="246" y="308.08" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">   <tspan fill="#cfcf9b">#</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#a2d76b">*</tspan><tspan fill="#c8b695">#</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#8e7d64">|</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#6c8e5b">/</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#8e7d64">+</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#8e7d64">+++</tspan><tspan fill="#6c8e5b">+=++++*</tspan><tspan fill="#8b9776">**</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">**</tspan><tspan fill="#6c8e5b">++++</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#6c8e5b">+++</tspan><tspan fill="#8b9776">****</tspan><tspan fill="#6c8e5b">==</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#ff8199">#*</tspan><tspan fill="#e97b87">\</tspan><tspan fill="#f35d72">\+++|</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#8e7d64">==</tspan><tspan fill="#894447">===</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#aede96">=</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#aede96">%#%%</tspan><tspan fill="#cedeb0">%</tspan><tspan fill="#aede96">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8e7d64">=+</tspan><tspan fill="#a2d76b">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#8b9776">+</tspan><tspan fill="#8e7d64">++</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#aede96">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#894447">=</tspan><tspan fill="#8e7d64">==</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#a2d76b">======#####</tspan>   </text>
+<text x="246" y="314.91" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">    <tspan fill="#cfcf9b">|</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#99aa7e">*/</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#e2f6bd">\/</tspan><tspan fill="#99aa7e">/*</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#8e7d64">+</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#6c8e5b">+\=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8b9776">==</tspan><tspan fill="#6c8e5b">=/++++</tspan><tspan fill="#8b9776">****</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#6c8e5b">+++</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#6c8e5b">+\</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#b0cfac">=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#cedeb0">=</tspan><tspan fill="#e2f6bd">=#</tspan><tspan fill="#ff8199">#***</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">**=\*###</tspan><tspan fill="#f7fffd">%=</tspan><tspan fill="#e2f6bd">==</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#894447">/</tspan><tspan fill="#8e7d64">==</tspan><tspan fill="#a2d76b">==</tspan><tspan fill="#99aa7e">**</tspan><tspan fill="#a2d76b">*=</tspan><tspan fill="#aede96">##</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#8e7d64">/</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#a2d76b">*</tspan><tspan fill="#6c8e5b">*</tspan><tspan fill="#a2d76b">*======#/</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#8e7d64">=+</tspan><tspan fill="#894447">==</tspan><tspan fill="#8e7d64">===</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#a2d76b">===</tspan>    </text>
+<text x="246" y="321.74" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">    <tspan fill="#cfcf9b">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#cfcf9b">/|</tspan><tspan fill="#e2f6bd">/</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#6c8e5b">/+=/+</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#c8b695">#</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#c8b695">#</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#cfcf9b">#/</tspan><tspan fill="#8b9776">/</tspan><tspan fill="#6c8e5b">+++**+=</tspan><tspan fill="#577568">+</tspan><tspan fill="#8b9776">\</tspan><tspan fill="#6c8e5b">=</tspan><tspan fill="#8b9776">*\</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#f7fffd">=%</tspan><tspan fill="#ff8199">##===###***</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#ff8199">****/====</tspan><tspan fill="#f7fffd">%</tspan><tspan fill="#e2f6bd">/</tspan><tspan fill="#cfcf9b">/</tspan><tspan fill="#8e7d64">/+/</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#a2d76b">/</tspan><tspan fill="#aede96">%</tspan><tspan fill="#a2d76b">##</tspan><tspan fill="#99aa7e">*=</tspan><tspan fill="#aede96">\</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#8e7d64">=+===</tspan><tspan fill="#6c8e5b">========</tspan><tspan fill="#a2d76b">=**</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#8e7d64">==+</tspan><tspan fill="#894447">=</tspan><tspan fill="#8e7d64">+/=+</tspan>    </text>
+<text x="246" y="328.57" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">     <tspan fill="#12202b">-</tspan><tspan fill="#0e141f">-</tspan><tspan fill="#2c525b">==</tspan><tspan fill="#6c8e5b">/</tspan><tspan fill="#8b9776">/</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#cfcf9b">=|</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#577568">/</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#6c8e5b">=</tspan><tspan fill="#a2d76b">\*</tspan><tspan fill="#8b9776">**</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#a2d76b">**</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#a2d76b">#</tspan><tspan fill="#8b9776">/</tspan><tspan fill="#6c8e5b">=====</tspan><tspan fill="#577568">=</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#f7fffd">#</tspan><tspan fill="#ff8199">====***</tspan><tspan fill="#f35d72">==**</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">=</tspan><tspan fill="#f35d72">==*</tspan><tspan fill="#ff8199">***=====</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#8e7d64">\</tspan><tspan fill="#6c8e5b">+/</tspan><tspan fill="#a2d76b">=#==</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">===</tspan><tspan fill="#8e7d64">==</tspan><tspan fill="#894447">======</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#577568">==</tspan><tspan fill="#6c8e5b">==++*</tspan><tspan fill="#a2d76b">===</tspan><tspan fill="#6c8e5b">====</tspan>     </text>
+<text x="246" y="335.39" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">      <tspan fill="#b0cfac">==</tspan><tspan fill="#9bbd9a">==*</tspan><tspan fill="#b0cfac">/</tspan><tspan fill="#cedeb0">=</tspan><tspan fill="#cfcf9b">=\#</tspan><tspan fill="#9bbd9a">\</tspan><tspan fill="#cedeb0">|</tspan><tspan fill="#e2f6bd">==</tspan><tspan fill="#cedeb0">##=</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#e2f6bd">/=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#b0cfac">=</tspan><tspan fill="#9bbd9a">*=</tspan><tspan fill="#b0cfac">=</tspan><tspan fill="#cfcf9b">#\</tspan><tspan fill="#e2f6bd">%%%</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#e2f6bd">\%</tspan><tspan fill="#cedeb0">\#</tspan><tspan fill="#e2f6bd">%</tspan><tspan fill="#ff8199">#\\</tspan><tspan fill="#e6425d">=</tspan><tspan fill="#ff8199">|#**</tspan><tspan fill="#f35d72">***</tspan><tspan fill="#ff8199">**</tspan><tspan fill="#f35d72">*+</tspan><tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">+**</tspan><tspan fill="#ff8199">**</tspan><tspan fill="#f35d72">*=</tspan><tspan fill="#ff8199">=</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#ff8199">|#</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#c8b695">#*=/</tspan><tspan fill="#e2f6bd">=======%%%</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#99aa7e">=*</tspan><tspan fill="#9bbd9a">==</tspan><tspan fill="#b0cfac">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#aede96">#</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#aede96">#</tspan><tspan fill="#cfcf9b">##=</tspan>      </text>
+<text x="246" y="342.22" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">       <tspan fill="#688d98">==================================</tspan><tspan fill="#9bbd9a">/</tspan><tspan fill="#ff8199">#|</tspan><tspan fill="#e6425d">\|</tspan><tspan fill="#ff8199">\*|</tspan><tspan fill="#f35d72">\*</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">**+</tspan><tspan fill="#e6425d">+++</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#ff8199">\*</tspan><tspan fill="#f35d72">**</tspan><tspan fill="#ff8199">*|</tspan><tspan fill="#e6425d">|/</tspan><tspan fill="#ff8199">|\#</tspan><tspan fill="#cedeb0">|</tspan><tspan fill="#577568">\==================</tspan><tspan fill="#688d98">========</tspan><tspan fill="#9bbd9a">==</tspan><tspan fill="#688d98">=====</tspan>       </text>
+<text x="246" y="349.05" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">        <tspan fill="#2c525b">=</tspan><tspan fill="#577568">=</tspan><tspan fill="#688d98">\</tspan><tspan fill="#577568">/</tspan><tspan fill="#2c525b">|=</tspan><tspan fill="#577568">==/+==</tspan><tspan fill="#2c525b">/</tspan><tspan fill="#577568">\==+/=</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#577568">==</tspan><tspan fill="#2c525b">=====</tspan><tspan fill="#577568">/=</tspan><tspan fill="#2c525b">==</tspan><tspan fill="#577568">=</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#ff8199">#</tspan><tspan fill="#e97b87">\</tspan><tspan fill="#7d383b">=</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#ff8199">||\</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">***</tspan><tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">+\</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">\=+*=</tspan><tspan fill="#e97b87">\</tspan><tspan fill="#e6425d">=|</tspan><tspan fill="#f7fffd">|</tspan><tspan fill="#ff8199">#|</tspan><tspan fill="#0e141f">|=#%</tspan><tspan fill="#20464f">#%</tspan><tspan fill="#0e141f">\/</tspan><tspan fill="#2c525b">\/</tspan><tspan fill="#20464f">#</tspan><tspan fill="#2c525b">\/</tspan><tspan fill="#0e141f">%</tspan><tspan fill="#20464f">|</tspan><tspan fill="#2c525b">\/</tspan><tspan fill="#20464f">%</tspan><tspan fill="#2c525b">\/</tspan><tspan fill="#20464f">|/\</tspan><tspan fill="#2c525b">=\</tspan><tspan fill="#577568">\</tspan><tspan fill="#688d98">+</tspan><tspan fill="#577568">\=</tspan><tspan fill="#688d98">+</tspan><tspan fill="#577568">+==</tspan>        </text>
+<text x="246" y="355.88" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">         <tspan fill="#894447">\</tspan><tspan fill="#c8b695">||</tspan><tspan fill="#577568">/\</tspan><tspan fill="#8e7d64">/</tspan><tspan fill="#7d383b">%</tspan><tspan fill="#6c8e5b">\==</tspan><tspan fill="#577568">/</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#a2d76b">/</tspan><tspan fill="#6c8e5b">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8b9776">/</tspan><tspan fill="#6c8e5b">|</tspan><tspan fill="#2c525b">-</tspan><tspan fill="#8b9776">\</tspan><tspan fill="#6c8e5b">/=</tspan><tspan fill="#894447">==</tspan><tspan fill="#577568">/</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#577568">\</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#894447">==</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#ff8199">\</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#894447">\</tspan><tspan fill="#e6425d">=|</tspan><tspan fill="#ff8199">|\</tspan><tspan fill="#e6425d">\+</tspan><tspan fill="#ff8199">\*</tspan><tspan fill="#f35d72">*++</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">+\</tspan><tspan fill="#ff8199">*\</tspan><tspan fill="#e6425d">\/</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e6425d">=</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#894447">|\</tspan><tspan fill="#e6425d">/</tspan><tspan fill="#e97b87">/</tspan><tspan fill="#e2f6bd">/</tspan><tspan fill="#f7fffd">|</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#6c8e5b">/=</tspan><tspan fill="#577568">=</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#20464f">/\</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#894447">=</tspan><tspan fill="#6c8e5b">=</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#2c525b">/|</tspan><tspan fill="#a2d76b">\</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#894447">=</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#aede96">/</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#0e141f">\</tspan><tspan fill="#cedeb0">\</tspan><tspan fill="#6c8e5b">=\</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#99aa7e">|=</tspan><tspan fill="#a2d76b">\</tspan>         </text>
+<text x="246" y="362.7" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">           <tspan fill="#99aa7e">\</tspan><tspan fill="#577568">\</tspan><tspan fill="#688d98">\</tspan><tspan fill="#8b9776">/</tspan><tspan fill="#894447">=</tspan><tspan fill="#8b9776">\*</tspan><tspan fill="#c8b695">#</tspan><tspan fill="#6c8e5b">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#8e7d64">+\</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#a2d76b">|</tspan><tspan fill="#577568">|=</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#6c8e5b">+===</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#6c8e5b">|</tspan><tspan fill="#e2f6bd">\</tspan><tspan fill="#a2d76b">/=*</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#ff8199">#\</tspan><tspan fill="#e6425d">\</tspan><tspan fill="#894447">-|</tspan><tspan fill="#e97b87">/</tspan><tspan fill="#ff8199">\</tspan><tspan fill="#e6425d">|</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#ff8199">**</tspan><tspan fill="#f35d72">*++</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">+\</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#e6425d">=+</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#e6425d">=</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#ff8199">/</tspan><tspan fill="#894447">|</tspan><tspan fill="#7d383b">#</tspan><tspan fill="#894447">/</tspan><tspan fill="#e6425d">/</tspan><tspan fill="#f7fffd">/</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#6c8e5b">|==|\</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#894447">/</tspan><tspan fill="#577568">=</tspan><tspan fill="#b0cfac">|</tspan><tspan fill="#cedeb0">\</tspan><tspan fill="#b0cfac">|</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#894447">/=+\</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#577568">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#2c525b">||</tspan><tspan fill="#a2d76b">|</tspan>           </text>
+<text x="246" y="369.53" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">            <tspan fill="#577568">/</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#6c8e5b">==\/</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">\</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#a2d76b">\\=</tspan><tspan fill="#cfcf9b">/</tspan><tspan fill="#577568">/</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#a2d76b">\=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#0e141f">/</tspan><tspan fill="#577568">|</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#a2d76b">|</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#ff8199">|</tspan><tspan fill="#e6425d">||</tspan><tspan fill="#894447">/</tspan><tspan fill="#7d383b">\</tspan><tspan fill="#894447">|</tspan><tspan fill="#e97b87">/</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#ff8199">\</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">**</tspan><tspan fill="#f35d72">++</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#e6425d">\=+==|</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#e97b87">|</tspan><tspan fill="#7d383b">||</tspan><tspan fill="#894447">|</tspan><tspan fill="#e6425d">|</tspan><tspan fill="#f7fffd">=</tspan><tspan fill="#894447">|</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#6c8e5b">/</tspan><tspan fill="#0e141f">/</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#894447">==|</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#577568">\</tspan><tspan fill="#894447">=</tspan><tspan fill="#7d383b">=</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#8b9776">\</tspan><tspan fill="#99aa7e">/</tspan><tspan fill="#577568">|</tspan><tspan fill="#0e141f">\</tspan><tspan fill="#8e7d64">\++</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#577568">|</tspan><tspan fill="#0e141f">\</tspan>            </text>
+<text x="246" y="376.36" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">              <tspan fill="#b5e0d8">=</tspan><tspan fill="#b0cfac">=</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#cedeb0">=</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#b0cfac">/</tspan><tspan fill="#688d98">=</tspan><tspan fill="#a4d2ae">\</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#c8b695">#</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#e2f6bd">%</tspan><tspan fill="#cedeb0">/</tspan><tspan fill="#688d98">=</tspan><tspan fill="#b0cfac">\</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#e2f6bd">|%\</tspan><tspan fill="#cedeb0">|</tspan><tspan fill="#688d98">/</tspan><tspan fill="#9bbd9a">\</tspan><tspan fill="#e2f6bd">|\</tspan><tspan fill="#cfcf9b">|#</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#e97b87">|</tspan><tspan fill="#f35d72">/</tspan><tspan fill="#894447">/=\</tspan><tspan fill="#ff8199">\</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">*++</tspan><tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#e6425d">\=++==|</tspan><tspan fill="#ff8199">\</tspan><tspan fill="#894447">\\</tspan><tspan fill="#7d383b">%</tspan><tspan fill="#e6425d">||</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#8b9776">==</tspan><tspan fill="#b0cfac">/</tspan><tspan fill="#688d98">/</tspan><tspan fill="#82a583">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8e7d64">==\</tspan><tspan fill="#b5e0d8">\</tspan><tspan fill="#577568">/</tspan><tspan fill="#a4d2ae">\</tspan><tspan fill="#e2f6bd">/</tspan><tspan fill="#8e7d64">=\</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#688d98">/</tspan><tspan fill="#577568">\</tspan><tspan fill="#e2f6bd">\</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#99aa7e">/=</tspan><tspan fill="#9bbd9a">=</tspan>              </text>
+<text x="246" y="383.19" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">               <tspan fill="#b5e0d8">=</tspan><tspan fill="#b0e1e6">==</tspan><tspan fill="#b5e0d8">=</tspan><tspan fill="#b0e1e6">=</tspan><tspan fill="#b5e0d8">==</tspan><tspan fill="#b0e1e6">=</tspan><tspan fill="#a4d2ae">===</tspan><tspan fill="#b5e0d8">==</tspan><tspan fill="#a4d2ae">======</tspan><tspan fill="#b5e0d8">=</tspan><tspan fill="#a4d2ae">/=</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#688d98">|</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#ff8199">\*</tspan><tspan fill="#f35d72">**</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">*++</tspan><tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#e6425d">\++++\</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#e97b87">\</tspan><tspan fill="#7d383b">\-</tspan><tspan fill="#0e141f">#</tspan><tspan fill="#577568">|</tspan><tspan fill="#688d98">//===</tspan><tspan fill="#9bbd9a">==</tspan><tspan fill="#a4d2ae">=</tspan><tspan fill="#9bbd9a">==</tspan><tspan fill="#a4d2ae">=</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#a4d2ae">=</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#9bbd9a">==</tspan><tspan fill="#a4d2ae">==</tspan><tspan fill="#9bbd9a">=</tspan><tspan fill="#a4d2ae">===</tspan>               </text>
+<text x="246" y="390.01" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                 <tspan fill="#577568">==|</tspan><tspan fill="#2c525b">\/</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#577568">=+\</tspan><tspan fill="#2c525b">\</tspan><tspan fill="#20464f">=</tspan><tspan fill="#2c525b">/</tspan><tspan fill="#6c8e5b">|</tspan><tspan fill="#8b9776">===</tspan><tspan fill="#6c8e5b">|</tspan><tspan fill="#20464f">\</tspan><tspan fill="#2c525b">/</tspan><tspan fill="#6c8e5b">|</tspan><tspan fill="#577568">/</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#577568">+|</tspan><tspan fill="#2c525b">\/\</tspan><tspan fill="#577568">=</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#ff8199">#|</tspan><tspan fill="#f35d72">**</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">+++</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e6425d">+=+===\</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#894447">\</tspan><tspan fill="#7d383b">%</tspan><tspan fill="#894447">\</tspan><tspan fill="#577568">=</tspan><tspan fill="#2c525b">/</tspan><tspan fill="#0e141f">/</tspan><tspan fill="#577568">|==</tspan><tspan fill="#20464f">=</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#20464f">|</tspan><tspan fill="#0e141f">=/\=</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#20464f">====</tspan><tspan fill="#2c525b">===</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#2c525b">===</tspan>                 </text>
+<text x="246" y="396.84" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                   <tspan fill="#e2f6bd">/</tspan><tspan fill="#20464f">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#e2f6bd">\</tspan><tspan fill="#a2d76b">//</tspan><tspan fill="#8b9776">*/</tspan><tspan fill="#2c525b">/</tspan><tspan fill="#577568">|</tspan><tspan fill="#e2f6bd">\</tspan><tspan fill="#a2d76b">/#</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#e2f6bd">/</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#cfcf9b">/</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#e2f6bd">\=</tspan><tspan fill="#cfcf9b">==</tspan><tspan fill="#ff8199">#|</tspan><tspan fill="#f35d72">****+*+</tspan><tspan fill="#e6425d">+++=++\</tspan><tspan fill="#e97b87">\|</tspan><tspan fill="#7d383b">\</tspan><tspan fill="#e6425d">\\</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#82a583">|</tspan><tspan fill="#0e141f">\</tspan><tspan fill="#c8b695">\</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#f7fffd">=</tspan><tspan fill="#e2f6bd">==</tspan><tspan fill="#9bbd9a">/</tspan><tspan fill="#0e141f">=</tspan><tspan fill="#99aa7e">\</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#894447">==</tspan><tspan fill="#12202b">=</tspan><tspan fill="#9bbd9a">/</tspan><tspan fill="#0e141f">|%</tspan><tspan fill="#894447">-</tspan><tspan fill="#0e141f">%</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#2c525b">|</tspan>                   </text>
+<text x="246" y="403.67" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                      <tspan fill="#a2d76b">|\</tspan><tspan fill="#8e7d64">+=</tspan><tspan fill="#a2d76b">|</tspan><tspan fill="#2c525b">||</tspan><tspan fill="#a2d76b">|</tspan><tspan fill="#6c8e5b">/=</tspan><tspan fill="#a2d76b">\</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#2c525b">|</tspan><tspan fill="#a2d76b">|</tspan><tspan fill="#cfcf9b">%</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#8e7d64">*</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#cfcf9b">|\</tspan><tspan fill="#aede96">#</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#ff8199">|*</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#f35d72">**++</tspan><tspan fill="#e6425d">+++=++\</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#e97b87">=|</tspan><tspan fill="#7d383b">#</tspan><tspan fill="#f35d72">\</tspan><tspan fill="#e6425d">\</tspan><tspan fill="#e97b87">\</tspan><tspan fill="#82a583">|</tspan><tspan fill="#0e141f">\</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#9bbd9a">*</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#c8b695">=</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#cedeb0">|</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#cedeb0">//</tspan><tspan fill="#8e7d64">=</tspan><tspan fill="#82a583">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#894447">\=</tspan><tspan fill="#2c525b">=</tspan><tspan fill="#0e141f">=\</tspan>                      </text>
+<text x="246" y="410.5" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                        <tspan fill="#a2d76b">=</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#a2d76b">/</tspan><tspan fill="#2c525b">||</tspan><tspan fill="#e2f6bd">|===</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#a2d76b">##</tspan><tspan fill="#cfcf9b">\</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#e2f6bd">|\</tspan><tspan fill="#cedeb0">#</tspan><tspan fill="#e2f6bd">%</tspan><tspan fill="#ff8199">|**</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#f35d72">*+</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">+*</tspan><tspan fill="#e6425d">+=++=</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#ff8199">\*</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#7d383b">%</tspan><tspan fill="#e6425d">|</tspan><tspan fill="#e97b87">|*</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#a2d76b">\</tspan><tspan fill="#cfcf9b">=</tspan><tspan fill="#99aa7e">==</tspan><tspan fill="#8b9776">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#cfcf9b">#</tspan><tspan fill="#9bbd9a">|</tspan><tspan fill="#0e141f">#</tspan><tspan fill="#cedeb0">\</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#cedeb0">=</tspan>                        </text>
+<text x="246" y="417.32" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                           <tspan fill="#6c8e5b">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#a2d76b">==#</tspan><tspan fill="#cfcf9b">|</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#cedeb0">|#</tspan><tspan fill="#e2f6bd">%%|</tspan><tspan fill="#688d98">|</tspan><tspan fill="#20464f">|</tspan><tspan fill="#b0cfac">|</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#8b9776">=</tspan><tspan fill="#cfcf9b">/</tspan><tspan fill="#ff8199">\\*</tspan><tspan fill="#f35d72">*+</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e6425d">==\|</tspan><tspan fill="#ff8199">*</tspan><tspan fill="#e97b87">\</tspan><tspan fill="#e6425d">|</tspan><tspan fill="#7d383b">-</tspan><tspan fill="#e6425d">|</tspan><tspan fill="#e97b87">|</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#8e7d64">\</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#e2f6bd">|</tspan><tspan fill="#6c8e5b">\</tspan><tspan fill="#99aa7e">=</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#82a583">|</tspan><tspan fill="#0e141f">#</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#6c8e5b">+</tspan><tspan fill="#a2d76b">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#9bbd9a">#</tspan><tspan fill="#82a583">|</tspan><tspan fill="#0e141f">|</tspan>                           </text>
+<text x="246" y="424.15" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                               <tspan fill="#cedeb0">=</tspan><tspan fill="#e2f6bd">/</tspan><tspan fill="#f7fffd">\</tspan><tspan fill="#82a583">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#cedeb0">|</tspan><tspan fill="#e2f6bd">=</tspan><tspan fill="#cedeb0">=</tspan><tspan fill="#a2d76b">=</tspan><tspan fill="#aede96">\</tspan><tspan fill="#8b9776">\</tspan><tspan fill="#20464f">|</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#8b9776">\</tspan><tspan fill="#6c8e5b">/</tspan><tspan fill="#c8b695">|</tspan><tspan fill="#ff8199">|</tspan><tspan fill="#f35d72">\=***</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#e6425d">|\=\</tspan><tspan fill="#f35d72">\++|</tspan><tspan fill="#e6425d">/\</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#8e7d64">|</tspan><tspan fill="#0e141f">\</tspan><tspan fill="#99aa7e">|</tspan><tspan fill="#6c8e5b">=</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#8b9776">*</tspan><tspan fill="#99aa7e">*</tspan><tspan fill="#577568">\</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#99aa7e">|*</tspan><tspan fill="#8b9776">/</tspan>                               </text>
+<text x="246" y="430.98" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                                   <tspan fill="#2c525b">|</tspan><tspan fill="#688d98">|===\</tspan><tspan fill="#577568">|</tspan><tspan fill="#20464f">%</tspan><tspan fill="#688d98">|+</tspan><tspan fill="#577568">\</tspan><tspan fill="#cedeb0">\</tspan><tspan fill="#ff8199">|</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#e97b87">/</tspan><tspan fill="#f35d72">**++++</tspan><tspan fill="#e6425d">|=|</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#e97b87">|</tspan><tspan fill="#e6425d">/\</tspan><tspan fill="#e97b87">+</tspan><tspan fill="#e6425d">/</tspan><tspan fill="#c8b695">/</tspan><tspan fill="#20464f">=</tspan><tspan fill="#688d98">\+++|</tspan><tspan fill="#577568">|</tspan>                                   </text>
+<text x="246" y="437.81" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                                         <tspan fill="#688d98">|</tspan><tspan fill="#0e141f">|</tspan><tspan fill="#9bbd9a">|</tspan><tspan fill="#688d98">*</tspan><tspan fill="#9bbd9a">\</tspan><tspan fill="#ff8199">\#|</tspan><tspan fill="#e6425d">|+/</tspan><tspan fill="#e97b87">/*</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e6425d">|=|</tspan><tspan fill="#f35d72">|</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#e6425d">\+</tspan><tspan fill="#f35d72">*</tspan><tspan fill="#e6425d">+</tspan><tspan fill="#f35d72">=|</tspan><tspan fill="#e6425d">/</tspan><tspan fill="#ff8199">|</tspan><tspan fill="#c8b695">*</tspan>                                         </text>
+<text x="246" y="444.63" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="5.88" font-weight="700" text-anchor="middle" xml:space="preserve">                                                   <tspan fill="#e6425d">++</tspan><tspan fill="#f35d72">+</tspan><tspan fill="#e97b87">*</tspan><tspan fill="#f35d72">++</tspan><tspan fill="#e6425d">++=</tspan><tspan fill="#f35d72">*</tspan>                                                   </text>
+</g>
+<circle cx="246" cy="248" r="198" fill="none" stroke="#fde68a" stroke-width="1.2" stroke-opacity="0.45"/>
+<text x="246" y="486" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="21" font-weight="700" fill="#f4f7fb" text-anchor="middle" letter-spacing="0.2">BroAmStuck</text>
+<text x="246" y="510" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" font-weight="500" fill="#7e91ab" text-anchor="middle">@broamstuck-cybr</text>
+<line x1="484" y1="34" x2="484" y2="514" stroke="#172033" stroke-width="1"/>
+<text x="512" y="50" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="600" fill="#f4f7fb" text-anchor="start">Stack Radar · 3D</text>
+<polygon points="818.27,222.78 744.99,270.34 744.99,277.05 818.27,229.49" fill="#09101d" stroke="#273249" stroke-width="0.95"/>
+<polygon points="744.99,270.34 632.72,259.56 632.72,266.27 744.99,277.05" fill="#09101d" stroke="#273249" stroke-width="0.95"/>
+<polygon points="632.72,259.56 593.73,201.22 593.73,207.93 632.72,266.27" fill="#09101d" stroke="#273249" stroke-width="0.95"/>
+<polygon points="667.01,153.66 779.28,164.44 818.27,222.78 744.99,270.34 632.72,259.56 593.73,201.22" fill="#090f1c" fill-opacity="0.90" stroke="#273249" stroke-width="1.2"/>
+<polygon points="695.08,195.66 726.52,198.68 737.44,215.02 716.92,228.34 685.48,225.32 674.56,208.98" fill="none" stroke="#172033" stroke-width="0.85" stroke-dasharray="2 3"/>
+<polygon points="684.95,180.49 745.57,186.32 766.62,217.82 727.05,243.51 666.43,237.68 645.38,206.18" fill="none" stroke="#172033" stroke-width="0.85" stroke-dasharray="none"/>
+<polygon points="675.59,166.49 763.16,174.9 793.57,220.41 736.41,257.51 648.84,249.1 618.43,203.59" fill="none" stroke="#172033" stroke-width="0.85" stroke-dasharray="none"/>
+<line x1="706" y1="212" x2="667.01" y2="153.66" stroke="#172033" stroke-width="0.8"/>
+<line x1="667.01" y1="153.66" x2="667.01" y2="93.27" stroke="#273249" stroke-width="0.8" stroke-dasharray="2 3" stroke-opacity="0.6"/>
+<line x1="706" y1="212" x2="779.28" y2="164.44" stroke="#172033" stroke-width="0.8"/>
+<line x1="779.28" y1="164.44" x2="779.28" y2="104.05" stroke="#273249" stroke-width="0.8" stroke-dasharray="2 3" stroke-opacity="0.6"/>
+<line x1="706" y1="212" x2="818.27" y2="222.78" stroke="#172033" stroke-width="0.8"/>
+<line x1="818.27" y1="222.78" x2="818.27" y2="162.4" stroke="#273249" stroke-width="0.8" stroke-dasharray="2 3" stroke-opacity="0.6"/>
+<line x1="706" y1="212" x2="744.99" y2="270.34" stroke="#172033" stroke-width="0.8"/>
+<line x1="744.99" y1="270.34" x2="744.99" y2="209.96" stroke="#273249" stroke-width="0.8" stroke-dasharray="2 3" stroke-opacity="0.6"/>
+<line x1="706" y1="212" x2="632.72" y2="259.56" stroke="#172033" stroke-width="0.8"/>
+<line x1="632.72" y1="259.56" x2="632.72" y2="199.18" stroke="#273249" stroke-width="0.8" stroke-dasharray="2 3" stroke-opacity="0.6"/>
+<line x1="706" y1="212" x2="593.73" y2="201.22" stroke="#172033" stroke-width="0.8"/>
+<line x1="593.73" y1="201.22" x2="593.73" y2="140.83" stroke="#273249" stroke-width="0.8" stroke-dasharray="2 3" stroke-opacity="0.6"/>
+<polygon points="677.93,139.8 758.76,147.56 786.83,189.57 734.07,223.82 653.24,216.05 625.17,174.05" fill="none" stroke="#6ee7b7" stroke-width="0.75" stroke-opacity="0.30" stroke-dasharray="2 4"/>
+<polygon points="667.01,93.27 779.28,104.05 818.27,162.4 744.99,209.96 632.72,199.18 593.73,140.83" fill="none" stroke="#7dd3fc" stroke-width="0.85" stroke-opacity="0.42" stroke-dasharray="3 4"/>
+<path d="M804.55,166.8 L810.48,179.19 L809.29,192.06 L801.05,204.55 L786.34,215.79 L766.16,225.03 L741.87,231.63 L715.14,235.14 L687.79,235.33 L661.68,232.18 L638.58,225.9 L620.09,216.93 L607.45,205.87 L601.52,193.49 L602.71,180.61 L610.95,168.13 L625.66,156.88 L645.84,147.65 L670.13,141.05 L696.86,137.53 L724.21,137.35 L750.32,140.5 L773.42,146.77 L791.91,155.74 L804.55,166.8" fill="none" stroke="#fde68a" stroke-width="0.75" stroke-opacity="0.22" stroke-dasharray="2 5"/>
+<g><circle r="5.2" fill="url(#core-ff-gold)"/><circle r="1.5" fill="#fefce8"/><animateMotion path="M804.55,166.8 L810.48,179.19 L809.29,192.06 L801.05,204.55 L786.34,215.79 L766.16,225.03 L741.87,231.63 L715.14,235.14 L687.79,235.33 L661.68,232.18 L638.58,225.9 L620.09,216.93 L607.45,205.87 L601.52,193.49 L602.71,180.61 L610.95,168.13 L625.66,156.88 L645.84,147.65 L670.13,141.05 L696.86,137.53 L724.21,137.35 L750.32,140.5 L773.42,146.77 L791.91,155.74 L804.55,166.8" dur="18s" repeatCount="indefinite"/></g>
+<line x1="706" y1="212" x2="706" y2="129.81" stroke="#fde68a" stroke-width="0.9" stroke-dasharray="2 3" stroke-opacity="0.65"/>
+<polygon points="667.06,153.73 763.17,174.9 789.82,220.05 730.9,249.26 673.97,232.79 674.5,208.98" fill="#6ee7b7" fill-opacity="0.10" stroke="#6ee7b7" stroke-width="0.9" stroke-opacity="0.38"/>
+<polygon points="667.06,153.73 763.17,174.9 763.17,121.86 667.06,83.39" fill="#0e3a3e" fill-opacity="0.34" stroke="#5eead4" stroke-width="0.85" stroke-opacity="0.45" stroke-linejoin="round"/>
+<polygon points="706,138.2 667.06,83.39 763.17,121.86" fill="#fde047" fill-opacity="0.17" stroke="#7dd3fc" stroke-width="1.2" stroke-opacity="0.52" stroke-linejoin="round"/>
+<polygon points="674.5,208.98 667.06,153.73 667.06,83.39 674.5,195.51" fill="#16443b" fill-opacity="0.34" stroke="#5eead4" stroke-width="0.85" stroke-opacity="0.45" stroke-linejoin="round"/>
+<polygon points="706,138.2 674.5,195.51 667.06,83.39" fill="#fb923c" fill-opacity="0.17" stroke="#7dd3fc" stroke-width="1.2" stroke-opacity="0.52" stroke-linejoin="round"/>
+<polygon points="763.17,174.9 789.82,220.05 789.82,169.67 763.17,121.86" fill="#134e4a" fill-opacity="0.34" stroke="#5eead4" stroke-width="0.85" stroke-opacity="0.45" stroke-linejoin="round"/>
+<polygon points="706,138.2 763.17,121.86 789.82,169.67" fill="#38bdf8" fill-opacity="0.17" stroke="#7dd3fc" stroke-width="1.2" stroke-opacity="0.52" stroke-linejoin="round"/>
+<polygon points="706,138.2 673.97,206.93 674.5,195.51" fill="#fbbf24" fill-opacity="0.17" stroke="#7dd3fc" stroke-width="1.2" stroke-opacity="0.52" stroke-linejoin="round"/>
+<polygon points="673.97,232.79 674.5,208.98 674.5,195.51 673.97,206.93" fill="#3b3526" fill-opacity="0.34" stroke="#5eead4" stroke-width="0.85" stroke-opacity="0.45" stroke-linejoin="round"/>
+<polygon points="706,138.2 789.82,169.67 730.9,207.43" fill="#34d399" fill-opacity="0.17" stroke="#7dd3fc" stroke-width="1.2" stroke-opacity="0.52" stroke-linejoin="round"/>
+<polygon points="706,138.2 730.9,207.43 673.97,206.93" fill="#2dd4bf" fill-opacity="0.27" stroke="#fde68a" stroke-width="1.2" stroke-opacity="0.82" stroke-linejoin="round"/>
+<polygon points="789.82,220.05 730.9,249.26 730.9,207.43 789.82,169.67" fill="#1e3a5f" fill-opacity="0.34" stroke="#5eead4" stroke-width="0.85" stroke-opacity="0.45" stroke-linejoin="round"/>
+<polygon points="730.9,249.26 673.97,232.79 673.97,206.93 730.9,207.43" fill="#2a3f5f" fill-opacity="0.34" stroke="#5eead4" stroke-width="0.85" stroke-opacity="0.45" stroke-linejoin="round"/>
+<polygon points="667.06,83.39 763.17,121.86 789.82,169.67 730.9,207.43 673.97,206.93 674.5,195.51" fill="none" stroke="#fde68a" stroke-width="1.6" stroke-linejoin="round" filter="url(#core-bloom)"/>
+<line x1="667.06" y1="153.73" x2="667.06" y2="83.39" stroke="#fde68a" stroke-width="0.9" stroke-opacity="0.55"/>
+<circle cx="667.06" cy="83.39" r="5.8" fill="url(#core-ff-gold)"/>
+<circle cx="667.06" cy="83.39" r="2.7" fill="#fdba74" stroke="#ffffff" stroke-width="0.8"/>
+<line x1="763.17" y1="174.9" x2="763.17" y2="121.86" stroke="#fde68a" stroke-width="0.9" stroke-opacity="0.55"/>
+<circle cx="763.17" cy="121.86" r="5.8" fill="url(#core-ff-gold)"/>
+<circle cx="763.17" cy="121.86" r="2.7" fill="#bae6fd" stroke="#ffffff" stroke-width="0.8"/>
+<line x1="789.82" y1="220.05" x2="789.82" y2="169.67" stroke="#fde68a" stroke-width="0.9" stroke-opacity="0.55"/>
+<circle cx="789.82" cy="169.67" r="5.8" fill="url(#core-ff-gold)"/>
+<circle cx="789.82" cy="169.67" r="2.7" fill="#fde68a" stroke="#ffffff" stroke-width="0.8"/>
+<line x1="730.9" y1="249.26" x2="730.9" y2="207.43" stroke="#fde68a" stroke-width="0.9" stroke-opacity="0.55"/>
+<circle cx="730.9" cy="207.43" r="5.8" fill="url(#core-ff-gold)"/>
+<circle cx="730.9" cy="207.43" r="2.7" fill="#99f6e4" stroke="#ffffff" stroke-width="0.8"/>
+<line x1="673.97" y1="232.79" x2="673.97" y2="206.93" stroke="#fde68a" stroke-width="0.9" stroke-opacity="0.55"/>
+<circle cx="673.97" cy="206.93" r="5.8" fill="url(#core-ff-gold)"/>
+<circle cx="673.97" cy="206.93" r="2.7" fill="#bbf7d0" stroke="#ffffff" stroke-width="0.8"/>
+<line x1="674.5" y1="208.98" x2="674.5" y2="195.51" stroke="#fde68a" stroke-width="0.9" stroke-opacity="0.55"/>
+<circle cx="674.5" cy="195.51" r="5.8" fill="url(#core-ff-gold)"/>
+<circle cx="674.5" cy="195.51" r="2.7" fill="#cbd5e1" stroke="#ffffff" stroke-width="0.8"/>
+<circle cx="706" cy="138.2" r="8.5" fill="url(#core-ff-gold)"/>
+<circle cx="706" cy="138.2" r="3.1" fill="#ffffff"/>
+<line x1="667.01" y1="91.27" x2="667.01" y2="82.27" stroke="#fb923c" stroke-width="0.9" stroke-opacity="0.6"/>
+<text x="667.01" y="77.27" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.8" font-weight="600" fill="#f4f7fb" text-anchor="middle"><tspan fill="#fb923c" font-weight="700">HTML</tspan><tspan fill="#f4f7fb" font-weight="600"> 76%</tspan></text>
+<polyline points="782.28,131.23 818,127.23 826,127.23" fill="none" stroke="#38bdf8" stroke-width="0.9" stroke-opacity="0.6"/>
+<text x="830" y="131.23" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.8" font-weight="600" fill="#f4f7fb" text-anchor="start"><tspan fill="#38bdf8" font-weight="700">TypeScript</tspan><tspan fill="#f4f7fb" font-weight="600"> 12%</tspan></text>
+<polyline points="821.27,189.57 824.27,195.57 832.27,195.57" fill="none" stroke="#fbbf24" stroke-width="0.9" stroke-opacity="0.6"/>
+<text x="836.27" y="199.57" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.8" font-weight="600" fill="#f4f7fb" text-anchor="start"><tspan fill="#fbbf24" font-weight="700">JavaScript</tspan><tspan fill="#f4f7fb" font-weight="600"> 9%</tspan></text>
+<line x1="744.99" y1="273.34" x2="744.99" y2="281.34" stroke="#2dd4bf" stroke-width="0.9" stroke-opacity="0.6"/>
+<text x="744.99" y="294.34" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.8" font-weight="600" fill="#f4f7fb" text-anchor="middle"><tspan fill="#2dd4bf" font-weight="700">CSS</tspan><tspan fill="#b0bfd4" font-weight="600"> 3%</tspan></text>
+<polyline points="629.72,226.35 598,232.35 590,232.35" fill="none" stroke="#4ade80" stroke-width="0.9" stroke-opacity="0.6"/>
+<text x="586" y="236.35" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.8" font-weight="600" fill="#f4f7fb" text-anchor="end"><tspan fill="#4ade80" font-weight="700">Python</tspan><tspan fill="#b0bfd4" font-weight="600"> &lt;1%</tspan></text>
+<polyline points="590.73,168.01 587.73,162.01 579.73,162.01" fill="none" stroke="#94a3b8" stroke-width="0.9" stroke-opacity="0.6"/>
+<text x="575.73" y="166.01" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.8" font-weight="600" fill="#f4f7fb" text-anchor="end"><tspan fill="#94a3b8" font-weight="700">Shell</tspan><tspan fill="#b0bfd4" font-weight="600"> &lt;1%</tspan></text>
+<line x1="946" y1="48" x2="946" y2="322" stroke="#172033" stroke-width="1"/>
+<text x="970" y="86" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="26" font-weight="700" fill="#fde68a" text-anchor="start" letter-spacing="-0.5">81.1M</text>
+<text x="970" y="106" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="11.2" font-weight="400" fill="#b0bfd4" text-anchor="start">Ký tự mã nguồn</text>
+<text x="970" y="156" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="26" font-weight="700" fill="#f4f7fb" text-anchor="start" letter-spacing="-0.5">965</text>
+<text x="970" y="176" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="11.2" font-weight="400" fill="#b0bfd4" text-anchor="start">Commits trong năm</text>
+<text x="970" y="226" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="26" font-weight="700" fill="#fbbf24" text-anchor="start" letter-spacing="-0.5">21</text>
+<path d="M1015,210.2 L1016.7,214.65 L1021.47,214.9 L1017.76,217.9 L1019,222.5 L1015,219.9 L1011,222.5 L1012.24,217.9 L1008.53,214.9 L1013.3,214.65 Z" fill="#fbbf24"/>
+<text x="970" y="246" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="11.2" font-weight="400" fill="#b0bfd4" text-anchor="start">Stars đạt được</text>
+<text x="970" y="296" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="26" font-weight="700" fill="#6ee7b7" text-anchor="start" letter-spacing="-0.5">1000</text>
+<text x="970" y="316" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="11.2" font-weight="400" fill="#b0bfd4" text-anchor="start">Tổng đóng góp</text>
+<rect x="510" y="344" width="662" height="178" rx="12" fill="#05080f" stroke="#172033" stroke-width="1"/>
+<circle cx="528" cy="363" r="3.2" fill="#334155"/>
+<circle cx="540" cy="363" r="3.2" fill="#475569"/>
+<circle cx="552" cy="363" r="3.2" fill="#64748b"/>
+<text x="572" y="367" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" font-weight="500" fill="#7e91ab" text-anchor="start"><tspan fill="#6ee7b7">$</tspan><tspan fill="#7e91ab"> gh activity --recent</tspan></text>
+<line x1="524" y1="378" x2="1158" y2="378" stroke="#172033" stroke-width="1"/>
+<text x="530" y="401" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="500" fill="#7e91ab" text-anchor="start">14:16</text>
+<text x="580" y="401" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#fde68a" text-anchor="start">58a0400</text>
+<text x="648" y="401" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#7dd3fc" text-anchor="start">broamstuck-cybr</text>
+<text x="788" y="401" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="500" fill="#f4f7fb" text-anchor="start">feat(profile): rebuild HD…</text>
+<rect x="963" y="391" width="6" height="12" rx="1.2" fill="#fde68a"><animate attributeName="opacity" values="0.95;0.95;0.1;0.1" keyTimes="0;0.48;0.52;1" dur="1.25s" repeatCount="indefinite"/></rect>
+<text x="530" y="426" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="500" fill="#7e91ab" text-anchor="start">12:16</text>
+<text x="580" y="426" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#fde68a" text-anchor="start">00c2ba1</text>
+<text x="648" y="426" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#7dd3fc" text-anchor="start">broamstuck-cybr</text>
+<text x="788" y="426" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="400" fill="#b0bfd4" text-anchor="start">chore(profile): sync live SVG telemetry…</text>
+<text x="530" y="451" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="500" fill="#7e91ab" text-anchor="start">12:13</text>
+<text x="580" y="451" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#fde68a" text-anchor="start">ee01b75</text>
+<text x="648" y="451" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#7dd3fc" text-anchor="start">resourcepack</text>
+<text x="788" y="451" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="400" fill="#b0bfd4" text-anchor="start">docs(edunext_bank): remove emoji from…</text>
+<text x="530" y="476" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="500" fill="#7e91ab" text-anchor="start">12:09</text>
+<text x="580" y="476" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#fde68a" text-anchor="start">90a53d0</text>
+<text x="648" y="476" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#7dd3fc" text-anchor="start">Socratic</text>
+<text x="788" y="476" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="400" fill="#b0bfd4" text-anchor="start">docs(readme): add animated SVG banner…</text>
+<text x="530" y="501" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="500" fill="#7e91ab" text-anchor="start">12:09</text>
+<text x="580" y="501" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#fde68a" text-anchor="start">c53f113</text>
+<text x="648" y="501" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="600" fill="#7dd3fc" text-anchor="start">F-Forum_v2</text>
+<text x="788" y="501" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.6" font-weight="400" fill="#b0bfd4" text-anchor="start">docs(readme): add SVG banner, evolution…</text>
+<g pointer-events="none">
+<circle cx="693.9" cy="59.4" r="1.33" fill="#f8fafc"><animate attributeName="opacity" values="0.18;0.83;0.18" dur="9s" begin="-1.2s" repeatCount="indefinite"/></circle>
+<circle cx="859.5" cy="93.6" r="1.42" fill="#fde68a"><animate attributeName="opacity" values="0.2;0.82;0.2" dur="7.9s" begin="-7.8s" repeatCount="indefinite"/></circle>
+<circle cx="727.5" cy="154.6" r="1.25" fill="#f8fafc"><animate attributeName="opacity" values="0.14;0.55;0.14" dur="3.9s" begin="-5.3s" repeatCount="indefinite"/></circle>
+<circle cx="764.8" cy="193.9" r="1.55" fill="#fde68a"><animate attributeName="opacity" values="0.18;0.59;0.18" dur="8s" begin="-8.4s" repeatCount="indefinite"/></circle>
+<circle cx="638.6" cy="337.8" r="1.64" fill="#f8fafc"><animate attributeName="opacity" values="0.09;0.5;0.09" dur="5.6s" begin="-8s" repeatCount="indefinite"/></circle>
+<circle cx="705.2" cy="55.3" r="1.25" fill="#fde68a"><animate attributeName="opacity" values="0.16;0.5;0.16" dur="8.6s" begin="-6.1s" repeatCount="indefinite"/></circle>
+<circle cx="729" cy="172.9" r="1.56" fill="#f8fafc"><animate attributeName="opacity" values="0.11;0.67;0.11" dur="5.6s" begin="-1.7s" repeatCount="indefinite"/></circle>
+<circle cx="782.3" cy="29.1" r="1.46" fill="#fde68a"><animate attributeName="opacity" values="0.14;0.74;0.14" dur="8.5s" begin="-6.4s" repeatCount="indefinite"/></circle>
+<circle cx="484" cy="214.1" r="1.29" fill="#fde68a"><animate attributeName="opacity" values="0.1;0.9;0.1" dur="8.5s" begin="-8.6s" repeatCount="indefinite"/></circle>
+<circle cx="493.3" cy="412.5" r="0.84" fill="#f8fafc"><animate attributeName="opacity" values="0.2;0.59;0.2" dur="9.2s" begin="-3.2s" repeatCount="indefinite"/></circle>
+<circle cx="683.7" cy="332.6" r="1.68" fill="#fde68a"><animate attributeName="opacity" values="0.2;0.57;0.2" dur="4.9s" begin="-5.8s" repeatCount="indefinite"/></circle>
+<circle cx="759.4" cy="190.4" r="1.65" fill="#f8fafc"><animate attributeName="opacity" values="0.09;0.92;0.09" dur="5.1s" begin="-6.2s" repeatCount="indefinite"/></circle>
+<circle cx="922.5" cy="98.9" r="1.13" fill="#fde68a"><animate attributeName="opacity" values="0.11;0.71;0.11" dur="5.5s" begin="-2.8s" repeatCount="indefinite"/></circle>
+<circle cx="767.2" cy="148.3" r="0.98" fill="#fde68a"><animate attributeName="opacity" values="0.17;0.53;0.17" dur="6s" begin="-0.4s" repeatCount="indefinite"/></circle>
+<circle cx="651.5" cy="251" r="1.75" fill="#fde68a"><animate attributeName="opacity" values="0.17;0.78;0.17" dur="6.8s" begin="-5.6s" repeatCount="indefinite"/></circle>
+<circle cx="338.3" cy="35.8" r="1.08" fill="#fde68a"><animate attributeName="opacity" values="0.22;0.76;0.22" dur="5.4s" begin="-7.8s" repeatCount="indefinite"/></circle>
+<circle cx="476.9" cy="402.5" r="1.47" fill="#fde68a"><animate attributeName="opacity" values="0.21;0.58;0.21" dur="7.1s" begin="-0.7s" repeatCount="indefinite"/></circle>
+<circle cx="1174.7" cy="402.1" r="1.68" fill="#fde68a"><animate attributeName="opacity" values="0.11;0.86;0.11" dur="8.5s" begin="-4.7s" repeatCount="indefinite"/></circle>
+<circle cx="837.1" cy="61.8" r="1.03" fill="#f8fafc"><animate attributeName="opacity" values="0.1;0.48;0.1" dur="5.9s" begin="-1s" repeatCount="indefinite"/></circle>
+<circle cx="680.4" cy="322" r="1.39" fill="#fde68a"><animate attributeName="opacity" values="0.15;0.89;0.15" dur="8.6s" begin="-3s" repeatCount="indefinite"/></circle>
+<circle cx="586" cy="135.7" r="1.06" fill="#fde68a"><animate attributeName="opacity" values="0.16;0.62;0.16" dur="4.1s" begin="-3.7s" repeatCount="indefinite"/></circle>
+<circle cx="398.2" cy="40.3" r="1.24" fill="#f8fafc"><animate attributeName="opacity" values="0.17;0.7;0.17" dur="4.5s" begin="-3.2s" repeatCount="indefinite"/></circle>
+<circle cx="750.5" cy="87.6" r="1.75" fill="#f8fafc"><animate attributeName="opacity" values="0.2;0.51;0.2" dur="4.8s" begin="-8.4s" repeatCount="indefinite"/></circle>
+<circle cx="1068.8" cy="20.1" r="1.38" fill="#f8fafc"><animate attributeName="opacity" values="0.12;0.65;0.12" dur="5.9s" begin="-3.2s" repeatCount="indefinite"/></circle>
+<circle cx="592.2" cy="209.4" r="1.56" fill="#fde68a"><animate attributeName="opacity" values="0.21;0.67;0.21" dur="9.1s" begin="-4.4s" repeatCount="indefinite"/></circle>
+<circle cx="444.1" cy="380.1" r="1.14" fill="#f8fafc"><animate attributeName="opacity" values="0.11;0.83;0.11" dur="9s" begin="-3.6s" repeatCount="indefinite"/></circle>
+<circle cx="497.4" cy="432.8" r="0.91" fill="#fde68a"><animate attributeName="opacity" values="0.12;0.46;0.12" dur="8.2s" begin="-5.2s" repeatCount="indefinite"/></circle>
+<circle cx="462.1" cy="499.6" r="1.12" fill="#f8fafc"><animate attributeName="opacity" values="0.1;0.82;0.1" dur="4.8s" begin="-2.9s" repeatCount="indefinite"/></circle>
+<circle cx="680.6" cy="95.4" r="0.92" fill="#fde68a"><animate attributeName="opacity" values="0.13;0.88;0.13" dur="4.9s" begin="-3.5s" repeatCount="indefinite"/></circle>
+<circle cx="914.3" cy="303.5" r="1.11" fill="#fde68a"><animate attributeName="opacity" values="0.2;0.73;0.2" dur="8.3s" begin="-8.4s" repeatCount="indefinite"/></circle>
+<circle cx="818.9" cy="79.5" r="1.77" fill="#fde68a"><animate attributeName="opacity" values="0.18;0.68;0.18" dur="7.5s" begin="-1s" repeatCount="indefinite"/></circle>
+<circle cx="417.4" cy="483.3" r="1.1" fill="#fde68a"><animate attributeName="opacity" values="0.15;0.62;0.15" dur="4.8s" begin="-2.1s" repeatCount="indefinite"/></circle>
+<circle cx="31.4" cy="335.6" r="1.57" fill="#fde68a"><animate attributeName="opacity" values="0.15;0.77;0.15" dur="8.2s" begin="-3.7s" repeatCount="indefinite"/></circle>
+<circle cx="474.9" cy="506.2" r="1.13" fill="#fde68a"><animate attributeName="opacity" values="0.21;0.56;0.21" dur="5.1s" begin="-7.3s" repeatCount="indefinite"/></circle>
+<circle cx="794.7" cy="180.8" r="1.07" fill="#f8fafc"><animate attributeName="opacity" values="0.12;0.9;0.12" dur="5.1s" begin="-3.5s" repeatCount="indefinite"/></circle>
+<circle cx="289.1" cy="42.3" r="1.76" fill="#fde68a"><animate attributeName="opacity" values="0.2;0.66;0.2" dur="8.6s" begin="-3.8s" repeatCount="indefinite"/></circle>
+<circle cx="352.6" cy="457.6" r="1.28" fill="#f8fafc"><animate attributeName="opacity" values="0.14;0.53;0.14" dur="9s" begin="-6.3s" repeatCount="indefinite"/></circle>
+<circle cx="770" cy="216.9" r="1.48" fill="#f8fafc"><animate attributeName="opacity" values="0.19;0.61;0.19" dur="6.7s" begin="-1.1s" repeatCount="indefinite"/></circle>
+<circle cx="1172.3" cy="321.9" r="1.05" fill="#fde68a"><animate attributeName="opacity" values="0.11;0.53;0.11" dur="4s" begin="-0.9s" repeatCount="indefinite"/></circle>
+<circle cx="22.3" cy="493.7" r="0.93" fill="#fde68a"><animate attributeName="opacity" values="0.09;0.64;0.09" dur="8s" begin="-4.7s" repeatCount="indefinite"/></circle>
+<circle cx="722.7" cy="228.8" r="0.9" fill="#fde68a"><animate attributeName="opacity" values="0.17;0.93;0.17" dur="8.6s" begin="-7.2s" repeatCount="indefinite"/></circle>
+<circle cx="234.6" cy="504.4" r="1.57" fill="#f8fafc"><animate attributeName="opacity" values="0.15;0.62;0.15" dur="4s" begin="-1.4s" repeatCount="indefinite"/></circle>
+<g transform="translate(363.5 477.1)"><g><circle cx="0" cy="0" r="8.9" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.55" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="3.6s" begin="-5.6s" repeatCount="indefinite"/><animateMotion path="M0,0 C-12.9,-16.7 17.9,-13 10.7,-9.1 C-9.9,13.4 6.5,6.7 0,0" dur="13.5s" begin="-5.6s" repeatCount="indefinite"/></g></g>
+<g transform="translate(127.3 440.7)"><g><circle cx="0" cy="0" r="5.5" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.37" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="6.9s" begin="-3.5s" repeatCount="indefinite"/><animateMotion path="M0,0 C-3.9,-13.6 19.7,12.5 11.8,8.8 C2.2,6.7 2,5.4 0,0" dur="16.2s" begin="-3.5s" repeatCount="indefinite"/></g></g>
+<g transform="translate(946 302.3)"><g><circle cx="0" cy="0" r="6.1" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.61" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="3.5s" begin="-4.6s" repeatCount="indefinite"/><animateMotion path="M0,0 C5.2,-16 -17.6,-8.8 -10.6,-6.2 C14.3,18.5 -2.6,6.4 0,0" dur="15.1s" begin="-4.6s" repeatCount="indefinite"/></g></g>
+<g transform="translate(708.7 87.6)"><g><circle cx="0" cy="0" r="4.7" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.66" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="6.9s" begin="-12.1s" repeatCount="indefinite"/><animateMotion path="M0,0 C-15.6,-27.6 13.7,-6.9 8.2,-4.8 C5.8,12.9 7.8,11 0,0" dur="17.2s" begin="-12.1s" repeatCount="indefinite"/></g></g>
+<g transform="translate(223.6 54.6)"><g><circle cx="0" cy="0" r="5" fill="url(#core-ff-white)"/><circle cx="0" cy="0" r="1.43" fill="#ffffff"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="6.4s" begin="-7.4s" repeatCount="indefinite"/><animateMotion path="M0,0 C-1.9,-13.1 -11.1,-2.7 -6.6,-1.9 C6.7,15.4 1,5.2 0,0" dur="20.1s" begin="-7.4s" repeatCount="indefinite"/></g></g>
+<g transform="translate(940.8 311)"><g><circle cx="0" cy="0" r="7.6" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.18" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="6.9s" begin="-9.7s" repeatCount="indefinite"/><animateMotion path="M0,0 C-10.1,-16.6 9.2,6.3 5.5,4.4 C3.1,12.2 5.1,6.7 0,0" dur="15.6s" begin="-9.7s" repeatCount="indefinite"/></g></g>
+<g transform="translate(479.2 277.8)"><g><circle cx="0" cy="0" r="7.6" fill="url(#core-ff-white)"/><circle cx="0" cy="0" r="1.22" fill="#ffffff"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="3.6s" begin="-1.8s" repeatCount="indefinite"/><animateMotion path="M0,0 C-8.3,-28.4 -20.7,-4.3 -12.4,-3 C-13.1,15.9 4.2,11.4 0,0" dur="12.1s" begin="-1.8s" repeatCount="indefinite"/></g></g>
+<g transform="translate(606.2 216.4)"><g><circle cx="0" cy="0" r="5.7" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.66" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="3.9s" begin="-12.5s" repeatCount="indefinite"/><animateMotion path="M0,0 C-1.5,-8.6 0,1.6 0,1.1 C-2,20.5 0.8,3.4 0,0" dur="16s" begin="-12.5s" repeatCount="indefinite"/></g></g>
+<g transform="translate(583.5 228.5)"><g><circle cx="0" cy="0" r="6.4" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.42" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="7.2s" begin="-11.3s" repeatCount="indefinite"/><animateMotion path="M0,0 C16.4,-11.9 -1.9,12.1 -1.2,8.5 C8.4,24.2 -8.2,4.8 0,0" dur="13s" begin="-11.3s" repeatCount="indefinite"/></g></g>
+<g transform="translate(500.3 409.8)"><g><circle cx="0" cy="0" r="5.3" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.77" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="3.9s" begin="-9.9s" repeatCount="indefinite"/><animateMotion path="M0,0 C-10.7,-27.6 -14.6,-1.6 -8.8,-1.2 C1.3,12.6 5.4,11 0,0" dur="13.6s" begin="-9.9s" repeatCount="indefinite"/></g></g>
+<g transform="translate(912 97.7)"><g><circle cx="0" cy="0" r="5.9" fill="url(#core-ff-white)"/><circle cx="0" cy="0" r="1.64" fill="#ffffff"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="6s" begin="-10s" repeatCount="indefinite"/><animateMotion path="M0,0 C16.8,-14 -16.3,8.9 -9.8,6.2 C-0.1,23.7 -8.4,5.6 0,0" dur="16.7s" begin="-10s" repeatCount="indefinite"/></g></g>
+<g transform="translate(825.6 276)"><g><circle cx="0" cy="0" r="7.2" fill="url(#core-ff-white)"/><circle cx="0" cy="0" r="1.67" fill="#ffffff"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="4s" begin="-8.7s" repeatCount="indefinite"/><animateMotion path="M0,0 C18.3,-13.4 -8,-9.6 -4.8,-6.7 C9.8,19.5 -9.1,5.4 0,0" dur="12s" begin="-8.7s" repeatCount="indefinite"/></g></g>
+<g transform="translate(813.4 181.3)"><g><circle cx="0" cy="0" r="6.4" fill="url(#core-ff-white)"/><circle cx="0" cy="0" r="1.84" fill="#ffffff"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="3.9s" begin="-10.5s" repeatCount="indefinite"/><animateMotion path="M0,0 C-9.5,-28.7 14.6,-7.4 8.7,-5.2 C-13.9,19.3 4.7,11.5 0,0" dur="16.7s" begin="-10.5s" repeatCount="indefinite"/></g></g>
+<g transform="translate(547.2 280.6)"><g><circle cx="0" cy="0" r="6.6" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.84" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="4.4s" begin="-12s" repeatCount="indefinite"/><animateMotion path="M0,0 C-0.1,-22.2 -9.9,-1 -5.9,-0.7 C-14.7,20.9 0,8.9 0,0" dur="18.8s" begin="-12s" repeatCount="indefinite"/></g></g>
+<g transform="translate(658.6 111.4)"><g><circle cx="0" cy="0" r="7.2" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.29" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="7.4s" begin="-3.8s" repeatCount="indefinite"/><animateMotion path="M0,0 C14.3,-17.1 -18.7,9.9 -11.2,6.9 C-5.8,23 -7.2,6.8 0,0" dur="14.5s" begin="-3.8s" repeatCount="indefinite"/></g></g>
+<g transform="translate(436.7 155.5)"><g><circle cx="0" cy="0" r="5.3" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.75" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="5.1s" begin="-9.8s" repeatCount="indefinite"/><animateMotion path="M0,0 C-0.8,-8.3 -17.1,1.2 -10.2,0.8 C6.4,9.6 0.4,3.3 0,0" dur="12.2s" begin="-9.8s" repeatCount="indefinite"/></g></g>
+<g transform="translate(585.1 77.7)"><g><circle cx="0" cy="0" r="4.8" fill="url(#core-ff-white)"/><circle cx="0" cy="0" r="2.01" fill="#ffffff"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="4.2s" begin="-5.4s" repeatCount="indefinite"/><animateMotion path="M0,0 C4.9,-22.2 -21.7,9 -13,6.3 C8.9,6.6 -2.5,8.9 0,0" dur="18.6s" begin="-5.4s" repeatCount="indefinite"/></g></g>
+<g transform="translate(134.5 39)"><g><circle cx="0" cy="0" r="5.5" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.72" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="7.2s" begin="-3.9s" repeatCount="indefinite"/><animateMotion path="M0,0 C-5.6,-22 -1.8,-6.7 -1.1,-4.7 C-14.5,19 2.8,8.8 0,0" dur="17.6s" begin="-3.9s" repeatCount="indefinite"/></g></g>
+<g transform="translate(907.1 49.6)"><g><circle cx="0" cy="0" r="4.9" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.86" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="4.1s" begin="-1.8s" repeatCount="indefinite"/><animateMotion path="M0,0 C-4,-10.6 11,0 6.6,0 C-13.9,13 2,4.3 0,0" dur="18.4s" begin="-1.8s" repeatCount="indefinite"/></g></g>
+<g transform="translate(437.1 57.5)"><g><circle cx="0" cy="0" r="7.9" fill="url(#core-ff-gold)"/><circle cx="0" cy="0" r="1.85" fill="#fefce8"/><animate attributeName="opacity" values="0.18;0.96;0.42;0.9;0.18" dur="4.2s" begin="-5s" repeatCount="indefinite"/><animateMotion path="M0,0 C-10.4,-19 17.7,-3 10.6,-2.1 C-4.9,23.5 5.2,7.6 0,0" dur="11.6s" begin="-5s" repeatCount="indefinite"/></g></g>
+</g>
+</g>
+</svg>
