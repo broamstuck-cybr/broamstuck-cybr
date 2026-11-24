@@ -1,44 +1,19 @@
 <div align="center">
 
-<img src="assets/hero-banner.svg" alt="BroAmStuck — Arch / Hyprland Engineering Banner" width="880" />
+<img src="assets/01-monolith-hero.svg" alt="BroAmStuck — Arch & Hyprland Telemetry Monolith" width="100%" />
 
-<br />
+<img src="assets/02-identity-telemetry.svg" alt="Phosphor Portrait, Stack Radar and Commit Stream" width="100%" />
 
-<img src="assets/header-contributions.svg" alt="broamstuck@arch ~ $ ./contributions.sh" width="880" />
+<img src="assets/03-activity-matrix.svg" alt="52-Week Activity Matrix and Velocity Spectrum" width="100%" />
 
-<img src="assets/contributions.svg" alt="52 weeks of contributions, streak telemetry and 12-week velocity" width="880" />
+<p align="center">
+  <a href="https://github.com/broamstuck-cybr/f_forumv3"><img src="assets/card-fforum.svg" alt="F-Forum v3" width="49%" /></a>&nbsp;<a href="https://github.com/broamstuck-cybr/SOURCEOFKNOWLEDGFORAI"><img src="assets/card-vault.svg" alt="Knowledge Vault" width="49%" /></a>
+</p>
 
-<img src="assets/header-whoami.svg" alt="broamstuck@arch ~ $ whoami" width="880" />
+<p align="center">
+  <a href="https://github.com/broamstuck-cybr/Edunext_fe"><img src="assets/card-edunext.svg" alt="EduNext BAS" width="49%" /></a>&nbsp;<a href="https://github.com/broamstuck-cybr/shoptify-winter-reverser-engine"><img src="assets/card-reverser.svg" alt="Winter '26 Reverser" width="49%" /></a>
+</p>
 
-</div>
-
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td width="50%" align="center" valign="top">
-      <img src="assets/portrait.svg" alt="ASCII portrait" width="490" />
-    </td>
-    <td width="50%" align="center" valign="top">
-      <img src="assets/dashboard.svg" alt="Language radar, telemetry and recent commits" width="490" />
-    </td>
-  </tr>
-</table>
-
-<div align="center">
-
-<img src="assets/header-ecosystem.svg" alt="broamstuck@arch ~ $ ./ecosystem-map.sh" width="880" />
-
-<img src="assets/ecosystem-mindmap.svg" alt="Repository ecosystem architecture mind-map" width="880" />
-
-<img src="assets/header-gallery.svg" alt="broamstuck@arch ~ $ ./gallery.sh --featured" width="880" />
-
-<img src="assets/featured-gallery.svg" alt="Featured flagship repositories gallery" width="880" />
-
-<br />
-
-[F-Forum v3](https://github.com/broamstuck-cybr/f_forumv3) (`fforum3.vercel.app`) · [SOURCEOFKNOWLEDGFORAI](https://github.com/broamstuck-cybr/SOURCEOFKNOWLEDGFORAI) · [EduNext BAS](https://github.com/broamstuck-cybr/Edunext_fe) · [Winter '26 Reverser](https://github.com/broamstuck-cybr/shoptify-winter-reverser-engine) · [F-Forum v1](https://github.com/broamstuck-cybr/f-forum)
-
-<br />
-
-<img src="assets/specs.svg" alt="System specs, language stack and totals" width="880" />
+<img src="assets/04-constellation-specs.svg" alt="System Topology and Arch Runtime Stack" width="100%" />
 
 </div>
