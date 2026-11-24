@@ -381,13 +381,13 @@
 <rect x="803" y="122.2" width="11.5" height="11.5" rx="3" fill="#39d353" stroke="#7ee787" stroke-opacity="0.45" stroke-width="0.6"/>
 <rect x="817.7" y="34" width="11.5" height="11.5" rx="3" fill="#39d353" stroke="#7ee787" stroke-opacity="0.45" stroke-width="0.6"/>
 <rect x="817.7" y="48.7" width="11.5" height="11.5" rx="3" fill="#26a641"/>
-<rect x="817.7" y="63.4" width="11.5" height="11.5" rx="3" fill="#26a641"/>
+<rect x="817.7" y="63.4" width="11.5" height="11.5" rx="3" fill="#39d353" stroke="#7ee787" stroke-opacity="0.45" stroke-width="0.6"/>
 <rect x="817.7" y="78.1" width="11.5" height="11.5" rx="3" fill="#161e2e"/>
 <rect x="817.7" y="92.8" width="11.5" height="11.5" rx="3" fill="#161e2e"/>
 <rect x="817.7" y="107.5" width="11.5" height="11.5" rx="3" fill="#161e2e"/>
 <rect x="817.7" y="122.2" width="11.5" height="11.5" rx="3" fill="#161e2e"/>
 <line x1="20" y1="150" x2="860" y2="150" stroke="#1e293b" stroke-width="1" stroke-dasharray="3 4"/>
-<text x="26" y="179" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="16" font-weight="700" fill="#39d353" text-anchor="start">989</text>
+<text x="26" y="179" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="16" font-weight="700" fill="#39d353" text-anchor="start">998</text>
 <text x="26" y="196" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="8.8" font-weight="400" fill="#8b949e" text-anchor="start">contributions (1y)</text>
 <text x="210" y="179" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="16" font-weight="700" fill="#e3b341" text-anchor="start">20d</text>
 <text x="210" y="196" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="8.8" font-weight="400" fill="#8b949e" text-anchor="start">longest streak</text>
@@ -395,8 +395,8 @@
 <text x="356" y="196" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="8.8" font-weight="400" fill="#8b949e" text-anchor="start">current streak</text>
 <text x="500" y="179" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="16" font-weight="700" fill="#f1f5f9" text-anchor="start">92 (10-04)</text>
 <text x="500" y="196" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="8.8" font-weight="400" fill="#8b949e" text-anchor="start">peak day</text>
-<polygon points="694,194 694,187.89 708.36,181.26 722.73,192.74 737.09,189.89 751.45,174.21 765.82,162 780.18,183.89 794.55,193.37 808.91,193.16 823.27,191.05 837.64,186.74 852,190.84 852,194" fill="url(#spark-fill)"/>
-<polyline points="694,187.89 708.36,181.26 722.73,192.74 737.09,189.89 751.45,174.21 765.82,162 780.18,183.89 794.55,193.37 808.91,193.16 823.27,191.05 837.64,186.74 852,190.84" fill="none" stroke="#39d353" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="852" cy="190.84" r="3" fill="#39d353"><animate attributeName="r" values="2.5;4;2.5" dur="2.2s" repeatCount="indefinite"/></circle>
+<polygon points="694,194 694,187.89 708.36,181.26 722.73,192.74 737.09,189.89 751.45,174.21 765.82,162 780.18,183.89 794.55,193.37 808.91,193.16 823.27,191.05 837.64,186.74 852,189.89 852,194" fill="url(#spark-fill)"/>
+<polyline points="694,187.89 708.36,181.26 722.73,192.74 737.09,189.89 751.45,174.21 765.82,162 780.18,183.89 794.55,193.37 808.91,193.16 823.27,191.05 837.64,186.74 852,189.89" fill="none" stroke="#39d353" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="852" cy="189.89" r="3" fill="#39d353"><animate attributeName="r" values="2.5;4;2.5" dur="2.2s" repeatCount="indefinite"/></circle>
 <text x="852" y="206" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, monospace" font-size="8" font-weight="400" fill="#64748b" text-anchor="end">12w velocity</text>
 </svg>
