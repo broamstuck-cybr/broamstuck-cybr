@@ -572,6 +572,17 @@ async function initObservatory() {
     consoleState = "loading";
     renderConsole();
     try {
+      const rlRes = await fetch("https://api.github.com/rate_limit");
+      if (!rlRes.ok) throw new Error(`HTTP ${rlRes.status}`);
+      const rlData = await rlRes.json();
+      const remaining = rlData && rlData.resources && rlData.resources.core
+        ? Number(rlData.resources.core.remaining)
+        : 1;
+      if (remaining < 1) {
+        consoleState = "error";
+        renderConsole();
+        return;
+      }
       const res = await fetch(`https://api.github.com/users/${telemetry.username}/events/public?per_page=30`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const rawEvents = await res.json();
@@ -643,8 +654,8 @@ async function initObservatory() {
   const dogCanvas = document.getElementById("pixel-dog-canvas");
   const dogHitbox = document.getElementById("pixel-dog-hitbox");
   if (dogLayer && dogCanvas && dogHitbox) {
-    pup = new StarlightPixelDog(dogLayer, dogCanvas, dogHitbox, (nx, ny) => {
-      sky.injectImpulse(nx, ny, 7, -6);
+    pup = new StarlightPixelDog(dogLayer, dogCanvas, dogHitbox, (nx, ny, fx = 7, fy = -6) => {
+      sky.injectImpulse(nx, ny, fx, fy);
     });
   }
 

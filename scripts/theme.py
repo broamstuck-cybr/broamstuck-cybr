@@ -52,10 +52,12 @@ REDUCED_MOTION_STYLE = (
     "<style>"
     ".pup-calm { display: none; } "
     "@media (prefers-reduced-motion: reduce) { "
-    "animate, animateTransform, animateMotion { display: none; } "
     ".vg-drift { animation: none !important; } "
     ".pup-live { display: none !important; } "
     ".pup-calm { display: inline !important; } "
+    "} "
+    "@media (prefers-reduced-motion: reduce) { "
+    "g:has(> animateMotion) { display: none !important; } "
     "}"
     "</style>"
 )
@@ -247,10 +249,11 @@ def van_gogh_starry_backdrop(
         if motif in (1, 4) and count % 17 == 0:
             dur = 4.8 + (count % 7) * 0.85
             elems.append(
-                '<path d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.90">'
+                '<path class="pup-live" d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.90">'
                 '<animate attributeName="stroke-opacity" values="0.58;0.98;0.58" dur="%ss" repeatCount="indefinite"/>'
                 "</path>"
-                % (d_str, lit_col, num(stroke_w, 2), num(dur, 1))
+                '<path class="pup-calm" d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.88"/>'
+                % (d_str, lit_col, num(stroke_w, 2), num(dur, 1), d_str, lit_col, num(stroke_w, 2))
             )
         else:
             elems.append(
@@ -337,12 +340,16 @@ def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opac
         num(comet_rx, 1), num(comet_ry, 1), num(peri_x, 1),
     )
     elems.append('<path d="%s" transform="rotate(17)" fill="none" stroke="%s" stroke-width="0.58" stroke-opacity="0.38" stroke-dasharray="3.5 3.5"/>' % (comet_d, TEAL_MIST))
-    elems.append(
-        '<g transform="rotate(17)">'
+    comet_glyph = (
         '<path d="M0,0 L-20,-2.6 L-13,0 L-20,2.6 Z" fill="%s" fill-opacity="0.78"/>'
         '<path d="%s" fill="#ffffff"/>'
+        % (SKY_SOFT, star_path(0, 0, 4.1, 1.4, 4))
+    )
+    elems.append(
+        '<g class="pup-live" transform="rotate(17)">%s'
         '<animateMotion path="%s" dur="28s" rotate="auto" repeatCount="indefinite"/></g>'
-        % (SKY_SOFT, star_path(0, 0, 4.1, 1.4, 4), comet_d)
+        '<g class="pup-calm" transform="rotate(17) translate(%s 0)">%s</g>'
+        % (comet_glyph, comet_d, num(peri_x, 1), comet_glyph)
     )
 
     for name, rf, pr, pcol, dur, phase_deg, has_ring in planets:
@@ -357,15 +364,22 @@ def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opac
             % (num(rx, 1), num(ry, 1), MILKY_DUST if rf > 0.5 else CREAM)
         )
         neg_begin = -round((phase_deg / 360.0) * float(dur.rstrip("s")), 1)
-        elems.append("<g>")
+        body_parts = []
         if has_ring:
-            elems.append('<ellipse cx="0" cy="0" rx="%s" ry="%s" transform="rotate(-18)" fill="none" stroke="%s" stroke-width="1.05" stroke-opacity="0.92"/>' % (num(pr * 2.45, 1), num(pr * 0.86, 1), IVORY_WARM))
+            body_parts.append('<ellipse cx="0" cy="0" rx="%s" ry="%s" transform="rotate(-18)" fill="none" stroke="%s" stroke-width="1.05" stroke-opacity="0.92"/>' % (num(pr * 2.45, 1), num(pr * 0.86, 1), IVORY_WARM))
         if name == "Uranus":
-            elems.append('<ellipse cx="0" cy="0" rx="%s" ry="%s" transform="rotate(72)" fill="none" stroke="%s" stroke-width="0.72"/>' % (num(pr * 1.9, 1), num(pr * 0.65, 1), SKY_SOFT))
-        elems.append('<path d="%s" fill="%s" stroke="#081226" stroke-width="0.45"/>' % (star_path(0, 0, pr * 1.38, pr * 0.68, 6), pcol))
-        elems.append('<circle cx="0" cy="0" r="%s" fill="#ffffff" fill-opacity="0.78"/>' % num(max(0.7, pr * 0.28), 1))
-        elems.append('<animateMotion path="%s" dur="%s" begin="%ss" repeatCount="indefinite"/>' % (orbit_d, dur, num(neg_begin, 1)))
-        elems.append("</g>")
+            body_parts.append('<ellipse cx="0" cy="0" rx="%s" ry="%s" transform="rotate(72)" fill="none" stroke="%s" stroke-width="0.72"/>' % (num(pr * 1.9, 1), num(pr * 0.65, 1), SKY_SOFT))
+        body_parts.append('<path d="%s" fill="%s" stroke="#081226" stroke-width="0.45"/>' % (star_path(0, 0, pr * 1.38, pr * 0.68, 6), pcol))
+        body_parts.append('<circle cx="0" cy="0" r="%s" fill="#ffffff" fill-opacity="0.78"/>' % num(max(0.7, pr * 0.28), 1))
+        planet_svg = "".join(body_parts)
+        p_rad = math.radians(phase_deg)
+        st_x = -rx * math.cos(p_rad)
+        st_y = -ry * math.sin(p_rad)
+        elems.append(
+            '<g class="pup-live">%s<animateMotion path="%s" dur="%s" begin="%ss" repeatCount="indefinite"/></g>'
+            '<g class="pup-calm" transform="translate(%s %s)">%s</g>'
+            % (planet_svg, orbit_d, dur, num(neg_begin, 1), num(st_x, 1), num(st_y, 1), planet_svg)
+        )
 
     elems.append("</g>")
     return elems

@@ -7,7 +7,13 @@ import shutil
 import urllib.request
 
 from cards import render_flagship_cards
-from pixel_dog_svg import nocturne_garden_pup, pup_defs, starry_matrix_pup
+from pixel_dog_svg import (
+    core_stage_butterfly_cameo,
+    flora_butterfly_defs,
+    nocturne_garden_pup,
+    pup_defs,
+    starry_matrix_pup,
+)
 from theme import (
     BG_CONSOLE,
     BG_NIGHT,
@@ -482,10 +488,11 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         else:
             parts.append('<circle cx="%s" cy="%s" r="9.4" fill="%s" fill-opacity="0.18"/>' % (num(cx, 1), num(cy, 1), CADMIUM))
             parts.append(
-                '<circle cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3.2 2.1" stroke-opacity="0.92">'
+                '<circle class="pup-live" cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3.2 2.1" stroke-opacity="0.92">'
                 '<animateTransform attributeName="transform" type="rotate" from="0 %s %s" to="360 %s %s" dur="18s" repeatCount="indefinite"/>'
                 "</circle>"
-                % (num(cx, 1), num(cy, 1), CADMIUM, num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1))
+                '<circle class="pup-calm" cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3.2 2.1" stroke-opacity="0.92"/>'
+                % (num(cx, 1), num(cy, 1), CADMIUM, num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1), CADMIUM)
             )
             parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.58"/>' % (star_path(cx, cy, 6.9, 2.4, 8), IVORY_WARM))
 
@@ -715,6 +722,7 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     ]
     parts.extend(nocturne_defs("core"))
     parts.extend(clip_defs)
+    parts.extend(flora_butterfly_defs("core"))
     parts.extend(
         [
             '<clipPath id="core-left-clip"><rect x="1" y="1" width="483" height="562"/></clipPath>',
@@ -849,6 +857,7 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     parts.append('<rect x="168" y="473" width="156" height="54" rx="10" fill="#050b18" fill-opacity="0.86" stroke="%s" stroke-width="0.8"/>' % BORDER_WARM)
     parts.append(text(acx, 497, DISPLAY, INK_PRIMARY, 20.5, "middle", "700", ' letter-spacing="-0.2"', FONT_DISPLAY))
     parts.append(text(acx, 517, "@%s" % USERNAME, INK_MUTED, 11.0, "middle", "500"))
+    parts.extend(core_stage_butterfly_cameo())
 
     parts.append('<line x1="484" y1="32" x2="484" y2="532" stroke="%s" stroke-width="0.85"/>' % BORDER_SUBTLE)
 
