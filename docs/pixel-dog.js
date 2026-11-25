@@ -1,5 +1,19 @@
 // SPDX-License-Identifier: MIT
-// WHY: Living 2.5D pixel Shiba/Corgi, 3-species fluttering butterflies, elastic meadow grass/wildflowers, natural dog animations, click-pet cycling, and twig fetch.
+// WHY: 60 FPS living 2.5D pixel ecosystem: 11 shaded species x 25 animations, >=34 interactive micro-habitat props, bioluminescent fireflies, and 60s day-night habits.
+
+import {
+  SPECIES_IDS,
+  ANIMATION_25,
+  COMPANION_SPECIES_DEFS,
+  PROP_CATALOG,
+  bakeCompanionSprites,
+  bakePropSprites
+} from "./ecosystem-data.js";
+import { evaluateDayNightCycle, DAY_NIGHT_CYCLE_SEC } from "./sky-engine.js";
+
+const FIREFLY_COLORS = ["#bef264", "#fde047", "#86efac", "#fef08a", "#34d399"];
+const DEW_COLORS = ["#bae6fd", "#7dd3fc", "#fef9c3", "#ffffff"];
+const LOCOMOTION_ANIMS = new Set(["walk", "trot", "gallop", "hop", "chaseButterfly", "crouchStalk"]);
 
 const PALETTE = {
   O: "#2b150c",
@@ -1471,15 +1485,19 @@ function seededRand(seed) {
 }
 
 export class StarlightPixelDog {
-  constructor(layerEl, canvasEl, hitboxEl, onJoyPulse) {
+  constructor(layerEl, canvasEl, hitboxEl, onJoyPulse, getEnv = null) {
     this.layer = layerEl;
     this.canvas = canvasEl;
     this.ctx = canvasEl.getContext("2d");
     this.hitbox = hitboxEl;
     this.onJoyPulse = onJoyPulse || null;
+    this.getEnv = typeof getEnv === "function" ? getEnv : null;
 
     this.spritesRight = bakeSpriteMap(false);
     this.spritesLeft = bakeSpriteMap(true);
+    this.companionSprites = bakeCompanionSprites();
+    this.propSprites = bakePropSprites();
+    this.propDefsById = new Map(PROP_CATALOG.map((p) => [p.id, p]));
     this.butterflySprites = bakeButterflyBank();
     this.flowerSprites = bakeFlowerBank();
     this.twigSpriteRight = bakeSpriteGrid(TWIG_GRID, TWIG_W, TWIG_H, false);
@@ -1492,11 +1510,13 @@ export class StarlightPixelDog {
     this.docW = 1440;
     this.docH = 1600;
     this.dpr = 1;
+    this.localCycleTime = this.reducedMotion ? 4.0 : 0.0;
 
     this.x = 320;
     this.y = 280;
     this.facing = 1;
     this.hopY = 0;
+    this.shakeX = 0;
 
     this.state = this.reducedMotion ? "sit" : "trot";
     this.gait = "trot";
@@ -1511,20 +1531,25 @@ export class StarlightPixelDog {
     this._lastHx = -999;
     this._lastHy = -999;
     this._lastSyncState = "";
+    this._datasetAccum = 0;
 
     this.petCount = 0;
     this.lastPetReaction = "none";
     this.fetchCount = 0;
     this.visitedStates = new Set();
+    this.visitedAnims25 = new Set();
 
     this.emote = null;
     this.autoEmoteCooldown = 6.0;
     this.petEmoteGuard = 0;
 
     this.waypoints = [];
+    this.props = [];
     this.floraClusters = [];
     this.sunflowerPerches = [];
     this.butterflies = [];
+    this.fireflies = [];
+    this.companions = [];
 
     this.currentWpIdx = -1;
     this.startPt = { x: 320, y: 280 };
@@ -1534,6 +1559,7 @@ export class StarlightPixelDog {
     this.travelArc = 0;
 
     this.activeFlora = null;
+    this.activeProp = null;
     this.sniffWillSneeze = false;
     this.sneezeTriggered = false;
     this.activeButterfly = null;
@@ -1551,7 +1577,9 @@ export class StarlightPixelDog {
     this.openingQueue = [
       "sniffFlora",
       "stalkButterfly",
-      "butterflyNosePerch",
+      "boopFirefly",
+      "binky",
+      "drink",
       "bellyRoll",
       "scratchEar",
       "yawnStretch"
@@ -1562,11 +1590,16 @@ export class StarlightPixelDog {
     this.sparks = [];
     this.napStars = [];
     this.pollenMotes = [];
+    this.dandelionSeeds = [];
+    this.waterRipples = [];
+    this.dewDrops = [];
     this._looping = false;
 
     this._resize();
     this._collectWaypointsAndFlora();
     this._initButterflies();
+    this._initFireflies();
+    this._initCompanions();
     this._placeInitial();
     this._bindEvents();
     this.render();
@@ -1576,23 +1609,84 @@ export class StarlightPixelDog {
     }
   }
 
+  _currentEnv() {
+    if (this.getEnv) {
+      return this.getEnv();
+    }
+    const base = evaluateDayNightCycle(this.localCycleTime);
+    return { ...base, meteorsLaunched: 0, activeMeteors: 0 };
+  }
+
+  _mapDogStateToAnim25(st) {
+    if (ANIMATION_25.includes(st)) return st;
+    const table = {
+      run: "gallop",
+      fetchTwig: "gallop",
+      sniffFlora: "sniff",
+      stalkButterfly: "crouchStalk",
+      pounceButterfly: "pounce",
+      butterflyNosePerch: "earPerk",
+      yawnStretch: "yawn",
+      sit: "tailWag",
+      rest: "sunBask",
+      nap: "sleepCurl",
+      petBowHop: "binky",
+      petBellyRoll: "bellyRoll",
+      petTailSpin: "happySpin"
+    };
+    return table[st] || "tailWag";
+  }
+
   _recordState(st) {
-    if (st) this.visitedStates.add(st);
+    if (st) {
+      this.visitedStates.add(st);
+      this.visitedAnims25.add(this._mapDogStateToAnim25(st));
+    }
+  }
+
+  _recordAnim25(anim) {
+    if (anim && ANIMATION_25.includes(anim)) {
+      this.visitedAnims25.add(anim);
+    }
+  }
+
+  notifyMeteor(meteorInfo) {
+    if (this.reducedMotion) return;
+    const dir = meteorInfo && meteorInfo.dirX ? meteorInfo.dirX : 1;
+    let count = 0;
+    for (let i = 0; i < this.companions.length; i++) {
+      const c = this.companions[i];
+      if (c.anim === "sleepCurl") continue;
+      if ((i + (meteorInfo ? meteorInfo.slot : 0)) % 2 === 0 && count < 4) {
+        c.anim = "stargazeMeteor";
+        this._recordAnim25("stargazeMeteor");
+        c.timer = 0;
+        c.duration = 1.45 + (i % 3) * 0.22;
+        c.hopY = 0;
+        c.facing = dir;
+        count += 1;
+      }
+    }
+    const calmDog = this.state === "sit" || this.state === "rest" || this.state === "tailWag" || this.state === "earPerk";
+    if (calmDog) {
+      this.facing = dir;
+      this._enterState("stargazeMeteor", 1.55);
+      this._maybeShowEmote("sparkle", false);
+    }
   }
 
   _resize() {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = 1;
     const w = Math.max(320, this.layer.clientWidth || document.documentElement.clientWidth || 1440);
     const h = Math.max(480, this.layer.clientHeight || document.body.offsetHeight || 1400);
     this.docW = w;
     this.docH = h;
-    this.canvas.width = Math.round(w * this.dpr);
-    this.canvas.height = Math.round(h * this.dpr);
-    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.canvas.width = Math.round(w);
+    this.canvas.height = Math.round(h);
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
   }
 
-  // WHY: Builds real observatory waypoints, meadow grass/wildflower clusters, and painted Sunflower landing perches across .sky-dome, .board, and .garden-observatory.
   _collectWaypointsAndFlora() {
     const layerRect = this.layer.getBoundingClientRect();
     const ox = layerRect.left;
@@ -1711,6 +1805,41 @@ export class StarlightPixelDog {
       rawFlora.push({ x: 200, y: 262, zone: "sky", lush: 2 }, { x: 310, y: 262, zone: "garden", lush: 2 });
     }
 
+    const minPropDist = this.docW < 520 ? 20 : 28;
+    const rawProps = this._buildRawPropPlacements(ox, oy, clampX, clampY);
+    const placedProps = [];
+    for (let i = 0; i < rawProps.length; i++) {
+      const cand = rawProps[i];
+      let collide = false;
+      for (let j = 0; j < placedProps.length; j++) {
+        if (Math.hypot(placedProps[j].x - cand.x, placedProps[j].y - cand.y) < minPropDist) {
+          collide = true;
+          break;
+        }
+      }
+      if (!collide) {
+        const def = this.propDefsById.get(cand.id) || PROP_CATALOG[0];
+        placedProps.push({
+          uid: placedProps.length,
+          id: def.id,
+          category: def.category,
+          width: def.width,
+          height: def.height,
+          glowColor: def.glowColor || null,
+          glowRadius: def.glowRadius || 0,
+          x: cand.x,
+          y: cand.y,
+          zone: cand.zone,
+          bend: 0,
+          bendVel: 0,
+          glowBoost: 0,
+          cooldown: 0,
+          phase: (placedProps.length * 1.37) % (Math.PI * 2)
+        });
+      }
+    }
+    this.props = placedProps;
+
     const minSpacing = this.docW < 520 ? 44 : 54;
     const filteredFlora = [];
     for (let i = 0; i < rawFlora.length; i++) {
@@ -1721,6 +1850,14 @@ export class StarlightPixelDog {
         if (Math.abs(ex.y - cand.y) < 36 && Math.abs(ex.x - cand.x) < minSpacing) {
           tooClose = true;
           break;
+        }
+      }
+      if (!tooClose) {
+        for (let p = 0; p < this.props.length; p++) {
+          if (Math.hypot(this.props[p].x - cand.x, this.props[p].y - cand.y) < 24) {
+            tooClose = true;
+            break;
+          }
         }
       }
       if (!tooClose) filteredFlora.push(cand);
@@ -1743,6 +1880,111 @@ export class StarlightPixelDog {
 
     this.waypoints = pts;
     this.sunflowerPerches = perches;
+  }
+
+  // WHY: Distributes >=36 non-overlapping interactive pixel habitat props across sky-dome, board rims, 3D card ledges, and 3 garden depth tiers at all breakpoints.
+  _buildRawPropPlacements(ox, oy, clampX, clampY) {
+    const slots = [];
+    const add = (id, x, y, zone) => {
+      slots.push({ id, x: clampX(x, 20), y: clampY(y), zone });
+    };
+
+    const skyDome = document.querySelector(".sky-dome");
+    if (skyDome) {
+      const r = skyDome.getBoundingClientRect();
+      const left = r.left - ox;
+      const top = r.top - oy;
+      add("starlightWindchime", left + r.width * 0.72, top + 28, "sky");
+      add("weathervane", left + r.width * 0.90, top + 30, "sky");
+
+      const skyRimIds = [
+        "ironLantern",
+        "sunflowerCluster",
+        "dandelionPuff",
+        "dewPuddle",
+        "lavenderTuft",
+        "glowMushroomBlue",
+        "woodBirdhouse"
+      ];
+      const skyFracs = [0.06, 0.20, 0.35, 0.50, 0.65, 0.80, 0.94];
+      for (let i = 0; i < skyRimIds.length; i++) {
+        add(skyRimIds[i], left + r.width * skyFracs[i], top + r.height - 2, "sky");
+      }
+    }
+
+    const boards = document.querySelectorAll("section.board");
+    if (boards[0]) {
+      const r = boards[0].getBoundingClientRect();
+      const left = r.left - ox;
+      const yBot = r.bottom - oy - 1;
+      const b0Ids = ["mossyStone", "chamomilePatch", "fireflyJar", "cloverBed", "crystalGeode"];
+      const b0Fracs = [0.09, 0.29, 0.50, 0.71, 0.91];
+      for (let i = 0; i < b0Ids.length; i++) {
+        add(b0Ids[i], left + r.width * b0Fracs[i], yBot, "board");
+      }
+    }
+
+    if (boards[1]) {
+      const r = boards[1].getBoundingClientRect();
+      const left = r.left - ox;
+      const yBot = r.bottom - oy - 1;
+      const b1Ids = ["provenceStoneWall", "acornStash", "ironLantern", "berryBush", "hollowOakLog"];
+      const b1Fracs = [0.08, 0.28, 0.50, 0.72, 0.92];
+      for (let i = 0; i < b1Ids.length; i++) {
+        add(b1Ids[i], left + r.width * b1Fracs[i], yBot, "board");
+      }
+    }
+
+    const viewports = document.querySelectorAll(".forum-viewport");
+    const cardPairs = [
+      ["strawNest", "amanitaMushroom"],
+      ["pebbleBank", "oakBarrel"],
+      ["woodSignpost", "steppingStones"]
+    ];
+    viewports.forEach((vp, idx) => {
+      const r = vp.getBoundingClientRect();
+      const left = r.left - ox;
+      const usableW = Math.max(88, r.width - 72);
+      const yLedge = r.bottom - oy - 2;
+      const pair = cardPairs[idx % cardPairs.length];
+      add(pair[0], left + usableW * 0.20, yLedge, "card");
+      add(pair[1], left + usableW * 0.68, yLedge, "card");
+    });
+
+    const garden = document.querySelector(".garden-observatory");
+    if (garden) {
+      const r = garden.getBoundingClientRect();
+      const left = r.left - ox;
+      const top = r.top - oy;
+      const t1Ids = ["cypressAlcove", "wheatSheaf", "gardenBench", "wildRoseBush", "sunflowerCluster"];
+      const t1Fracs = [0.09, 0.29, 0.50, 0.71, 0.91];
+      for (let i = 0; i < t1Ids.length; i++) {
+        add(t1Ids[i], left + r.width * t1Fracs[i], top + r.height * 0.57, "garden");
+      }
+
+      const t2Ids = ["cattailReeds", "streamBrook", "miniFootbridge", "lilypadLotus", "splashFountain"];
+      const t2Fracs = [0.15, 0.33, 0.51, 0.69, 0.87];
+      for (let i = 0; i < t2Ids.length; i++) {
+        add(t2Ids[i], left + r.width * t2Fracs[i], top + r.height * 0.76, "garden");
+      }
+
+      const t3Ids = ["fernFrond", "glowMushroomBlue", "dandelionPuff", "ironLantern", "lavenderTuft"];
+      const t3Fracs = [0.08, 0.27, 0.47, 0.67, 0.88];
+      for (let i = 0; i < t3Ids.length; i++) {
+        add(t3Ids[i], left + r.width * t3Fracs[i], top + r.height * 0.95, "garden");
+      }
+    }
+
+    if (slots.length < 34) {
+      for (let i = slots.length; i < 34; i++) {
+        const p = PROP_CATALOG[i % PROP_CATALOG.length];
+        const col = i % 5;
+        const row = Math.floor(i / 5);
+        add(p.id, 36 + col * ((this.docW - 72) / 4), 120 + row * 92, "garden");
+      }
+    }
+
+    return slots;
   }
 
   _createFloraCluster(spot, idx) {
@@ -1901,6 +2143,271 @@ export class StarlightPixelDog {
     best.facing = best.destX >= best.x ? 1 : -1;
   }
 
+  _initFireflies() {
+    const count = 28;
+    const rand = seededRand(51829);
+    const shadeProps = this.props.filter((p) => p.category === "flora" || p.category === "dandelion" || p.category === "lantern" || p.category === "glow");
+    const anchorPool = shadeProps.length ? shadeProps : this.props;
+    this.fireflies = [];
+
+    for (let i = 0; i < count; i++) {
+      const home = anchorPool[i % Math.max(1, anchorPool.length)] || { x: 120 + i * 32, y: 260, zone: "garden" };
+      const lift = 14 + rand() * 28;
+      this.fireflies.push({
+        id: i,
+        homeX: home.x + (rand() - 0.5) * 14,
+        homeY: home.y - 3,
+        x: home.x,
+        y: home.y - lift,
+        roamRx: 18 + rand() * 30,
+        roamRy: 10 + rand() * 16,
+        lift,
+        phase: rand() * Math.PI * 2,
+        pulsePhase: rand() * Math.PI * 2,
+        speed: 0.65 + rand() * 0.65,
+        color: FIREFLY_COLORS[i % FIREFLY_COLORS.length],
+        boopFlash: 0,
+        zone: home.zone
+      });
+    }
+  }
+
+  _initCompanions() {
+    const order = [
+      { sp: "bluebird", zone: "sky", initAnim: "perchSway" },
+      { sp: "rabbit", zone: "sky", initAnim: "hop" },
+      { sp: "squirrel", zone: "board", initAnim: "graze" },
+      { sp: "hedgehog", zone: "board", initAnim: "sniff" },
+      { sp: "calicoCat", zone: "board", initAnim: "groom" },
+      { sp: "tawnyOwl", zone: "card", initAnim: "earPerk" },
+      { sp: "redFox", zone: "card", initAnim: "walk" },
+      { sp: "mallardDuck", zone: "garden", initAnim: "drink" },
+      { sp: "treeFrog", zone: "garden", initAnim: "boopFirefly" },
+      { sp: "spottedDeer", zone: "garden", initAnim: "tailWag" }
+    ];
+
+    const usedPropUids = new Set();
+    this.companions = order.map((item, idx) => {
+      const def = COMPANION_SPECIES_DEFS[item.sp];
+      const zoneProps = this.props.filter((p) => p.zone === item.zone);
+      const prefProps = zoneProps.filter((p) => def.preferredProps.includes(p.id) && !usedPropUids.has(p.uid));
+      const fallbackProps = (zoneProps.length ? zoneProps : this.props).filter((p) => !usedPropUids.has(p.uid));
+      const homeProp = prefProps[0] || fallbackProps[idx % Math.max(1, fallbackProps.length)] || this.props[idx % Math.max(1, this.props.length)] || { x: 140 + idx * 76, y: 260, zone: item.zone, uid: -1 };
+      if (homeProp.uid >= 0) usedPropUids.add(homeProp.uid);
+
+      const offsetSide = idx % 2 === 0 ? -12 : 12;
+      const startX = Math.max(28, Math.min(this.docW - 28, homeProp.x + offsetSide));
+      const perchLift = (homeProp.category === "perch" && (item.sp === "bluebird" || item.sp === "tawnyOwl" || item.sp === "calicoCat" || item.sp === "squirrel")) ? -8 : 0;
+      const startY = Math.max(40, Math.min(this.docH - 14, homeProp.y + perchLift));
+
+      const comp = {
+        id: idx,
+        species: item.sp,
+        rhythm: def.rhythm,
+        width: def.width,
+        height: def.height,
+        speed: def.speed,
+        preferredProps: def.preferredProps,
+        homeZone: item.zone,
+        x: startX,
+        y: startY,
+        facing: idx % 2 === 0 ? 1 : -1,
+        hopY: 0,
+        shakeX: 0,
+        anim: this.reducedMotion ? (def.rhythm === "nocturnal" ? "perchSway" : "tailWag") : item.initAnim,
+        timer: 0,
+        duration: 1.4 + (idx % 4) * 0.35,
+        startPt: { x: startX, y: startY },
+        targetPt: { x: startX, y: startY },
+        travelArc: 0,
+        targetProp: homeProp,
+        stepAccum: 0,
+        bag: []
+      };
+      this._recordAnim25(comp.anim);
+      if (!this.reducedMotion && LOCOMOTION_ANIMS.has(comp.anim)) {
+        this._assignCompanionTravel(comp, comp.anim);
+      }
+      return comp;
+    });
+  }
+
+  _assignCompanionTravel(comp, animName) {
+    const zoneProps = this.props.filter((p) => p.zone === comp.homeZone);
+    const pool = zoneProps.length >= 2 ? zoneProps : this.props;
+    const candidates = pool.filter((p) => Math.hypot(p.x - comp.x, p.y - comp.y) > 26);
+    const pickPool = candidates.length ? candidates : pool;
+    const destProp = pickPool[Math.floor(Math.random() * Math.max(1, pickPool.length))] || { x: comp.x + 48, y: comp.y, category: "flora" };
+
+    const side = destProp.x >= comp.x ? -10 : 10;
+    const perchLift = (destProp.category === "perch" && (comp.species === "bluebird" || comp.species === "tawnyOwl" || comp.species === "calicoCat" || comp.species === "squirrel")) ? -8 : 0;
+    const tx = Math.max(28, Math.min(this.docW - 28, destProp.x + (perchLift ? 0 : side)));
+    const ty = Math.max(40, Math.min(this.docH - 14, destProp.y + perchLift));
+
+    comp.startPt = { x: comp.x, y: comp.y };
+    comp.targetPt = { x: tx, y: ty };
+    comp.targetProp = destProp;
+    const dist = Math.hypot(tx - comp.x, ty - comp.y);
+    const mult = animName === "gallop" || animName === "chaseButterfly" ? 1.38 : (animName === "walk" || animName === "crouchStalk" ? 0.78 : 1.05);
+    comp.duration = Math.max(0.85, Math.min(2.9, dist / Math.max(38, comp.speed * mult)));
+    comp.travelArc = animName === "hop" ? 12 : (Math.abs(ty - comp.y) > 24 ? 10 : 0);
+    comp.timer = 0;
+    comp.anim = animName;
+    if (Math.abs(tx - comp.x) > 2) comp.facing = tx >= comp.x ? 1 : -1;
+    this._recordAnim25(animName);
+  }
+
+  _pickCompanionNextAction(comp, env) {
+    const prop = comp.targetProp;
+    const cat = prop ? prop.category : "flora";
+    const isDay = env.daylight >= 0.48;
+    const sleepyPhase = (comp.rhythm === "diurnal" && !isDay) || (comp.rhythm === "nocturnal" && isDay);
+
+    const unvisited = ANIMATION_25.filter((a) => !this.visitedAnims25.has(a));
+    if (unvisited.length && Math.random() < 0.58) {
+      const nextUnvisited = unvisited[comp.id % unvisited.length];
+      if (LOCOMOTION_ANIMS.has(nextUnvisited)) {
+        this._assignCompanionTravel(comp, nextUnvisited);
+      } else {
+        this._enterCompanionIdle(comp, nextUnvisited);
+      }
+      return;
+    }
+
+    if (Math.random() < 0.42) {
+      const movePool = sleepyPhase
+        ? ["walk", "trot"]
+        : (comp.species === "rabbit" || comp.species === "treeFrog"
+            ? ["hop", "binky", "trot"]
+            : ["walk", "trot", "gallop", "chaseButterfly", "crouchStalk"]);
+      const mv = movePool[Math.floor(Math.random() * movePool.length)];
+      if (mv === "binky") {
+        this._enterCompanionIdle(comp, "binky");
+      } else {
+        this._assignCompanionTravel(comp, mv);
+      }
+      return;
+    }
+
+    const weighted = [];
+    if (cat === "water") weighted.push("drink", "drink", "shakeFur", "hop");
+    if (cat === "flora" || cat === "dandelion") weighted.push("sniff", "graze", "bellyRoll", "pounce");
+    if (cat === "perch" || cat === "chime") weighted.push("perchSway", "groom", "scratchEar", "stretch");
+    if (cat === "lantern" || cat === "glow") weighted.push("boopFirefly", "earPerk", "stargazeMeteor", "tailWag");
+
+    if (sleepyPhase) {
+      weighted.push("sleepCurl", "sleepCurl", "yawn", "stretch");
+    } else if (isDay) {
+      weighted.push("sunBask", "sunBask", "binky", "happySpin", "tailWag", "chaseButterfly");
+    } else {
+      weighted.push("boopFirefly", "boopFirefly", "stargazeMeteor", "earPerk", "pounce");
+    }
+
+    const chosen = weighted[Math.floor(Math.random() * weighted.length)] || "tailWag";
+    if (LOCOMOTION_ANIMS.has(chosen)) {
+      this._assignCompanionTravel(comp, chosen);
+    } else {
+      this._enterCompanionIdle(comp, chosen);
+    }
+  }
+
+  _enterCompanionIdle(comp, animName) {
+    comp.anim = animName;
+    comp.timer = 0;
+    comp.hopY = 0;
+    comp.shakeX = 0;
+    comp.duration = animName === "sleepCurl" || animName === "sunBask" ? (2.3 + Math.random() * 1.1) : (1.25 + Math.random() * 0.85);
+    this._recordAnim25(animName);
+
+    if (comp.targetProp) {
+      if (Math.abs(comp.targetProp.x - comp.x) > 3 && animName !== "perchSway") {
+        comp.facing = comp.targetProp.x >= comp.x ? 1 : -1;
+      }
+      this._interactWithProp(comp.targetProp, comp.facing * 5.5, animName);
+    }
+    if (animName === "shakeFur") {
+      this._spawnDewDrops(comp.x, comp.y - 12, 4);
+    } else if (animName === "boopFirefly") {
+      this._boopNearestFirefly(comp.x, comp.y - 16);
+    }
+  }
+
+  _boopNearestFirefly(x, y) {
+    if (!this.fireflies.length || this.reducedMotion) return;
+    let best = this.fireflies[0];
+    let bestD = Infinity;
+    for (let i = 0; i < this.fireflies.length; i++) {
+      const d = Math.hypot(this.fireflies[i].x - x, this.fireflies[i].y - y);
+      if (d < bestD) {
+        bestD = d;
+        best = this.fireflies[i];
+      }
+    }
+    if (best && bestD < 140) {
+      best.boopFlash = 1.0;
+      this._spawnPollenMotes(best.x, best.y, 3, "#bef264");
+    }
+  }
+
+  // WHY: Triggers physical bend, concentric water ripples, floating dandelion seeds, chime swing, or bioluminescent glow pulse when an animal touches a prop.
+  _interactWithProp(prop, impulse = 5, animHint = "") {
+    if (!prop || this.reducedMotion) return;
+    prop.bendVel = Math.max(-20, Math.min(20, prop.bendVel + impulse));
+    if (prop.cooldown > 0) return;
+    prop.cooldown = 0.45;
+
+    if (prop.category === "water" || animHint === "drink") {
+      this._spawnWaterRipple(prop.x, prop.y - 4);
+    } else if (prop.category === "dandelion") {
+      this._spawnDandelionSeeds(prop.x, prop.y - prop.height * PIXEL_SCALE + 6, 4);
+    } else if (prop.category === "glow" || prop.category === "lantern") {
+      prop.glowBoost = 1.0;
+      this._spawnPollenMotes(prop.x, prop.y - 14, 2, prop.glowColor || "#fde047");
+    } else if (prop.category === "chime") {
+      prop.bendVel = impulse * 1.6;
+      this._spawnPollenMotes(prop.x, prop.y - 18, 3, "#fde047");
+    } else if (prop.category === "flora") {
+      this._spawnPollenMotes(prop.x, prop.y - 14, 2);
+    }
+  }
+
+  _spawnWaterRipple(x, y) {
+    if (this.reducedMotion) return;
+    if (this.waterRipples.length > 24) this.waterRipples.shift();
+    this.waterRipples.push({ x, y, r: 3, maxR: 18, life: 1.0 });
+  }
+
+  _spawnDandelionSeeds(x, y, count = 4) {
+    if (this.reducedMotion) return;
+    for (let i = 0; i < count; i++) {
+      if (this.dandelionSeeds.length > 36) this.dandelionSeeds.shift();
+      this.dandelionSeeds.push({
+        x: x + (Math.random() - 0.5) * 10,
+        y: y + (Math.random() - 0.5) * 6,
+        vx: 8 + Math.random() * 14,
+        vy: -9 - Math.random() * 10,
+        phase: Math.random() * Math.PI * 2,
+        life: 1.0
+      });
+    }
+  }
+
+  _spawnDewDrops(x, y, count = 4) {
+    if (this.reducedMotion) return;
+    for (let i = 0; i < count; i++) {
+      if (this.dewDrops.length > 32) this.dewDrops.shift();
+      const ang = -Math.PI * 0.85 + (i / Math.max(1, count - 1)) * Math.PI * 0.7;
+      this.dewDrops.push({
+        x,
+        y,
+        vx: Math.cos(ang) * (20 + Math.random() * 18),
+        vy: Math.sin(ang) * 24 - 10,
+        life: 1.0,
+        color: DEW_COLORS[i % DEW_COLORS.length]
+      });
+    }
+  }
+
   _placeInitial() {
     if (this.reducedMotion) {
       this._parkCalmEcosystem();
@@ -1927,7 +2434,7 @@ export class StarlightPixelDog {
     this._syncHitbox();
   }
 
-  // WHY: Parks pup calmly in 'sit' beside a resting wildflower and perched butterfly with zero continuous motion (0px delta) under prefers-reduced-motion: reduce.
+  // WHY: Parks all 11 animals, >=34 props, 28 fireflies, and 3 butterflies in a serene zero-motion snapshot (0px delta) under prefers-reduced-motion: reduce.
   _parkCalmEcosystem() {
     const gardenFlora = this.floraClusters.filter((c) => c.zone === "garden");
     const anchorCluster = gardenFlora[1] || gardenFlora[0] || this.floraClusters[0];
@@ -1943,6 +2450,7 @@ export class StarlightPixelDog {
     }
 
     this.hopY = 0;
+    this.shakeX = 0;
     this.state = "sit";
     this._recordState("sit");
     this.earPerkTimer = 0;
@@ -1950,12 +2458,40 @@ export class StarlightPixelDog {
     this.sparks.length = 0;
     this.napStars.length = 0;
     this.pollenMotes.length = 0;
+    this.dandelionSeeds.length = 0;
+    this.waterRipples.length = 0;
+    this.dewDrops.length = 0;
     this.emote = null;
     this.twig = null;
 
     for (let i = 0; i < this.floraClusters.length; i++) {
       this.floraClusters[i].bend = 0;
       this.floraClusters[i].bendVel = 0;
+    }
+
+    for (let i = 0; i < this.props.length; i++) {
+      this.props[i].bend = 0;
+      this.props[i].bendVel = 0;
+      this.props[i].glowBoost = 0;
+    }
+
+    for (let i = 0; i < this.fireflies.length; i++) {
+      const ff = this.fireflies[i];
+      ff.x = Math.max(24, Math.min(this.docW - 24, ff.homeX + ((i % 3) - 1) * 10));
+      ff.y = Math.max(32, Math.min(this.docH - 18, ff.homeY - 14 - (i % 4) * 4));
+      ff.boopFlash = 0;
+    }
+
+    for (let i = 0; i < this.companions.length; i++) {
+      const c = this.companions[i];
+      const hp = c.targetProp || this.props[i % Math.max(1, this.props.length)];
+      if (hp) {
+        c.x = Math.max(28, Math.min(this.docW - 28, hp.x + (i % 2 === 0 ? -12 : 12)));
+        c.y = Math.max(40, Math.min(this.docH - 14, hp.y));
+      }
+      c.hopY = 0;
+      c.shakeX = 0;
+      c.anim = c.rhythm === "nocturnal" ? "perchSway" : "tailWag";
     }
 
     if (this.butterflies[0]) {
@@ -1986,7 +2522,6 @@ export class StarlightPixelDog {
     this._syncHitbox();
   }
 
-  // WHY: Enforces strict 15s-28s anti-spam cooldown on autonomous pixel emotes while allowing immediate affectionate feedback on user click-pet or twig fetch.
   _maybeShowEmote(kind, forceUser = false) {
     if (!this.emoteSprites[kind]) return;
     if (forceUser) {
@@ -2119,17 +2654,23 @@ export class StarlightPixelDog {
       return this.openingQueue.shift();
     }
     if (!this.behaviorBag.length) {
+      const env = this._currentEnv();
       const deck = [
         "sniffFlora",
         "stalkButterfly",
         "butterflyNosePerch",
+        "binky",
+        "drink",
+        "boopFirefly",
+        "shakeFur",
         "bellyRoll",
         "scratchEar",
         "yawnStretch",
-        "sit",
-        "rest",
-        "nap",
-        "sniffFlora"
+        "groom",
+        "graze",
+        "happySpin",
+        env.daylight >= 0.45 ? "sunBask" : "stargazeMeteor",
+        env.daylight >= 0.45 ? "sit" : "nap"
       ];
       for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -2150,6 +2691,29 @@ export class StarlightPixelDog {
       this._startStalkButterfly();
     } else if (choice === "butterflyNosePerch") {
       this._startButterflyNosePerch();
+    } else if (choice === "binky") {
+      this._enterState("binky", 1.25);
+      this._burstGoldenSparks(7);
+    } else if (choice === "drink") {
+      const waterProp = this.props.find((p) => p.category === "water" && Math.hypot(p.x - this.x, p.y - this.y) < 160) || this.props.find((p) => p.category === "water");
+      if (waterProp) this._interactWithProp(waterProp, 4, "drink");
+      this._enterState("drink", 1.55);
+    } else if (choice === "boopFirefly") {
+      this._boopNearestFirefly(this.x, this.y - 18);
+      this._enterState("boopFirefly", 1.35);
+    } else if (choice === "shakeFur") {
+      this._spawnDewDrops(this.x, this.y - 16, 5);
+      this._enterState("shakeFur", 1.15);
+    } else if (choice === "groom") {
+      this._enterState("groom", 1.45);
+    } else if (choice === "graze") {
+      this._enterState("graze", 1.5);
+    } else if (choice === "happySpin") {
+      this._enterState("happySpin", 1.25);
+    } else if (choice === "stargazeMeteor") {
+      this._enterState("stargazeMeteor", 1.65);
+    } else if (choice === "sunBask") {
+      this._enterState("sunBask", 2.4);
     } else if (choice === "bellyRoll") {
       this._enterState("bellyRoll", 1.75 + Math.random() * 0.45);
       this._maybeShowEmote("heart", false);
@@ -2310,7 +2874,6 @@ export class StarlightPixelDog {
     };
   }
 
-  // WHY: Cycles click-pet reactions cleanly through play-bow hop -> belly-rub roll -> tail-chase spin with affectionate pixel heart/note emotes.
   triggerPet() {
     this.petCount += 1;
     this._releaseInteractiveButterfly();
@@ -2369,7 +2932,6 @@ export class StarlightPixelDog {
     }
   }
 
-  // WHY: Tosses a pixel golden starlight twig onto open .sky-dome or .garden-observatory space, attracts a curious butterfly, and triggers pup fetch-and-return.
   triggerTwigToss(clientX, clientY, zoneEl) {
     const modal = document.getElementById("stage-modal");
     if (modal && modal.open) return;
@@ -2502,6 +3064,8 @@ export class StarlightPixelDog {
       resizeTimer = setTimeout(() => {
         this._resize();
         this._collectWaypointsAndFlora();
+        this._initFireflies();
+        this._initCompanions();
         if (this.reducedMotion) {
           this._parkCalmEcosystem();
         } else {
@@ -2511,7 +3075,7 @@ export class StarlightPixelDog {
             this.butterflies[i].x = Math.max(32, Math.min(this.docW - 32, this.butterflies[i].x));
             this.butterflies[i].y = Math.max(36, Math.min(this.docH - 26, this.butterflies[i].y));
           }
-          this._syncHitbox();
+          this._syncHitbox(true);
         }
         this.render();
       }, 80);
@@ -2522,7 +3086,7 @@ export class StarlightPixelDog {
     if (typeof ResizeObserver === "function") {
       const ro = new ResizeObserver(() => {
         const nextH = Math.max(480, document.body.offsetHeight || 1400);
-        if (Math.abs(nextH - this.docH) > 12) handleResize();
+        if (Math.abs(nextH - this.docH) > 96) handleResize();
       });
       ro.observe(document.body);
     }
@@ -2534,6 +3098,8 @@ export class StarlightPixelDog {
         this.render();
       } else {
         this._initButterflies();
+        this._initFireflies();
+        this._initCompanions();
         this._pickNextWaypoint(true);
         this._startLoop();
       }
@@ -2587,7 +3153,7 @@ export class StarlightPixelDog {
     }, { passive: true });
   }
 
-  _syncHitbox() {
+  _syncHitbox(forceTelemetry = false) {
     const modal = document.getElementById("stage-modal");
     const modalOpen = Boolean(modal && modal.open);
     if (this.hitbox.hidden !== modalOpen) {
@@ -2595,21 +3161,41 @@ export class StarlightPixelDog {
     }
     const hx = Math.round(Math.max(0, Math.min(this.docW - 56, this.x - 28)));
     const hy = Math.round(Math.max(0, Math.min(this.docH - 56, this.y - 48 + this.hopY)));
-    if (this.reducedMotion || this._lastSyncState !== this.state || Math.hypot(hx - this._lastHx, hy - this._lastHy) >= 12) {
+    const stateChanged = this._lastSyncState !== this.state;
+    if (this.reducedMotion || stateChanged || Math.hypot(hx - this._lastHx, hy - this._lastHy) >= 12) {
       this._lastHx = hx;
       this._lastHy = hy;
       this._lastSyncState = this.state;
       this.hitbox.style.transform = `translate3d(${hx}px, ${hy}px, 0)`;
     }
-    this.hitbox.dataset.state = this.state;
-    this.hitbox.dataset.pets = String(this.petCount);
-    this.hitbox.dataset.petReaction = this.lastPetReaction;
-    this.hitbox.dataset.butterflies = String(this.butterflies.length);
-    this.hitbox.dataset.flora = String(this.floraClusters.length);
-    this.hitbox.dataset.fetches = String(this.fetchCount);
-    this.hitbox.dataset.twig = this.twig ? this.twig.phase : "none";
-    this.hitbox.dataset.emote = this.emote ? this.emote.kind : "";
-    this.hitbox.dataset.history = Array.from(this.visitedStates).join(",");
+
+    if (forceTelemetry || stateChanged || this.reducedMotion || this._datasetAccum >= 0.25) {
+      this._datasetAccum = 0;
+      const env = this._currentEnv();
+      const activeSet = new Set([this._mapDogStateToAnim25(this.state)]);
+      for (let i = 0; i < this.companions.length; i++) {
+        activeSet.add(this.companions[i].anim);
+      }
+
+      this.hitbox.dataset.state = this.state;
+      this.hitbox.dataset.pets = String(this.petCount);
+      this.hitbox.dataset.petReaction = this.lastPetReaction;
+      this.hitbox.dataset.butterflies = String(this.butterflies.length);
+      this.hitbox.dataset.flora = String(this.floraClusters.length);
+      this.hitbox.dataset.fetches = String(this.fetchCount);
+      this.hitbox.dataset.twig = this.twig ? this.twig.phase : "none";
+      this.hitbox.dataset.emote = this.emote ? this.emote.kind : "";
+      this.hitbox.dataset.history = Array.from(this.visitedStates).join(",");
+      this.hitbox.dataset.speciesCount = String(SPECIES_IDS.length);
+      this.hitbox.dataset.animCount = String(ANIMATION_25.length);
+      this.hitbox.dataset.propsCount = String(this.props.length);
+      this.hitbox.dataset.fireflies = String(this.fireflies.length);
+      this.hitbox.dataset.dayPhase = env.phase;
+      this.hitbox.dataset.daylight = env.daylight.toFixed(2);
+      this.hitbox.dataset.meteors = String(env.meteorsLaunched || 0);
+      this.hitbox.dataset.activeAnims = Array.from(activeSet).join(",");
+      this.hitbox.dataset.visitedAnims = String(this.visitedAnims25.size);
+    }
   }
 
   _startLoop() {
@@ -2756,8 +3342,120 @@ export class StarlightPixelDog {
     }
   }
 
+  _updateProps(dt) {
+    const movingDog = this.state === "trot" || this.state === "run" || this.state === "pounceButterfly" || (this.state === "fetchTwig" && (this.fetchPhase === "go" || this.fetchPhase === "return"));
+    for (let i = 0; i < this.props.length; i++) {
+      const p = this.props[i];
+      if (p.cooldown > 0) p.cooldown = Math.max(0, p.cooldown - dt);
+      if (p.glowBoost > 0) p.glowBoost = Math.max(0, p.glowBoost - dt * 0.85);
+
+      if (movingDog && Math.abs(this.x - p.x) < 22 && Math.abs(this.y - p.y) < 18) {
+        this._interactWithProp(p, (this.x <= p.x ? 1 : -1) * 7, this.state);
+      }
+
+      p.bendVel += (-24 * p.bend - 5.2 * p.bendVel) * dt;
+      p.bend = Math.max(-3.5, Math.min(3.5, p.bend + p.bendVel * dt));
+    }
+  }
+
+  _updateFireflies(dt, env) {
+    const nightVis = Math.max(0, Math.min(1, env.nightGlow));
+    for (let i = 0; i < this.fireflies.length; i++) {
+      const ff = this.fireflies[i];
+      ff.phase += dt * ff.speed * 1.45;
+      ff.pulsePhase += dt * (2.2 + (i % 4) * 0.45);
+      if (ff.boopFlash > 0) ff.boopFlash = Math.max(0, ff.boopFlash - dt * 1.6);
+
+      const targetX = nightVis > 0.14
+        ? ff.homeX + Math.cos(ff.phase) * ff.roamRx + Math.sin(ff.phase * 1.7) * 8
+        : ff.homeX + Math.sin(ff.phase * 0.4) * 3;
+      const targetY = nightVis > 0.14
+        ? ff.homeY - ff.lift + Math.sin(ff.phase * 1.3) * ff.roamRy
+        : ff.homeY - 2;
+
+      const clampedX = Math.max(20, Math.min(this.docW - 20, targetX));
+      const clampedY = Math.max(26, Math.min(this.docH - 14, targetY));
+      ff.x += (clampedX - ff.x) * Math.min(1, dt * 3.8);
+      ff.y += (clampedY - ff.y) * Math.min(1, dt * 3.8);
+    }
+  }
+
+  _updateCompanions(dt, env) {
+    for (let i = 0; i < this.companions.length; i++) {
+      const c = this.companions[i];
+      c.timer += dt;
+
+      if (LOCOMOTION_ANIMS.has(c.anim)) {
+        const u = Math.min(1, c.timer / Math.max(0.45, c.duration));
+        const ease = u * u * (3 - 2 * u);
+        let nx = c.startPt.x + (c.targetPt.x - c.startPt.x) * ease;
+        let ny = c.startPt.y + (c.targetPt.y - c.startPt.y) * ease;
+
+        if (c.anim === "chaseButterfly" && this.butterflies.length) {
+          const bf = this.butterflies[c.id % this.butterflies.length];
+          nx += Math.sin(this.animTime * 6 + c.id) * 4;
+          if (Math.hypot(bf.x - c.x, bf.y - c.y) < 38) {
+            this._startleButterfly(bf);
+          }
+        }
+
+        if (Math.abs(nx - c.x) > 0.15) c.facing = nx >= c.x ? 1 : -1;
+        c.x = nx;
+        c.y = ny;
+
+        if (c.anim === "hop") {
+          c.hopY = -Math.abs(Math.sin(this.animTime * 8.2 + c.id)) * 9 - Math.sin(u * Math.PI) * c.travelArc;
+        } else if (c.anim === "gallop" || c.anim === "chaseButterfly") {
+          c.hopY = -Math.abs(Math.sin(this.animTime * 12.5 + c.id)) * 4.5 - Math.sin(u * Math.PI) * c.travelArc;
+        } else {
+          c.hopY = -Math.sin(u * Math.PI) * c.travelArc;
+        }
+        c.shakeX = 0;
+
+        if (u >= 1) {
+          c.hopY = 0;
+          if (c.anim === "crouchStalk") {
+            this._enterCompanionIdle(c, "pounce");
+          } else {
+            this._pickCompanionNextAction(c, env);
+          }
+        }
+      } else {
+        const u = Math.min(1, c.timer / Math.max(0.4, c.duration));
+        c.shakeX = 0;
+        if (c.anim === "binky") {
+          c.hopY = -Math.sin(u * Math.PI) * 16;
+          if (u > 0.42 && u < 0.56) c.facing = -c.facing;
+        } else if (c.anim === "pounce") {
+          c.hopY = u < 0.7 ? -Math.sin((u / 0.7) * Math.PI) * 14 : 0;
+        } else if (c.anim === "boopFirefly") {
+          c.hopY = -Math.sin(u * Math.PI) * 10;
+        } else if (c.anim === "happySpin") {
+          c.facing = Math.floor(c.timer / 0.16) % 2 === 0 ? 1 : -1;
+          c.hopY = -Math.abs(Math.sin(c.timer * 10)) * 5;
+        } else if (c.anim === "shakeFur") {
+          c.hopY = 0;
+          c.shakeX = Math.sin(this.animTime * 38 + c.id) * 2;
+        } else if (c.anim === "drink" && c.targetProp && Math.random() < dt * 1.8) {
+          this._spawnWaterRipple(c.targetProp.x, c.targetProp.y - 4);
+        } else {
+          c.hopY = 0;
+        }
+
+        if (c.timer >= c.duration) {
+          c.hopY = 0;
+          c.shakeX = 0;
+          this._pickCompanionNextAction(c, env);
+        }
+      }
+    }
+  }
+
   update(dt) {
     this.animTime += dt;
+    this.localCycleTime = (this.localCycleTime + dt) % DAY_NIGHT_CYCLE_SEC;
+    this._datasetAccum += dt;
+    this.shakeX = 0;
     if (this.autoEmoteCooldown > 0) this.autoEmoteCooldown = Math.max(0, this.autoEmoteCooldown - dt);
     if (this.petEmoteGuard > 0) this.petEmoteGuard = Math.max(0, this.petEmoteGuard - dt);
     if (this.earPerkTimer > 0) this.earPerkTimer = Math.max(0, this.earPerkTimer - dt);
@@ -3020,11 +3718,77 @@ export class StarlightPixelDog {
           this._enterState("sit", 1.8);
         }
       }
+    } else if (this.state === "binky") {
+      this.stateTimer += dt;
+      const u = Math.min(1, this.stateTimer / Math.max(0.3, this.stateDuration));
+      this.hopY = -Math.sin(u * Math.PI) * 18;
+      if (this.stateTimer >= this.stateDuration) {
+        this.hopY = 0;
+        this._pickNextWaypoint(true);
+      }
+    } else if (this.state === "boopFirefly") {
+      this.stateTimer += dt;
+      const u = Math.min(1, this.stateTimer / Math.max(0.3, this.stateDuration));
+      this.hopY = -Math.sin(u * Math.PI) * 12;
+      if (this.stateTimer >= this.stateDuration) {
+        this.hopY = 0;
+        this._pickNextWaypoint();
+      }
+    } else if (this.state === "shakeFur") {
+      this.stateTimer += dt;
+      this.shakeX = Math.sin(this.animTime * 40) * 2;
+      if (this.stateTimer >= this.stateDuration) {
+        this.shakeX = 0;
+        this._pickNextWaypoint();
+      }
+    } else if (this.state === "happySpin") {
+      this.stateTimer += dt;
+      this.facing = Math.floor(this.stateTimer / 0.16) % 2 === 0 ? 1 : -1;
+      this.hopY = -Math.abs(Math.sin(this.stateTimer * 10)) * 6;
+      if (this.stateTimer >= this.stateDuration) {
+        this.hopY = 0;
+        this._pickNextWaypoint();
+      }
+    } else {
+      this.stateTimer += dt;
+      if (this.stateTimer >= this.stateDuration) {
+        this.hopY = 0;
+        this._pickNextWaypoint(true);
+      }
     }
 
+    const env = this._currentEnv();
     this._updateFlora(dt);
+    this._updateProps(dt);
     this._updateButterflies(dt);
+    this._updateFireflies(dt, env);
+    this._updateCompanions(dt, env);
     this._updateTwig(dt);
+
+    for (let i = this.waterRipples.length - 1; i >= 0; i--) {
+      const rp = this.waterRipples[i];
+      rp.r += dt * 16;
+      rp.life -= dt * 1.15;
+      if (rp.life <= 0.02) this.waterRipples.splice(i, 1);
+    }
+
+    for (let i = this.dandelionSeeds.length - 1; i >= 0; i--) {
+      const sd = this.dandelionSeeds[i];
+      sd.phase += dt * 3.1;
+      sd.x += (sd.vx + Math.sin(sd.phase) * 9) * dt;
+      sd.y += sd.vy * dt;
+      sd.life -= dt * 0.55;
+      if (sd.life <= 0.02) this.dandelionSeeds.splice(i, 1);
+    }
+
+    for (let i = this.dewDrops.length - 1; i >= 0; i--) {
+      const d = this.dewDrops[i];
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+      d.vy += 58 * dt;
+      d.life -= dt * 1.65;
+      if (d.life <= 0.02) this.dewDrops.splice(i, 1);
+    }
 
     for (let i = this.pawPuffs.length - 1; i >= 0; i--) {
       const p = this.pawPuffs[i];
@@ -3072,27 +3836,51 @@ export class StarlightPixelDog {
       if (this.state === "petBowHop") return "sitTilt";
       return "sit0";
     }
-    if (this.state === "run") {
+    if (this.state === "run" || this.state === "gallop") {
       if (this.hoverPauseTimer > 0) return "sitEar";
       if (this.hopY < -8) return "hop";
       return Math.floor(this.animTime * 13.0) % 2 === 0 ? "run0" : "run1";
     }
-    if (this.state === "trot") {
+    if (this.state === "trot" || this.state === "walk") {
       if (this.hoverPauseTimer > 0) return "sitEar";
       if (this.hopY < -5) return "hop";
-      const idx = Math.floor(this.animTime * 9.5) % 4;
+      const idx = Math.floor(this.animTime * (this.state === "walk" ? 6.0 : 9.5)) % 4;
       return `trot${idx}`;
     }
-    if (this.state === "sniffFlora") {
+    if (this.state === "binky" || this.state === "boopFirefly" || this.state === "hop") {
+      return this.hopY < -4 ? "hop" : "bow";
+    }
+    if (this.state === "drink" || this.state === "graze") {
+      return Math.floor(this.animTime * 5.2) % 2 === 0 ? "sniffLow0" : "sniffLow1";
+    }
+    if (this.state === "groom") {
+      return Math.floor(this.animTime * 6.5) % 2 === 0 ? "scratchEar0" : "sitTilt";
+    }
+    if (this.state === "stargazeMeteor") {
+      return Math.floor(this.animTime * 3.0) % 2 === 0 ? "sitTilt" : "sitEar";
+    }
+    if (this.state === "shakeFur") {
+      return Math.floor(this.animTime * 16.0) % 2 === 0 ? "sneeze0" : "trot1";
+    }
+    if (this.state === "sunBask") {
+      return Math.floor(this.animTime * 1.5) % 2 === 0 ? "rest0" : "rest1";
+    }
+    if (this.state === "happySpin") {
+      const sub = Math.floor(this.stateTimer / 0.14) % 3;
+      if (sub === 0) return "bow";
+      if (sub === 1) return "hop";
+      return "trot1";
+    }
+    if (this.state === "sniffFlora" || this.state === "sniff") {
       if (this.sniffWillSneeze && this.stateTimer >= this.stateDuration - 0.58) {
         return this.stateTimer < this.stateDuration - 0.34 ? "sneeze0" : "sneeze1";
       }
       return Math.floor(this.animTime * 5.8) % 2 === 0 ? "sniffLow0" : "sniffLow1";
     }
-    if (this.state === "stalkButterfly") {
+    if (this.state === "stalkButterfly" || this.state === "crouchStalk") {
       return Math.floor(this.animTime * 8.5) % 2 === 0 ? "stalk0" : "stalk1";
     }
-    if (this.state === "pounceButterfly") {
+    if (this.state === "pounceButterfly" || this.state === "pounce") {
       const u = this.stateTimer / Math.max(0.3, this.stateDuration);
       if (u < 0.72) {
         return Math.floor(this.animTime * 9.0) % 2 === 0 ? "pounce0" : "pounce1";
@@ -3110,7 +3898,7 @@ export class StarlightPixelDog {
     if (this.state === "scratchEar") {
       return Math.floor(this.animTime * 9.5) % 2 === 0 ? "scratchEar0" : "scratchEar1";
     }
-    if (this.state === "yawnStretch") {
+    if (this.state === "yawnStretch" || this.state === "yawn" || this.state === "stretch") {
       const u = this.stateTimer / Math.max(0.4, this.stateDuration);
       if (u < 0.22) return "bow";
       if (u < 0.74) return "yawnStretch0";
@@ -3132,7 +3920,7 @@ export class StarlightPixelDog {
       if (this.earPerkTimer > 0) return "rest0";
       return Math.floor(this.animTime * 1.4) % 2 === 0 ? "rest0" : "rest1";
     }
-    if (this.state === "nap") {
+    if (this.state === "nap" || this.state === "sleepCurl") {
       return Math.floor(this.animTime * 1.3) % 2 === 0 ? "nap0" : "nap1";
     }
     if (this.state === "petBowHop") {
@@ -3152,6 +3940,192 @@ export class StarlightPixelDog {
     if (this.blinkTimer <= 0) return "sitBlink";
     if (this.stateTimer > 0.85 && this.stateTimer < 1.85) return "sitTilt";
     return Math.floor(this.animTime * 4.5) % 2 === 0 ? "sit0" : "sit1";
+  }
+
+  _selectCompanionFrame(comp) {
+    if (this.reducedMotion) {
+      return comp.rhythm === "nocturnal" ? "idle0" : "idle0";
+    }
+    const t = this.animTime + comp.id * 0.7;
+    const a = comp.anim;
+    if (a === "walk") return Math.floor(t * 5.8) % 2 === 0 ? "move0" : "move1";
+    if (a === "trot") return Math.floor(t * 9.2) % 2 === 0 ? "move0" : "move1";
+    if (a === "gallop" || a === "chaseButterfly") {
+      return comp.hopY < -3 ? "leap" : (Math.floor(t * 13.0) % 2 === 0 ? "move0" : "move1");
+    }
+    if (a === "hop" || a === "binky" || a === "boopFirefly" || a === "pounce") {
+      return comp.hopY < -3 ? "leap" : "low";
+    }
+    if (a === "crouchStalk" || a === "graze" || a === "drink" || a === "sniff") {
+      return Math.floor(t * 4.6) % 2 === 0 ? "low" : "idle1";
+    }
+    if (a === "sleepCurl") return "sleep";
+    if (a === "sunBask") return Math.floor(t * 1.4) % 2 === 0 ? "sleep" : "idle0";
+    if (a === "stretch") return comp.timer < comp.duration * 0.55 ? "low" : "idle1";
+    if (a === "yawn") return comp.timer < comp.duration * 0.6 ? "idle1" : "sleep";
+    if (a === "bellyRoll") return Math.floor(t * 5.2) % 2 === 0 ? "sleep" : "low";
+    if (a === "groom" || a === "scratchEar") return Math.floor(t * 8.4) % 2 === 0 ? "low" : "idle1";
+    if (a === "happySpin" || a === "shakeFur") return Math.floor(t * 11.0) % 2 === 0 ? "move0" : "idle1";
+    if (a === "stargazeMeteor" || a === "earPerk") return "idle1";
+    if (a === "perchSway") return Math.floor(t * 2.2) % 2 === 0 ? "idle0" : "idle1";
+    return Math.floor(t * 4.2) % 2 === 0 ? "idle0" : "idle1";
+  }
+
+  _getGlowHaloSprite(hex) {
+    if (!this._glowHaloCache) this._glowHaloCache = new Map();
+    const hit = this._glowHaloCache.get(hex);
+    if (hit) return hit;
+    const size = 24;
+    const c = document.createElement("canvas");
+    c.width = size;
+    c.height = size;
+    const gctx = c.getContext("2d");
+    const half = (size - 1) * 0.5;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const d = Math.hypot(x - half, y - half) / half;
+        if (d > 1) continue;
+        const a = d < 0.35 ? 0.85 : (d < 0.68 ? 0.45 : 0.18);
+        gctx.fillStyle = hex;
+        gctx.globalAlpha = a;
+        gctx.fillRect(x, y, 1, 1);
+      }
+    }
+    this._glowHaloCache.set(hex, c);
+    return c;
+  }
+
+  _drawProps(ctx, env) {
+    const nightGlow = env.nightGlow;
+    for (let i = 0; i < this.props.length; i++) {
+      const p = this.props[i];
+      const sp = this.propSprites[p.id];
+      if (!sp) continue;
+
+      const drawW = sp.width * PIXEL_SCALE;
+      const drawH = sp.height * PIXEL_SCALE;
+      const breeze = this.reducedMotion ? 0 : (p.category === "flora" || p.category === "dandelion" || p.category === "chime"
+        ? Math.sin(this.animTime * 1.8 + p.phase) * 1.2
+        : 0);
+      const swayPx = Math.round((p.bend * 1.5 + breeze) / PIXEL_SCALE) * PIXEL_SCALE;
+      const px = Math.round((p.x - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE + swayPx;
+      const py = Math.round((p.y - drawH + 4) / PIXEL_SCALE) * PIXEL_SCALE;
+
+      if (p.glowColor && (nightGlow > 0.14 || p.glowBoost > 0.05)) {
+        const gAlpha = Math.min(0.54, nightGlow * 0.40 + p.glowBoost * 0.26);
+        const halo = this._getGlowHaloSprite(p.glowColor);
+        const gr = p.glowRadius;
+        ctx.globalAlpha = gAlpha;
+        ctx.drawImage(halo, Math.round(px + drawW * 0.5 - gr), Math.round(py + drawH * 0.42 - gr * 0.78), gr * 2, Math.round(gr * 1.6));
+      }
+
+      ctx.fillStyle = "#040814";
+      ctx.globalAlpha = 0.32;
+      ctx.fillRect(px + PIXEL_SCALE * 2, Math.round(p.y / PIXEL_SCALE) * PIXEL_SCALE, drawW - PIXEL_SCALE * 4, PIXEL_SCALE * 2);
+
+      const useNightSprite = sp.night && (nightGlow > 0.35 || p.glowBoost > 0.2);
+      ctx.globalAlpha = 1;
+      ctx.drawImage(useNightSprite ? sp.night : sp.day, px, py, drawW, drawH);
+    }
+  }
+
+  _drawWaterRipples(ctx) {
+    for (let i = 0; i < this.waterRipples.length; i++) {
+      const rp = this.waterRipples[i];
+      const rx = Math.round(rp.x / PIXEL_SCALE) * PIXEL_SCALE;
+      const ry = Math.round(rp.y / PIXEL_SCALE) * PIXEL_SCALE;
+      const w = Math.round(rp.r) * PIXEL_SCALE;
+      const h = Math.max(PIXEL_SCALE * 2, Math.round(rp.r * 0.38) * PIXEL_SCALE);
+      ctx.globalAlpha = Math.max(0, rp.life * 0.78);
+      ctx.strokeStyle = "#bae6fd";
+      ctx.lineWidth = PIXEL_SCALE;
+      ctx.strokeRect(rx - w * 0.5, ry - h * 0.5, w, h);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  _drawCompanionRange(ctx, minY, maxY) {
+    for (let i = 0; i < this.companions.length; i++) {
+      const c = this.companions[i];
+      if (c.y < minY || c.y >= maxY) continue;
+      const bank = this.companionSprites[c.species];
+      if (!bank) continue;
+
+      const drawW = bank.width * PIXEL_SCALE;
+      const drawH = bank.height * PIXEL_SCALE;
+      const swayX = (!this.reducedMotion && c.anim === "perchSway") ? Math.round(Math.sin(this.animTime * 2.2 + c.id) * 1.5) : 0;
+      const snapX = Math.round((c.x + c.shakeX + swayX - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
+      const snapY = Math.round((c.y - drawH + 4 + c.hopY) / PIXEL_SCALE) * PIXEL_SCALE;
+      const groundY = Math.round(c.y / PIXEL_SCALE) * PIXEL_SCALE;
+
+      const hopRatio = Math.min(1, Math.abs(c.hopY) / 16);
+      const shW = Math.max(6, Math.round((drawW * 0.34 * (1 - hopRatio * 0.3)) / PIXEL_SCALE) * PIXEL_SCALE);
+      const shCenterX = Math.round(c.x / PIXEL_SCALE) * PIXEL_SCALE;
+
+      ctx.fillStyle = "#040814";
+      ctx.globalAlpha = 0.36 * (1 - hopRatio * 0.35);
+      ctx.fillRect(shCenterX - shW, groundY - PIXEL_SCALE, shW * 2, PIXEL_SCALE * 2);
+
+      const dirSet = c.facing >= 0 ? bank.right : bank.left;
+      const fk = this._selectCompanionFrame(c);
+      const sprite = dirSet[fk] || dirSet.idle0;
+      ctx.globalAlpha = 1;
+      ctx.drawImage(sprite, snapX, snapY, drawW, drawH);
+
+      if (!this.reducedMotion && c.anim === "stargazeMeteor") {
+        this._drawPixelStar(ctx, c.x + c.facing * 8, snapY - 4, "#fde047", 0.90, true);
+      } else if (!this.reducedMotion && c.anim === "sleepCurl" && Math.floor(this.animTime * 2 + c.id) % 2 === 0) {
+        this._drawPixelStar(ctx, c.x + c.facing * 8, snapY - 2, "#7dd3fc", 0.72, false);
+      }
+    }
+  }
+
+  _drawFireflies(ctx, env) {
+    const nightVis = this.reducedMotion ? 0.85 : Math.max(0.05, env.nightGlow);
+    for (let i = 0; i < this.fireflies.length; i++) {
+      const ff = this.fireflies[i];
+      const pulse = this.reducedMotion ? 0.78 : (0.38 + 0.62 * (0.5 + 0.5 * Math.sin(ff.pulsePhase)));
+      const alpha = Math.min(1, nightVis * pulse + ff.boopFlash * 0.85);
+      if (alpha <= 0.06) continue;
+
+      const fx = Math.round(ff.x / PIXEL_SCALE) * PIXEL_SCALE;
+      const fy = Math.round(ff.y / PIXEL_SCALE) * PIXEL_SCALE;
+
+      ctx.fillStyle = ff.color;
+      ctx.globalAlpha = alpha * 0.28;
+      ctx.fillRect(fx - PIXEL_SCALE * 2, fy - PIXEL_SCALE * 2, PIXEL_SCALE * 5, PIXEL_SCALE * 5);
+
+      ctx.globalAlpha = alpha * 0.62;
+      ctx.fillRect(fx - PIXEL_SCALE, fy - PIXEL_SCALE, PIXEL_SCALE * 3, PIXEL_SCALE * 3);
+
+      ctx.fillStyle = ff.boopFlash > 0.2 ? "#ffffff" : "#fef9c3";
+      ctx.globalAlpha = Math.min(1, alpha * 1.1);
+      ctx.fillRect(fx, fy, PIXEL_SCALE, PIXEL_SCALE);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  _drawSeedsAndDew(ctx) {
+    for (let i = 0; i < this.dandelionSeeds.length; i++) {
+      const sd = this.dandelionSeeds[i];
+      const sx = Math.round(sd.x / PIXEL_SCALE) * PIXEL_SCALE;
+      const sy = Math.round(sd.y / PIXEL_SCALE) * PIXEL_SCALE;
+      ctx.globalAlpha = Math.max(0, Math.min(1, sd.life * 0.9));
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx - PIXEL_SCALE, sy - PIXEL_SCALE, PIXEL_SCALE * 3, PIXEL_SCALE);
+      ctx.fillStyle = "#dfd2b5";
+      ctx.fillRect(sx, sy, PIXEL_SCALE, PIXEL_SCALE * 2);
+    }
+
+    for (let i = 0; i < this.dewDrops.length; i++) {
+      const d = this.dewDrops[i];
+      const dx = Math.round(d.x / PIXEL_SCALE) * PIXEL_SCALE;
+      const dy = Math.round(d.y / PIXEL_SCALE) * PIXEL_SCALE;
+      ctx.globalAlpha = Math.max(0, Math.min(1, d.life * 0.92));
+      ctx.fillStyle = d.color;
+      ctx.fillRect(dx, dy, PIXEL_SCALE, PIXEL_SCALE);
+    }
+    ctx.globalAlpha = 1;
   }
 
   _selectButterflyFrame(bf) {
@@ -3277,10 +4251,11 @@ export class StarlightPixelDog {
   render() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.docW, this.docH);
+    const env = this._currentEnv();
 
     const drawW = SPRITE_W * PIXEL_SCALE;
     const drawH = SPRITE_H * PIXEL_SCALE;
-    const snapX = Math.round((this.x - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
+    const snapX = Math.round((this.x + this.shakeX - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
     const snapY = Math.round((this.y - drawH + 6 + this.hopY) / PIXEL_SCALE) * PIXEL_SCALE;
     const groundY = Math.round(this.y / PIXEL_SCALE) * PIXEL_SCALE;
 
@@ -3293,7 +4268,10 @@ export class StarlightPixelDog {
     ctx.save();
     ctx.imageSmoothingEnabled = false;
 
+    this._drawProps(ctx, env);
+    this._drawWaterRipples(ctx);
     this._drawFloraClusters(ctx);
+    this._drawCompanionRange(ctx, -Infinity, this.y);
 
     ctx.fillStyle = "#040814";
     ctx.globalAlpha = 0.34 * (1 - hopRatio * 0.38);
@@ -3330,7 +4308,10 @@ export class StarlightPixelDog {
       this._drawTwig(ctx);
     }
 
+    this._drawCompanionRange(ctx, this.y, Infinity);
     this._drawButterflies(ctx);
+    this._drawFireflies(ctx, env);
+    this._drawSeedsAndDew(ctx);
 
     for (let i = 0; i < this.pollenMotes.length; i++) {
       const m = this.pollenMotes[i];

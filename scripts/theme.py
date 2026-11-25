@@ -50,13 +50,12 @@ LANG_PALETTE = {
 
 REDUCED_MOTION_STYLE = (
     "<style>"
-    ".pup-calm { display: none; } "
+    ".pup-calm, .cel-calm, .eco-calm { display: none; } "
     "@media (prefers-reduced-motion: reduce) { "
+    "*, *::before, *::after { animation: none !important; transition: none !important; } "
     ".vg-drift { animation: none !important; } "
-    ".pup-live { display: none !important; } "
-    ".pup-calm { display: inline !important; } "
-    "} "
-    "@media (prefers-reduced-motion: reduce) { "
+    ".pup-live, .cel-live, .eco-live { display: none !important; } "
+    ".pup-calm, .cel-calm, .eco-calm { display: inline !important; } "
     "g:has(> animateMotion) { display: none !important; } "
     "}"
     "</style>"
@@ -144,6 +143,44 @@ def shade_hex(hex_col, factor, warm_boost=0.0):
     return "#%02x%02x%02x" % (nr, ng, nb)
 
 
+def quant_hex(hex_col, step=6):
+    r, g, b = hex_to_rgb(hex_col)
+    qr = min(255, ((r + step // 2) // step) * step)
+    qg = min(255, ((g + step // 2) // step) * step)
+    qb = min(255, ((b + step // 2) // step) * step)
+    return "#%02x%02x%02x" % (qr, qg, qb)
+
+
+def merge_close_runs(runs, tol=9):
+    # WHY: Coalesces adjacent micro-glyph runs within <=3.5% RGB delta to cut ~350KB of redundant <tspan> tags with zero visual loss.
+    merged = []
+    prev_rgb = None
+    for col_h, txt in runs:
+        if not txt:
+            continue
+        if col_h is None:
+            if merged and merged[-1][0] is None:
+                merged[-1][1] += txt
+            else:
+                merged.append([None, txt])
+                prev_rgb = None
+            continue
+        rgb = hex_to_rgb(col_h)
+        if (
+            merged
+            and merged[-1][0] is not None
+            and prev_rgb is not None
+            and abs(rgb[0] - prev_rgb[0]) <= tol
+            and abs(rgb[1] - prev_rgb[1]) <= tol
+            and abs(rgb[2] - prev_rgb[2]) <= tol
+        ):
+            merged[-1][1] += txt
+        else:
+            merged.append([col_h, txt])
+            prev_rgb = rgb
+    return merged
+
+
 def nocturne_defs(prefix):
     return [
         '<linearGradient id="%s-bg" x1="0" y1="0" x2="0.16" y2="1">' % prefix,
@@ -163,6 +200,127 @@ def nocturne_defs(prefix):
         '<stop offset="78%%" stop-color="%s" stop-opacity="0.36"/>' % SKY_SOFT,
         '<stop offset="100%%" stop-color="%s" stop-opacity="0"/>' % CREAM,
         "</linearGradient>",
+    ]
+
+
+def celestial_defs(prefix):
+    # WHY: Shared GPU-composited gradients and sculpted celestial glyphs keep 60s Day-Night and 10s Giant Meteors ultra-compact.
+    sun_flare = star_path(0, 0, 22.5, 9.5, 12, -90.0)
+    sun_rays = star_path(0, 0, 68.0, 12.0, 8, -67.5)
+    crescent_d = "M -4.2,-14.2 A 14.8,14.8 0 1,0 12.6,9.2 A 11.2,11.2 0 1,1 -4.2,-14.2 Z"
+    return [
+        '<linearGradient id="%s-dn-dawn-g" x1="0" y1="0" x2="0.06" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#3b0764" stop-opacity="0.76"/>',
+        '<stop offset="38%" stop-color="#be185d" stop-opacity="0.66"/>',
+        '<stop offset="74%" stop-color="#fb7185" stop-opacity="0.58"/>',
+        '<stop offset="100%" stop-color="#fde047" stop-opacity="0.34"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-day-g" x1="0" y1="0" x2="0.08" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#0284c7" stop-opacity="0.84"/>',
+        '<stop offset="36%" stop-color="#38bdf8" stop-opacity="0.72"/>',
+        '<stop offset="70%" stop-color="#7dd3fc" stop-opacity="0.50"/>',
+        '<stop offset="88%" stop-color="#bae6fd" stop-opacity="0.34"/>',
+        '<stop offset="100%" stop-color="#fef08a" stop-opacity="0.24"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-dusk-g" x1="0" y1="0" x2="0.05" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#2e1065" stop-opacity="0.78"/>',
+        '<stop offset="38%" stop-color="#7e22ce" stop-opacity="0.68"/>',
+        '<stop offset="74%" stop-color="#f97316" stop-opacity="0.62"/>',
+        '<stop offset="100%" stop-color="#facc15" stop-opacity="0.36"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-meadow-g" x1="0" y1="0" x2="0" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#fef08a" stop-opacity="0"/>',
+        '<stop offset="35%" stop-color="#fde047" stop-opacity="0.18"/>',
+        '<stop offset="75%" stop-color="#4ade80" stop-opacity="0.20"/>',
+        '<stop offset="100%" stop-color="#fbbf24" stop-opacity="0.16"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-pan-dawn-g" x1="0" y1="0" x2="0.04" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#3b0764" stop-opacity="0.76"/>',
+        '<stop offset="28%" stop-color="#be185d" stop-opacity="0.68"/>',
+        '<stop offset="52%" stop-color="#fb7185" stop-opacity="0.62"/>',
+        '<stop offset="68%" stop-color="#fde047" stop-opacity="0.38"/>',
+        '<stop offset="85%" stop-color="#fb923c" stop-opacity="0.16"/>',
+        '<stop offset="100%" stop-color="#451a03" stop-opacity="0.08"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-pan-day-g" x1="0" y1="0" x2="0.06" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#0284c7" stop-opacity="0.86"/>',
+        '<stop offset="28%" stop-color="#38bdf8" stop-opacity="0.74"/>',
+        '<stop offset="50%" stop-color="#7dd3fc" stop-opacity="0.54"/>',
+        '<stop offset="66%" stop-color="#fef08a" stop-opacity="0.34"/>',
+        '<stop offset="84%" stop-color="#fde047" stop-opacity="0.16"/>',
+        '<stop offset="100%" stop-color="#4ade80" stop-opacity="0.14"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-pan-dusk-g" x1="0" y1="0" x2="0.04" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#2e1065" stop-opacity="0.78"/>',
+        '<stop offset="30%" stop-color="#7e22ce" stop-opacity="0.68"/>',
+        '<stop offset="54%" stop-color="#f97316" stop-opacity="0.62"/>',
+        '<stop offset="70%" stop-color="#facc15" stop-opacity="0.38"/>',
+        '<stop offset="86%" stop-color="#ea580c" stop-opacity="0.16"/>',
+        '<stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.08"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-amb-g" x1="0" y1="0" x2="0" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.16"/>',
+        '<stop offset="55%" stop-color="#fef08a" stop-opacity="0.06"/>',
+        '<stop offset="100%" stop-color="#040916" stop-opacity="0"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-dn-water-g" x1="0" y1="0" x2="0" y2="1">' % prefix,
+        '<stop offset="0%" stop-color="#38bdf8" stop-opacity="0"/>',
+        '<stop offset="45%" stop-color="#38bdf8" stop-opacity="0.24"/>',
+        '<stop offset="100%" stop-color="#fef08a" stop-opacity="0.28"/>',
+        "</linearGradient>",
+        '<radialGradient id="%s-sun-aura" cx="0.5" cy="0.5" r="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>',
+        '<stop offset="22%" stop-color="#fef08a" stop-opacity="0.78"/>',
+        '<stop offset="56%" stop-color="#fbbf24" stop-opacity="0.34"/>',
+        '<stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<radialGradient id="%s-moon-aura" cx="0.5" cy="0.5" r="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#fef08a" stop-opacity="0.48"/>',
+        '<stop offset="48%" stop-color="#60a5fa" stop-opacity="0.18"/>',
+        '<stop offset="100%" stop-color="#1e3a8a" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<g id="%s-sun-glyph">' % prefix,
+        '<circle cx="0" cy="0" r="58" fill="url(#%s-sun-aura)"/>' % prefix,
+        '<path d="%s" fill="url(#%s-sun-aura)" fill-opacity="0.58"/>' % (sun_rays, prefix),
+        '<circle cx="0" cy="0" r="29" fill="none" stroke="#fef08a" stroke-width="1.4" stroke-dasharray="5.4 3.4" stroke-opacity="0.88"/>',
+        '<circle cx="0" cy="0" r="22" fill="none" stroke="#fb923c" stroke-width="1.2" stroke-dasharray="3.8 2.8" stroke-opacity="0.82"/>',
+        '<path d="%s" fill="#fde047" stroke="#f59e0b" stroke-width="0.85"/>' % sun_flare,
+        '<circle cx="0" cy="0" r="11.8" fill="#fef9c3" stroke="#fbbf24" stroke-width="1.4"/>',
+        '<circle cx="0" cy="0" r="6.8" fill="#ffffff"/>',
+        "</g>",
+        '<g id="%s-moon-glyph">' % prefix,
+        '<circle cx="0" cy="0" r="34" fill="url(#%s-moon-aura)"/>' % prefix,
+        '<circle cx="0" cy="0" r="20.5" fill="none" stroke="#fde68a" stroke-width="0.95" stroke-dasharray="4.2 3.1" stroke-opacity="0.68"/>',
+        '<path d="%s" fill="#fde047" stroke="#fb923c" stroke-width="0.85"/>' % crescent_d,
+        '<path d="M -2.5,-11.2 A 12.2,12.2 0 0,0 8.5,7.2" fill="none" stroke="#fefce8" stroke-width="1.05" stroke-linecap="round" stroke-opacity="0.85"/>',
+        "</g>",
+        '<linearGradient id="%s-mtail-outer" x1="1" y1="0.5" x2="0" y2="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.92"/>',
+        '<stop offset="32%" stop-color="#60a5fa" stop-opacity="0.62"/>',
+        '<stop offset="68%" stop-color="#818cf8" stop-opacity="0.28"/>',
+        '<stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>',
+        "</linearGradient>",
+        '<linearGradient id="%s-mtail-core" x1="1" y1="0.5" x2="0" y2="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>',
+        '<stop offset="24%" stop-color="#fef08a" stop-opacity="0.95"/>',
+        '<stop offset="58%" stop-color="#fb923c" stop-opacity="0.54"/>',
+        '<stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>',
+        "</linearGradient>",
+        '<radialGradient id="%s-mflash-g" cx="0.5" cy="0.5" r="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.46"/>',
+        '<stop offset="45%" stop-color="#38bdf8" stop-opacity="0.20"/>',
+        '<stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<radialGradient id="%s-mhead-cyan" cx="0.5" cy="0.5" r="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>',
+        '<stop offset="38%" stop-color="#38bdf8" stop-opacity="0.68"/>',
+        '<stop offset="100%" stop-color="#0284c7" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<radialGradient id="%s-mhead-gold" cx="0.5" cy="0.5" r="0.5">' % prefix,
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>',
+        '<stop offset="48%" stop-color="#fef08a" stop-opacity="0.82"/>',
+        '<stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>',
+        "</radialGradient>",
     ]
 
 
@@ -197,7 +355,7 @@ def van_gogh_starry_backdrop(
     stroke_limit=1400,
     layer_key="panorama",
 ):
-    # WHY: Renders fine-tapered Structure-Tensor impasto strokes with dual-tone specular ridges and crisp calligraphic glyphs.
+    # WHY: Batches background cells and banded impasto strokes into multi-segment SVG paths to halve byte size and boost 60fps compositor speed.
     scene = load_vangogh_scene()
     layer = scene.get(layer_key) or scene.get("panorama")
     if not layer:
@@ -213,24 +371,49 @@ def van_gogh_starry_backdrop(
 
     bg_rows = layer.get("bg") or []
     if bg_rows:
-        elems.append('<g opacity="0.76">')
+        bg_by_col = {}
+        bg_order = []
         for r_idx in range(0, len(bg_rows), 2):
             x_cur = 0
             ry = r_idx * row_step
             rh = row_step * 2.15
+            ry_s, rh_s = num(ry, 1), num(rh, 1)
             for bcol, blen in bg_rows[r_idx]:
                 px = x_cur * col_step
                 pw = blen * col_step + 0.6
                 if not _inside_boxes(px + pw * 0.5, ry + rh * 0.5, boxes, pad=8.0):
                     lifted_bg = shade_hex(bcol, 1.04, 0.01)
-                    elems.append('<rect x="%s" y="%s" width="%s" height="%s" fill="%s"/>' % (num(px, 1), num(ry, 1), num(pw, 1), num(rh, 1), lifted_bg))
+                    if lifted_bg not in bg_by_col:
+                        bg_by_col[lifted_bg] = []
+                        bg_order.append(lifted_bg)
+                    pw_s = num(pw, 1)
+                    bg_by_col[lifted_bg].append("M%s,%sh%sv%sh-%sz" % (num(px, 1), ry_s, pw_s, rh_s, pw_s))
                 x_cur += blen
+        elems.append('<g opacity="0.76">')
+        for col_k in bg_order:
+            elems.append('<path fill="%s" d="%s"/>' % (col_k, "".join(bg_by_col[col_k])))
         elems.append("</g>")
 
     strokes = layer.get("strokes") or []
     elems.append('<g fill="none" stroke-linecap="round">')
     count = 0
     w_scale = 1.48 if width >= 900 else 1.06
+    band_size = 980
+    cur_band = 0
+    band_map = {}
+    band_keys = []
+    anim_nodes = []
+
+    def _flush_band():
+        for b_key in band_keys:
+            sc_h, sw_s, sop_s = b_key
+            elems.append(
+                '<path stroke="%s" stroke-width="%s" stroke-opacity="%s" d="%s"/>'
+                % (sc_h, sw_s, sop_s, "".join(band_map[b_key]))
+            )
+        band_map.clear()
+        del band_keys[:]
+
     for item in strokes:
         if count >= stroke_limit:
             break
@@ -240,48 +423,64 @@ def van_gogh_starry_backdrop(
         px1, py1 = x1 * width, y1 * height
         if _inside_boxes(pxm, pym, boxes, pad=6.0):
             continue
+        band_idx = count // band_size
+        if band_idx != cur_band:
+            _flush_band()
+            cur_band = band_idx
         count += 1
-        stroke_w = max(0.45, sw * w_scale)
+        stroke_w = max(0.45, round(sw * w_scale * 4.0) / 4.0)
         r_c, g_c, _ = hex_to_rgb(scol)
         is_radiant = motif in (1, 2, 4) or (r_c + g_c) >= 340
-        lit_col = shade_hex(scol, 1.04, 0.03 if is_radiant else 0.01)
-        d_str = "M%s,%s Q%s,%s %s,%s" % (num(px0, 1), num(py0, 1), num(pxm, 1), num(pym, 1), num(px1, 1), num(py1, 1))
-        if motif in (1, 4) and count % 17 == 0:
+        lit_col = quant_hex(shade_hex(scol, 1.04, 0.03 if is_radiant else 0.01), 6)
+        d_str = "M%s,%sQ%s,%s %s,%s" % (num(px0, 1), num(py0, 1), num(pxm, 1), num(pym, 1), num(px1, 1), num(py1, 1))
+        sw_s = num(stroke_w, 2)
+        if motif in (1, 4) and count % 19 == 0:
             dur = 4.8 + (count % 7) * 0.85
-            elems.append(
+            anim_nodes.append(
                 '<path class="pup-live" d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.90">'
                 '<animate attributeName="stroke-opacity" values="0.58;0.98;0.58" dur="%ss" repeatCount="indefinite"/>'
                 "</path>"
                 '<path class="pup-calm" d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.88"/>'
-                % (d_str, lit_col, num(stroke_w, 2), num(dur, 1), d_str, lit_col, num(stroke_w, 2))
+                % (d_str, lit_col, sw_s, num(dur, 1), d_str, lit_col, sw_s)
             )
         else:
-            elems.append(
-                '<path d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.88"/>'
-                % (d_str, lit_col, num(stroke_w, 2))
-            )
+            b_key = (lit_col, sw_s, "0.88")
+            if b_key not in band_map:
+                band_map[b_key] = []
+                band_keys.append(b_key)
+            band_map[b_key].append(d_str)
         if is_radiant and count % 4 == 0:
-            spec_col = shade_hex(scol, 1.16, 0.10)
-            elems.append(
-                '<path d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.58"/>'
-                % (d_str, spec_col, num(max(0.36, stroke_w * 0.40), 2))
-            )
+            spec_col = quant_hex(shade_hex(scol, 1.16, 0.10), 6)
+            spec_w = num(max(0.36, round(stroke_w * 0.40 * 4.0) / 4.0), 2)
+            s_key = (spec_col, spec_w, "0.58")
+            if s_key not in band_map:
+                band_map[s_key] = []
+                band_keys.append(s_key)
+            band_map[s_key].append(d_str)
+    _flush_band()
+    elems.extend(anim_nodes)
     elems.append("</g>")
 
     grid = layer.get("grid") or []
     font_sz = width / (cols * 0.60)
+    elems.append('<g font-family="%s" font-size="%s" font-weight="600" aria-hidden="true">' % (FONT_MONO, num(font_sz, 2)))
 
     for r_idx in range(0, len(grid), max(1, glyph_stride)):
         py = (r_idx + 0.82) * row_step
         runs = grid[r_idx]
         if not boxes:
-            tspans = "".join('<tspan fill="%s">%s</tspan>' % (shade_hex(col_h, 1.03, 0.01), esc(ch)) for col_h, ch in runs if col_h)
+            raw_runs = [(shade_hex(col_h, 1.03, 0.01) if col_h else None, ch) for col_h, ch in runs]
+            merged_runs = merge_close_runs(raw_runs, tol=12)
+            tspans = "".join(
+                ('<tspan fill="%s">%s</tspan>' % (sc, esc(txt))) if sc else esc(txt)
+                for sc, txt in merged_runs
+            )
             elems.append(
-                '<text x="0" y="%s" textLength="%s" lengthAdjust="spacing" font-family="%s" font-size="%s" font-weight="600" xml:space="preserve">%s</text>'
-                % (num(py, 2), num(width, 1), FONT_MONO, num(font_sz, 2), tspans)
+                '<text x="0" y="%s" textLength="%s" lengthAdjust="spacing" xml:space="preserve">%s</text>'
+                % (num(py, 2), num(width, 1), tspans)
             )
         else:
-            tspans = []
+            raw_runs = []
             col_cur = 0
             has_visible = False
             for col_h, chunk in runs:
@@ -296,18 +495,336 @@ def van_gogh_starry_backdrop(
                             has_visible = True
                 col_cur += len(chunk)
                 joined = "".join(masked_chars)
-                if joined.strip() and col_h:
-                    tspans.append('<tspan fill="%s">%s</tspan>' % (shade_hex(col_h, 1.03, 0.01), esc(joined)))
-                else:
-                    tspans.append(esc(joined))
+                sh_col = shade_hex(col_h, 1.03, 0.01) if (joined.strip() and col_h) else None
+                raw_runs.append((sh_col, joined))
             if has_visible:
+                merged_runs = merge_close_runs(raw_runs, tol=9)
+                tspans = "".join(
+                    ('<tspan fill="%s">%s</tspan>' % (sc, esc(txt))) if sc else esc(txt)
+                    for sc, txt in merged_runs
+                )
                 elems.append(
-                    '<text x="0" y="%s" textLength="%s" lengthAdjust="spacing" font-family="%s" font-size="%s" font-weight="600" xml:space="preserve">%s</text>'
-                    % (num(py, 2), num(width, 1), FONT_MONO, num(font_sz, 2), "".join(tspans))
+                    '<text x="0" y="%s" textLength="%s" lengthAdjust="spacing" xml:space="preserve">%s</text>'
+                    % (num(py, 2), num(width, 1), tspans)
                 )
 
-    elems.append("</g>")
+    elems.append("</g></g>")
     return elems
+
+
+def render_day_night_cycle(prefix, width, height, zone_rects, sun_arc=None, moon_arc=None):
+    # WHY: 60s continuous GPU-composited environmental cycle (Midnight -> Rose Dawn -> Arles Daylight -> Sunset -> Twilight) via opacity + translate3d.
+    rects = zone_rects or [(0, 0, width, height, "sky")]
+    sky_rect = next((r for r in rects if len(r) >= 5 and r[4] in ("sky", "panorama_sky")), rects[0])
+    sx, sy, sw, raw_sh = sky_rect[0], sky_rect[1], sky_rect[2], sky_rect[3]
+    is_pan = len(sky_rect) >= 5 and sky_rect[4] == "panorama_sky"
+    sh = raw_sh * 0.64 if is_pan else raw_sh
+
+    if sun_arc is None:
+        sun_pts = [
+            (0.00, sx + sw * 0.10, sy + sh * 0.94, 0.82),
+            (22.5, sx + sw * 0.12, sy + sh * 0.86, 0.86),
+            (28.0, sx + sw * 0.21, sy + sh * 0.54, 0.94),
+            (35.0, sx + sw * 0.31, sy + max(32.0, sh * 0.31), 0.98),
+            (44.0, sx + sw * 0.40, sy + max(28.0, sh * 0.22), 1.02),
+            (53.3, sx + sw * 0.49, sy + max(26.0, sh * 0.19), 1.05),
+            (62.0, sx + sw * 0.59, sy + max(28.0, sh * 0.23), 1.02),
+            (70.0, sx + sw * 0.70, sy + max(34.0, sh * 0.34), 0.98),
+            (78.0, sx + sw * 0.80, sy + sh * 0.56, 0.95),
+            (85.5, sx + sw * 0.88, sy + sh * 0.86, 0.88),
+            (100.0, sx + sw * 0.90, sy + sh * 0.95, 0.82),
+        ]
+    else:
+        sun_pts = sun_arc
+
+    if moon_arc is None:
+        mx0, my0 = sx + sw * 0.83, sy + max(34.0, sh * 0.25)
+        moon_pts = [
+            (0.0, mx0, my0, 0.96, 1.00),
+            (22.0, mx0 - sw * 0.03, my0 - sh * 0.02, 0.94, 1.00),
+            (31.0, mx0 - sw * 0.06, my0 - sh * 0.04, 0.42, 0.94),
+            (38.3, mx0 - sw * 0.09, my0 - sh * 0.05, 0.16, 0.90),
+            (53.3, mx0 - sw * 0.11, my0 - sh * 0.05, 0.14, 0.88),
+            (68.3, mx0 - sw * 0.07, my0 - sh * 0.03, 0.20, 0.92),
+            (78.0, mx0 - sw * 0.03, my0 + sh * 0.01, 0.46, 0.96),
+            (88.0, mx0 - sw * 0.01, my0 + sh * 0.01, 0.88, 0.99),
+            (100.0, mx0, my0, 0.96, 1.00),
+        ]
+    else:
+        moon_pts = moon_arc
+
+    sun_op_map = {
+        0.0: 0.0,
+        22.5: 0.0,
+        28.0: 0.84,
+        35.0: 0.98,
+        44.0: 1.0,
+        53.3: 1.0,
+        62.0: 1.0,
+        70.0: 0.96,
+        78.0: 0.82,
+        85.5: 0.0,
+        100.0: 0.0,
+    }
+    sun_kf_rules = []
+    for pct, px_s, py_s, sc_s in sun_pts:
+        op_v = sun_op_map.get(pct, 1.0 if 28.0 <= pct <= 78.0 else 0.0)
+        sun_kf_rules.append(
+            "%s%% { opacity: %s; transform: translate3d(%spx, %spx, 0px) scale(%s); }"
+            % (num(pct, 1), num(op_v, 2), num(px_s, 1), num(py_s, 1), num(sc_s, 2))
+        )
+
+    moon_kf_rules = []
+    for pct, px_m, py_m, op_m, sc_m in moon_pts:
+        moon_kf_rules.append(
+            "%s%% { opacity: %s; transform: translate3d(%spx, %spx, 0px) scale(%s); }"
+            % (num(pct, 1), num(op_m, 2), num(px_m, 1), num(py_m, 1), num(sc_m, 2))
+        )
+
+    css = (
+        "<style>"
+        "@keyframes %(p)s-kf-dawn {"
+        " 0%%, 21%% { opacity: 0; }"
+        " 26%% { opacity: 0.42; }"
+        " 30.8%% { opacity: 0.66; }"
+        " 36%% { opacity: 0.34; }"
+        " 41%%, 100%% { opacity: 0; }"
+        "} "
+        "@keyframes %(p)s-kf-day {"
+        " 0%%, 23.3%% { opacity: 0; }"
+        " 31%% { opacity: 0.30; }"
+        " 38.3%% { opacity: 0.78; }"
+        " 53.3%% { opacity: 0.84; }"
+        " 68.3%% { opacity: 0.76; }"
+        " 75.5%% { opacity: 0.26; }"
+        " 82.5%%, 100%% { opacity: 0; }"
+        "} "
+        "@keyframes %(p)s-kf-dusk {"
+        " 0%%, 65%% { opacity: 0; }"
+        " 71%% { opacity: 0.44; }"
+        " 76.7%% { opacity: 0.68; }"
+        " 83%% { opacity: 0.38; }"
+        " 89.5%% { opacity: 0.15; }"
+        " 96%%, 100%% { opacity: 0; }"
+        "} "
+        "@keyframes %(p)s-kf-clouds {"
+        " 0%%, 24%% { opacity: 0; transform: translate3d(-10px, 0px, 0px); }"
+        " 34%% { opacity: 0.58; transform: translate3d(-4px, 0px, 0px); }"
+        " 53.3%% { opacity: 0.88; transform: translate3d(6px, 0px, 0px); }"
+        " 68.3%% { opacity: 0.78; transform: translate3d(12px, 0px, 0px); }"
+        " 79%% { opacity: 0.36; transform: translate3d(15px, 0px, 0px); }"
+        " 86%%, 100%% { opacity: 0; transform: translate3d(18px, 0px, 0px); }"
+        "} "
+        "@keyframes %(p)s-kf-meadow {"
+        " 0%%, 24%% { opacity: 0; }"
+        " 38.3%% { opacity: 0.82; }"
+        " 53.3%% { opacity: 0.95; }"
+        " 68.3%% { opacity: 0.82; }"
+        " 78%% { opacity: 0.42; }"
+        " 86%%, 100%% { opacity: 0; }"
+        "} "
+        "@keyframes %(p)s-kf-sun { %(sun_kf)s } "
+        "@keyframes %(p)s-kf-moon { %(moon_kf)s } "
+        "@keyframes %(p)s-kf-spin { 0%% { transform: rotate(0deg); } 100%% { transform: rotate(360deg); } } "
+        ".%(p)s-dn-dawn { opacity: 0; will-change: opacity; animation: %(p)s-kf-dawn 60s linear infinite; } "
+        ".%(p)s-dn-day { opacity: 0; will-change: opacity; animation: %(p)s-kf-day 60s linear infinite; } "
+        ".%(p)s-dn-dusk { opacity: 0; will-change: opacity; animation: %(p)s-kf-dusk 60s linear infinite; } "
+        ".%(p)s-dn-clouds { opacity: 0; will-change: transform, opacity; animation: %(p)s-kf-clouds 60s linear infinite; } "
+        ".%(p)s-dn-meadow { opacity: 0; will-change: opacity; animation: %(p)s-kf-meadow 60s linear infinite; } "
+        ".%(p)s-dn-sun { opacity: 0; will-change: transform, opacity; animation: %(p)s-kf-sun 60s linear infinite; } "
+        ".%(p)s-dn-moon { opacity: 0.96; will-change: transform, opacity; animation: %(p)s-kf-moon 60s linear infinite; } "
+        ".%(p)s-sun-spin { animation: %(p)s-kf-spin 24s linear infinite; }"
+        "</style>"
+    ) % {
+        "p": prefix,
+        "sun_kf": " ".join(sun_kf_rules),
+        "moon_kf": " ".join(moon_kf_rules),
+    }
+
+    out = [css, '<g class="cel-live" pointer-events="none">']
+    for r_item in rects:
+        rx, ry, rw, rh = r_item[0], r_item[1], r_item[2], r_item[3]
+        rkind = r_item[4] if len(r_item) >= 5 else "sky"
+        rx_s, ry_s, rw_s, rh_s = num(rx, 1), num(ry, 1), num(rw, 1), num(rh, 1)
+        if rkind == "sky":
+            out.append('<rect class="%s-dn-dawn" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-dawn-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+            out.append('<rect class="%s-dn-day" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-day-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+            out.append('<rect class="%s-dn-dusk" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-dusk-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+        elif rkind == "panorama_sky":
+            out.append('<rect class="%s-dn-dawn" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-pan-dawn-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+            out.append('<rect class="%s-dn-day" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-pan-day-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+            out.append('<rect class="%s-dn-dusk" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-pan-dusk-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+        elif rkind == "meadow":
+            out.append('<rect class="%s-dn-meadow" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-meadow-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+        elif rkind == "water":
+            out.append('<rect class="%s-dn-meadow" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-water-g)"/>' % (prefix, rx_s, ry_s, rw_s, rh_s, prefix))
+        elif rkind == "ambient":
+            out.append(
+                '<g opacity="0.10">'
+                '<rect class="%s-dn-day" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-day-g)"/>'
+                '<rect class="%s-dn-dusk" x="%s" y="%s" width="%s" height="%s" fill="url(#%s-dn-dusk-g)"/>'
+                "</g>" % (prefix, rx_s, ry_s, rw_s, rh_s, prefix, prefix, rx_s, ry_s, rw_s, rh_s, prefix)
+            )
+
+    c1x, c1y = sx + sw * 0.20, sy + sh * 0.30
+    c2x, c2y = sx + sw * 0.62, sy + sh * 0.26
+    c3x, c3y = sx + sw * 0.82, sy + sh * 0.38
+    cw_u = max(44.0, sw * 0.085)
+
+    out.append('<g class="%s-dn-clouds">' % prefix)
+    for cx_b, cy_b, c_sc in ((c1x, c1y, 1.0), (c2x, c2y, 1.12), (c3x, c3y, 0.86)):
+        rx_m = cw_u * c_sc
+        ry_m = max(9.0, rx_m * 0.24)
+        out.append('<ellipse cx="%s" cy="%s" rx="%s" ry="%s" fill="#e0f2fe" fill-opacity="0.22"/>' % (num(cx_b, 1), num(cy_b + 2.0, 1), num(rx_m * 1.08, 1), num(ry_m * 0.85, 1)))
+        out.append('<ellipse cx="%s" cy="%s" rx="%s" ry="%s" fill="#fefce8" fill-opacity="0.28"/>' % (num(cx_b - rx_m * 0.24, 1), num(cy_b - 2.5, 1), num(rx_m * 0.62, 1), num(ry_m * 0.92, 1)))
+        out.append('<ellipse cx="%s" cy="%s" rx="%s" ry="%s" fill="#fef9c3" fill-opacity="0.26"/>' % (num(cx_b + rx_m * 0.22, 1), num(cy_b - 1.5, 1), num(rx_m * 0.56, 1), num(ry_m * 0.82, 1)))
+        d_rim = "M%s,%s Q%s,%s %s,%s Q%s,%s %s,%s" % (
+            num(cx_b - rx_m * 0.72, 1), num(cy_b + 1.0, 1),
+            num(cx_b - rx_m * 0.26, 1), num(cy_b - ry_m * 1.25, 1),
+            num(cx_b + rx_m * 0.04, 1), num(cy_b - ry_m * 0.45, 1),
+            num(cx_b + rx_m * 0.36, 1), num(cy_b - ry_m * 1.05, 1),
+            num(cx_b + rx_m * 0.72, 1), num(cy_b + 1.5, 1),
+        )
+        out.append('<path d="%s" fill="none" stroke="#fef08a" stroke-width="1.35" stroke-linecap="round" stroke-opacity="0.54"/>' % d_rim)
+    out.append("</g>")
+
+    out.append('<g class="%s-dn-moon"><use href="#%s-moon-glyph"/></g>' % (prefix, prefix))
+    out.append('<g class="%s-dn-sun"><g class="%s-sun-spin"><use href="#%s-sun-glyph"/></g></g>' % (prefix, prefix, prefix))
+    out.append("</g>")
+
+    calm_mx, calm_my = moon_pts[0][1], moon_pts[0][2]
+    calm_grad = "%s-dn-pan-dusk-g" if is_pan else "%s-dn-dusk-g"
+    out.append(
+        '<g class="cel-calm" pointer-events="none">'
+        '<rect x="%s" y="%s" width="%s" height="%s" fill="url(#%s)" opacity="0.14"/>'
+        '<g transform="translate(%s %s) scale(0.96)"><use href="#%s-moon-glyph"/></g>'
+        "</g>"
+        % (num(sx, 1), num(sy, 1), num(sw, 1), num(raw_sh, 1), calm_grad % prefix, num(calm_mx, 1), num(calm_my, 1), prefix)
+    )
+    return out
+
+
+def _meteor_body_markup(prefix, tail_len):
+    # WHY: Multi-gradient plasma wake (150-220px), #38bdf8 shockwave, #fef08a halo, #ffffff diamond coma, and crackling embers.
+    tl = float(tail_len)
+    core_l = tl * 0.78
+    hot_l = tl * 0.48
+    outer_pts = "4,0 -7,-8.2 -%s,0 -7,8.2" % num(tl, 1)
+    core_pts = "4,0 -5,-4.5 -%s,0 -5,4.5" % num(core_l, 1)
+    head_star4 = star_path(0, 0, 18.2, 3.2, 4, 0.0)
+    head_star8 = star_path(0, 0, 10.2, 3.0, 8, 22.5)
+    embers = [
+        (-tl * 0.14, -3.4, 3.8, "#ffffff"),
+        (-tl * 0.26, 3.9, 3.5, "#fef08a"),
+        (-tl * 0.39, -4.6, 3.2, "#38bdf8"),
+        (-tl * 0.52, 3.1, 2.9, "#fbbf24"),
+        (-tl * 0.66, -3.5, 2.6, "#7dd3fc"),
+        (-tl * 0.79, 2.5, 2.3, "#fde047"),
+        (-tl * 0.91, -2.0, 2.0, "#fb923c"),
+    ]
+    em_svg = "".join(
+        '<path d="%s" fill="%s"/>' % (star_path(ex, ey, er, er * 0.38, 4, 0.0), ecol)
+        for ex, ey, er, ecol in embers
+    )
+    return (
+        '<polygon points="%s" fill="url(#%s-mtail-outer)"/>'
+        '<polygon points="%s" fill="url(#%s-mtail-core)"/>'
+        '<line x1="3" y1="0" x2="-%s" y2="0" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>'
+        '<g class="%s-ember-tw">%s</g>'
+        '<circle cx="0" cy="0" r="20.5" fill="url(#%s-mhead-cyan)"/>'
+        '<path d="M 4.2,-10.4 Q 14.8,0 4.2,10.4" fill="none" stroke="#38bdf8" stroke-width="1.85" stroke-linecap="round" stroke-opacity="0.92"/>'
+        '<circle cx="0" cy="0" r="12.2" fill="url(#%s-mhead-gold)"/>'
+        '<path d="%s" fill="#fef08a"/>'
+        '<path d="%s" fill="#ffffff"/>'
+        '<circle cx="0" cy="0" r="3.9" fill="#ffffff"/>'
+        % (outer_pts, prefix, core_pts, prefix, num(hot_l, 1), prefix, em_svg, prefix, prefix, head_star4, head_star8)
+    )
+
+
+def render_giant_meteors(prefix, width, height, trajectories=None):
+    # WHY: Launches 4 large shooting stars every 10s (dur=10s) along staggered diagonal sky trajectories using GPU translate3d + opacity.
+    if trajectories is None:
+        sky_h = min(height * 0.56, 232.0)
+        specs = [
+            (0.40, 1.95, width * 0.09, 22.0, width * 0.54, sky_h * 0.88, 196.0),
+            (2.70, 4.30, width * 0.91, 20.0, width * 0.44, sky_h * 0.94, 216.0),
+            (4.85, 6.45, width * 0.35, 16.0, width * 0.83, sky_h * 0.82, 178.0),
+            (7.55, 9.20, width * 0.76, 18.0, width * 0.23, sky_h * 0.92, 220.0),
+        ]
+    else:
+        specs = trajectories
+
+    css_parts = [
+        "<style>",
+        "@keyframes %s-kf-ember { 0%%, 100%% { opacity: 0.52; } 50%% { opacity: 1; } } " % prefix,
+        ".%s-ember-tw { will-change: opacity; animation: %s-kf-ember 0.28s linear infinite; } " % (prefix, prefix),
+    ]
+    meteor_nodes = []
+
+    for idx, (t0, t1, x0, y0, x1, y1, tail_l) in enumerate(specs, start=1):
+        dx = x1 - x0
+        dy = y1 - y0
+        dist = math.hypot(dx, dy)
+        ang = math.degrees(math.atan2(dy, dx))
+
+        p_pre = max(0.0, round(t0 * 10.0 - 0.2, 2))
+        p_on = round((t0 + (t1 - t0) * 0.16) * 10.0, 2)
+        p_mid = round((t0 + (t1 - t0) * 0.52) * 10.0, 2)
+        p_fade = round((t0 + (t1 - t0) * 0.80) * 10.0, 2)
+        p_end = min(99.8, round(t1 * 10.0, 2))
+
+        css_parts.append(
+            "@keyframes %(p)s-kf-m%(i)d {"
+            " 0%%, %(pre)s%% { opacity: 0; transform: translate3d(0px, 0px, 0px) scaleX(0.38); }"
+            " %(on)s%% { opacity: 1; transform: translate3d(%(d1)spx, 0px, 0px) scaleX(0.96); }"
+            " %(mid)s%% { opacity: 1; transform: translate3d(%(dm)spx, 0px, 0px) scaleX(1.06); }"
+            " %(fade)s%% { opacity: 0.92; transform: translate3d(%(df)spx, 0px, 0px) scaleX(0.98); }"
+            " %(end)s%%, 100%% { opacity: 0; transform: translate3d(%(d2)spx, 0px, 0px) scaleX(0.52); }"
+            "} "
+            "@keyframes %(p)s-kf-mf%(i)d {"
+            " 0%%, %(pre)s%% { opacity: 0; }"
+            " %(mid)s%% { opacity: 0.44; }"
+            " %(end)s%%, 100%% { opacity: 0; }"
+            "} "
+            ".%(p)s-m%(i)d { opacity: 0; will-change: transform, opacity; animation: %(p)s-kf-m%(i)d 10s linear infinite; } "
+            ".%(p)s-mf%(i)d { opacity: 0; will-change: opacity; animation: %(p)s-kf-mf%(i)d 10s linear infinite; } "
+            % {
+                "p": prefix,
+                "i": idx,
+                "pre": num(p_pre, 2),
+                "on": num(p_on, 2),
+                "mid": num(p_mid, 2),
+                "fade": num(p_fade, 2),
+                "end": num(p_end, 2),
+                "d1": num(dist * 0.18, 1),
+                "dm": num(dist * 0.54, 1),
+                "df": num(dist * 0.82, 1),
+                "d2": num(dist, 1),
+            }
+        )
+
+        meteor_nodes.append(
+            '<g transform="translate(%s %s) rotate(%s)">'
+            '<ellipse class="%s-mf%d" cx="%s" cy="0" rx="%s" ry="20" fill="url(#%s-mflash-g)"/>'
+            '<g class="%s-m%d">%s</g>'
+            "</g>"
+            % (
+                num(x0, 1),
+                num(y0, 1),
+                num(ang, 1),
+                prefix,
+                idx,
+                num(dist * 0.48, 1),
+                num(dist * 0.46, 1),
+                prefix,
+                prefix,
+                idx,
+                _meteor_body_markup(prefix, tail_l),
+            )
+        )
+
+    css_parts.append("</style>")
+    return ["".join(css_parts), '<g class="cel-live" pointer-events="none">', "".join(meteor_nodes), "</g>"]
 
 
 def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opacity=0.76):

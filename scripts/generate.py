@@ -16,7 +16,6 @@ from pixel_dog_svg import (
 )
 from theme import (
     BG_CONSOLE,
-    BG_NIGHT,
     BORDER_SUBTLE,
     BORDER_WARM,
     CADMIUM,
@@ -27,7 +26,6 @@ from theme import (
     FIREFLY_GOLD,
     FONT_DISPLAY,
     FONT_MONO,
-    INK_FAINT,
     INK_MUTED,
     INK_PRIMARY,
     INK_SECOND,
@@ -38,19 +36,30 @@ from theme import (
     REDUCED_MOTION_STYLE,
     SKY_SOFT,
     TEAL_MIST,
+    celestial_defs,
     compact,
     esc,
-    load_vangogh_scene,
+    merge_close_runs,
     nocturne_card,
     nocturne_defs,
     num,
     raw_text,
+    render_day_night_cycle,
+    render_giant_meteors,
     shade_hex,
     solar_system_orrery,
     star_path,
     text,
     van_gogh_starry_backdrop,
 )
+
+try:
+    from ecosystem_defs import render_ecosystem_defs, render_ecosystem_stage
+    HAS_ECOSYSTEM = True
+except ImportError:
+    render_ecosystem_defs = None
+    render_ecosystem_stage = None
+    HAS_ECOSYSTEM = False
 
 USERNAME = os.environ.get("GH_PROFILE_USERNAME", "broamstuck-cybr")
 DISPLAY = os.environ.get("GH_PROFILE_DISPLAY", "BroAmStuck")
@@ -61,6 +70,30 @@ GQL = (os.environ.get("GITHUB_GRAPHQL_URL", "") or "https://api.github.com/graph
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "assets")
 DOCS_ASSETS = os.path.join(ROOT, "docs", "assets")
+
+
+def _as_markup_list(payload):
+    if payload is None:
+        return []
+    if isinstance(payload, (list, tuple)):
+        return [str(x) for x in payload if x]
+    return [str(payload)] if payload else []
+
+
+def _ecosystem_bundle(prefix, scene_kind, width, height):
+    # WHY: Wires ecosystem_defs (11 species, 25 animations, 32 props, fireflies) cleanly while retiring old dog-only calls.
+    if HAS_ECOSYSTEM and render_ecosystem_defs is not None and render_ecosystem_stage is not None:
+        raw_defs = "".join(_as_markup_list(render_ecosystem_defs(prefix, scene_kind)))
+        stage_nodes = _as_markup_list(render_ecosystem_stage(prefix, scene_kind, width, height))
+        if "<defs" in raw_defs:
+            return [], [raw_defs], stage_nodes
+        return [raw_defs], [], stage_nodes
+
+    if scene_kind == "matrix":
+        return pup_defs(prefix), [], starry_matrix_pup()
+    if scene_kind == "core":
+        return flora_butterfly_defs(prefix), [], core_stage_butterfly_cameo()
+    return pup_defs(prefix), [], nocturne_garden_pup()
 
 
 def request_json(url, payload=None):
@@ -310,6 +343,7 @@ def lang_percentages(langs):
 def starry_matrix_svg(day_map, total_contribs, streaks):
     width, height = 1200, 492
     clip_defs, frame_nodes = nocturne_card(width, height, "mat", radius=18)
+    eco_in_defs, eco_top_defs, eco_stage = _ecosystem_bundle("mat", "matrix", width, height)
     weeks52 = streaks["weeks52"]
     max_w = max(weeks52) if any(weeks52) else 1
 
@@ -319,8 +353,9 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         "<defs>",
     ]
     parts.extend(nocturne_defs("mat"))
+    parts.extend(celestial_defs("mat"))
     parts.extend(clip_defs)
-    parts.extend(pup_defs("mat"))
+    parts.extend(eco_in_defs)
     parts.extend(
         [
             '<clipPath id="mat-dome-clip"><rect x="16" y="16" width="1168" height="236" rx="10"/></clipPath>',
@@ -342,6 +377,7 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
             "</defs>",
         ]
     )
+    parts.extend(eco_top_defs)
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#mat-clip)">')
 
@@ -362,6 +398,20 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
     )
     parts.extend(solar_system_orrery(cx=560.0, cy=118.0, scale_x=296.0, scale_y=56.0, tilt_deg=-9.5, opacity=0.78))
     parts.append("</g>")
+    parts.extend(render_day_night_cycle("mat", width, height, [(16, 16, 1168, 236, "sky")]))
+    parts.extend(
+        render_giant_meteors(
+            "mat",
+            width,
+            height,
+            trajectories=[
+                (0.40, 1.95, 108.0, 26.0, 642.0, 218.0, 196.0),
+                (2.70, 4.30, 1096.0, 24.0, 534.0, 226.0, 216.0),
+                (4.85, 6.45, 412.0, 20.0, 992.0, 206.0, 178.0),
+                (7.55, 9.20, 896.0, 22.0, 276.0, 224.0, 220.0),
+            ],
+        )
+    )
     parts.append("</g>")
     parts.append('<rect x="16" y="16" width="1168" height="236" rx="10" fill="none" stroke="%s" stroke-width="0.85"/>' % BORDER_WARM)
     parts.append('<line x1="120" y1="252" x2="1080" y2="252" stroke="url(#mat-sheen)" stroke-width="0.85"/>')
@@ -403,14 +453,15 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
             avoid_boxes=[],
             opacity_scale=0.80,
             glyph_stride=1,
-            stroke_limit=1650,
+            stroke_limit=1320,
             layer_key="sky",
         )
     )
-    parts.append('<rect x="0" y="0" width="1168" height="186" fill="#040916" fill-opacity="0.58"/>')
+    parts.append('<rect x="0" y="0" width="1168" height="186" fill="#040916" fill-opacity="0.62"/>')
     parts.append('<rect x="0" y="0" width="1168" height="28" fill="url(#mat-top-scrim)"/>')
     parts.append('<rect x="0" y="0" width="62" height="186" fill="url(#mat-left-scrim)"/>')
     parts.append("</g>")
+    parts.append('<g class="cel-live" pointer-events="none"><rect class="mat-dn-meadow" x="16" y="446" width="1168" height="30" fill="url(#mat-dn-water-g)"/></g>')
 
     ordered_dates = sorted(day_map.keys())
     today = datetime.date.fromisoformat(ordered_dates[-1]) if ordered_dates else datetime.date.today()
@@ -470,10 +521,11 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
             parts.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.82" stroke-opacity="%s"/>' % (num(cx), num(cy), num(nx), num(ny), col, num(op)))
     parts.append("</g>")
 
+    zero_ticks = []
     for (w, r), (cx, cy, c, _) in coords.items():
         if c == 0:
-            parts.append(
-                '<path d="M%s %s H%s M%s %s V%s" stroke="#28436f" stroke-width="0.72" stroke-opacity="0.84"/>'
+            zero_ticks.append(
+                "M%s,%sH%sM%s,%sV%s"
                 % (num(cx - 1.6, 1), num(cy, 1), num(cx + 1.6, 1), num(cx, 1), num(cy - 1.6, 1), num(cy + 1.6, 1))
             )
         elif c <= 3:
@@ -495,6 +547,8 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
                 % (num(cx, 1), num(cy, 1), CADMIUM, num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1), CADMIUM)
             )
             parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.58"/>' % (star_path(cx, cy, 6.9, 2.4, 8), IVORY_WARM))
+    if zero_ticks:
+        parts.append('<path d="%s" stroke="#28436f" stroke-width="0.72" stroke-opacity="0.84"/>' % "".join(zero_ticks))
 
     water_y = 447.0
     parts.append('<line x1="44" y1="%s" x2="1168" y2="%s" stroke="url(#mat-water)" stroke-width="0.9"/>' % (num(water_y), num(water_y)))
@@ -506,12 +560,12 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         wx = grid_x + w * pitch_x
         glyph_str = "≈~≈" if norm > 0.55 else ("~~" if norm > 0.25 else "~")
         col = CADMIUM if norm > 0.45 else SKY_SOFT
-        parts.append(text(wx, water_y + 15 + (w % 2) * 5, glyph_str, col, 9.4, "middle", "600", ' opacity="%s"' % num(0.46 + norm * 0.50, 2)))
+        parts.append(text(wx, water_y + 15 + (w % 2) * 5, glyph_str, col, 9.4, "middle", "600", ' opacity="%s" aria-hidden="true"' % num(0.56 + norm * 0.42, 2)))
 
     parts.append("</g>")
     parts.append('<rect x="16" y="290" width="1168" height="186" rx="10" fill="none" stroke="%s" stroke-width="0.85"/>' % BORDER_WARM)
     parts.append('<line x1="250" y1="290" x2="960" y2="290" stroke="url(#mat-sheen)" stroke-width="0.85"/>')
-    parts.extend(starry_matrix_pup())
+    parts.extend(eco_stage)
     parts.append("</g>")
     parts.append("</svg>")
     return "\n".join(parts)
@@ -569,7 +623,7 @@ def render_stack_crystal(langs, lang_repos, lang_stars):
                 % (num(ix, 1), num(iy, 1), num(px, 1), num(py, 1), CREAM if deg % 60 == 0 else SKY_SOFT, "0.95" if deg % 60 == 0 else "0.55", "0.84" if deg % 60 == 0 else "0.42")
             )
     elems.append(
-        '<polygon points="%s" fill="#061226" fill-opacity="0.88" stroke="%s" stroke-width="0.95"/>'
+        '<polygon points="%s" fill="#061226" fill-opacity="0.90" stroke="%s" stroke-width="0.95"/>'
         % (" ".join("%s,%s" % (num(px, 1), num(py, 1)) for px, py in arm_pts), BORDER_WARM)
     )
 
@@ -714,6 +768,7 @@ def load_portrait_hd():
 def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, stars, total_contribs, events):
     width, height = 1200, 564
     clip_defs, frame_nodes = nocturne_card(width, height, "core", radius=16)
+    eco_in_defs, eco_top_defs, eco_stage = _ecosystem_bundle("core", "core", width, height)
 
     parts = [
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 564" width="1200" height="564" role="img" aria-label="BroAmStuck 4K Calligraphic Portrait, Stack Architecture and GitHub Activity">',
@@ -721,8 +776,9 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
         "<defs>",
     ]
     parts.extend(nocturne_defs("core"))
+    parts.extend(celestial_defs("core"))
     parts.extend(clip_defs)
-    parts.extend(flora_butterfly_defs("core"))
+    parts.extend(eco_in_defs)
     parts.extend(
         [
             '<clipPath id="core-left-clip"><rect x="1" y="1" width="483" height="562"/></clipPath>',
@@ -735,10 +791,36 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
             "</defs>",
         ]
     )
+    parts.extend(eco_top_defs)
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#core-clip)">')
 
     acx, acy, ar = 246.0, 252.0, 204.0
+    core_sun_arc = [
+        (0.0, 20.0, 184.0, 0.76),
+        (22.5, 24.0, 158.0, 0.80),
+        (28.0, 42.0, 118.0, 0.88),
+        (35.0, 74.0, 56.0, 0.92),
+        (44.0, 94.0, 42.0, 0.95),
+        (53.3, 112.0, 36.0, 0.98),
+        (62.0, 246.0, 24.0, 0.96),
+        (70.0, 382.0, 38.0, 0.95),
+        (78.0, 444.0, 116.0, 0.88),
+        (85.5, 462.0, 168.0, 0.78),
+        (100.0, 468.0, 184.0, 0.76),
+    ]
+    core_moon_arc = [
+        (0.0, 392.0, 42.0, 0.96, 0.92),
+        (22.0, 386.0, 38.0, 0.94, 0.92),
+        (31.0, 380.0, 36.0, 0.42, 0.88),
+        (38.3, 376.0, 34.0, 0.16, 0.85),
+        (53.3, 374.0, 34.0, 0.14, 0.84),
+        (68.3, 380.0, 36.0, 0.22, 0.88),
+        (78.0, 386.0, 38.0, 0.48, 0.90),
+        (88.0, 390.0, 40.0, 0.88, 0.92),
+        (100.0, 392.0, 42.0, 0.96, 0.92),
+    ]
+
     parts.append('<g clip-path="url(#core-left-clip)">')
     parts.extend(
         van_gogh_starry_backdrop(
@@ -746,14 +828,42 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
             484,
             height,
             avoid_boxes=[],
-            opacity_scale=0.72,
+            opacity_scale=0.74,
             glyph_stride=1,
             stroke_limit=1200,
             layer_key="sky",
         )
     )
-    parts.append('<rect x="1" y="1" width="483" height="562" fill="#040916" fill-opacity="0.30"/>')
+    parts.append('<rect x="1" y="1" width="483" height="562" fill="#040916" fill-opacity="0.22"/>')
+    parts.extend(
+        render_day_night_cycle(
+            "core",
+            484,
+            height,
+            [(1, 1, 483, 562, "sky")],
+            sun_arc=core_sun_arc,
+            moon_arc=core_moon_arc,
+        )
+    )
+    parts.extend(
+        render_giant_meteors(
+            "core",
+            484,
+            height,
+            trajectories=[
+                (0.40, 1.95, 198.0, 10.0, 10.0, 188.0, 162.0),
+                (2.70, 4.30, 298.0, 10.0, 478.0, 186.0, 168.0),
+                (4.85, 6.45, 12.0, 336.0, 174.0, 542.0, 158.0),
+                (7.55, 9.20, 474.0, 334.0, 326.0, 542.0, 164.0),
+            ],
+        )
+    )
     parts.append("</g>")
+    parts.append(
+        '<g class="cel-live" pointer-events="none">'
+        '<rect class="core-dn-day" x="485" y="2" width="713" height="128" fill="url(#core-dn-amb-g)"/>'
+        "</g>"
+    )
 
     parts.append('<circle cx="%s" cy="%s" r="%s" fill="#060d1c" stroke="%s" stroke-width="1.05"/>' % (num(acx), num(acy), num(ar + 5), BORDER_WARM))
     for deg in range(0, 360, 15):
@@ -778,36 +888,50 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     x_left = acx - ar
     y_top = acy - ar
 
+    # WHY: Batching portrait hatch/sky/contour segments by color cuts >5,500 DOM nodes and ~600KB with identical pixels.
     hatch_n = max(int(portrait_hd.get("hatch_n") or 76), 1)
     under_strokes = portrait_hd.get("under_strokes") or []
     if under_strokes:
         hstep = diam / float(hatch_n)
-        parts.append('<g stroke-linecap="round" opacity="0.90">')
+        hatch_by_col = {}
+        hatch_order = []
         for ax_i, ay_i, hcol, _, ang_deg in under_strokes:
             px_a = x_left + (ax_i + 0.5) * hstep
             py_a = y_top + (ay_i + 0.5) * hstep
             rad = math.radians(ang_deg)
             dx = math.cos(rad) * hstep * 0.74
             dy = math.sin(rad) * hstep * 0.74
-            parts.append(
-                '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="%s"/>'
-                % (num(px_a - dx, 1), num(py_a - dy, 1), num(px_a + dx, 1), num(py_a + dy, 1), hcol, num(hstep * 0.92, 2))
+            if hcol not in hatch_by_col:
+                hatch_by_col[hcol] = []
+                hatch_order.append(hcol)
+            hatch_by_col[hcol].append(
+                "M%s,%sL%s,%s" % (num(px_a - dx, 1), num(py_a - dy, 1), num(px_a + dx, 1), num(py_a + dy, 1))
             )
+        parts.append('<g fill="none" stroke-linecap="round" stroke-width="%s" opacity="0.90">' % num(hstep * 0.92, 2))
+        for hc in hatch_order:
+            parts.append('<path stroke="%s" d="%s"/>' % (hc, "".join(hatch_by_col[hc])))
         parts.append("</g>")
 
     sky_strokes = portrait_hd.get("sky_strokes") or []
     if sky_strokes:
-        parts.append('<g fill="none" stroke-linecap="round">')
+        sky_by_key = {}
+        sky_order = []
         for s0x, s0y, smx, smy, s1x, s1y, scol, sop in sky_strokes:
-            parts.append(
-                '<path d="M%s,%s Q%s,%s %s,%s" stroke="%s" stroke-width="1.05" stroke-opacity="%s"/>'
+            sk_key = (scol, num(sop, 2))
+            if sk_key not in sky_by_key:
+                sky_by_key[sk_key] = []
+                sky_order.append(sk_key)
+            sky_by_key[sk_key].append(
+                "M%s,%sQ%s,%s %s,%s"
                 % (
                     num(x_left + s0x * diam, 1), num(y_top + s0y * diam, 1),
                     num(x_left + smx * diam, 1), num(y_top + smy * diam, 1),
                     num(x_left + s1x * diam, 1), num(y_top + s1y * diam, 1),
-                    scol, num(sop, 2),
                 )
             )
+        parts.append('<g fill="none" stroke-linecap="round" stroke-width="1.05">')
+        for scol_k, sop_k in sky_order:
+            parts.append('<path stroke="%s" stroke-opacity="%s" d="%s"/>' % (scol_k, sop_k, "".join(sky_by_key[(scol_k, sop_k)])))
         parts.append("</g>")
 
     cols = max(int(portrait_hd.get("cols") or 216), 1)
@@ -817,47 +941,52 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     font_sz = diam / (cols * 0.601)
     start_y = y_top + row_step * 0.80
 
+    parts.append('<g font-family="%s" font-size="%s" font-weight="700" aria-hidden="true">' % (FONT_MONO, num(font_sz, 2)))
     for r_idx, runs in enumerate(grid):
-        tspan_parts = []
-        has_ink = False
-        for col_hex, chunk in runs:
-            escaped = esc(chunk)
-            if col_hex is None:
-                tspan_parts.append(escaped)
-            else:
-                has_ink = True
-                tspan_parts.append('<tspan fill="%s">%s</tspan>' % (col_hex, escaped))
+        has_ink = any(col_hex is not None for col_hex, _ in runs)
         if has_ink:
+            merged_runs = merge_close_runs(runs, tol=8)
+            tspan_parts = [
+                ('<tspan fill="%s">%s</tspan>' % (chx, esc(txt))) if chx is not None else esc(txt)
+                for chx, txt in merged_runs
+            ]
             parts.append(
-                '<text x="%s" y="%s" textLength="%s" lengthAdjust="spacing" font-family="%s" font-size="%s" font-weight="700" xml:space="preserve">%s</text>'
-                % (num(x_left, 1), num(start_y + r_idx * row_step, 2), num(diam, 1), FONT_MONO, num(font_sz, 2), "".join(tspan_parts))
+                '<text x="%s" y="%s" textLength="%s" lengthAdjust="spacing" xml:space="preserve">%s</text>'
+                % (num(x_left, 1), num(start_y + r_idx * row_step, 2), num(diam, 1), "".join(tspan_parts))
             )
+    parts.append("</g>")
 
     contours = portrait_hd.get("contours") or []
     if contours:
-        parts.append('<g stroke-linecap="round">')
+        cnt_by_key = {}
+        cnt_order = []
         for item in contours:
             x0, y0, x1, y1, scol, sop = item[0], item[1], item[2], item[3], item[4], item[5]
-            parts.append(
-                '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.62" stroke-opacity="%s"/>'
+            ck = (scol, num(sop, 2))
+            if ck not in cnt_by_key:
+                cnt_by_key[ck] = []
+                cnt_order.append(ck)
+            cnt_by_key[ck].append(
+                "M%s,%sL%s,%s"
                 % (
                     num(x_left + x0 * diam, 1),
                     num(y_top + y0 * diam, 1),
                     num(x_left + x1 * diam, 1),
                     num(y_top + y1 * diam, 1),
-                    scol,
-                    num(sop, 2),
                 )
             )
+        parts.append('<g fill="none" stroke-linecap="round" stroke-width="0.62">')
+        for scol_k, sop_k in cnt_order:
+            parts.append('<path stroke="%s" stroke-opacity="%s" d="%s"/>' % (scol_k, sop_k, "".join(cnt_by_key[(scol_k, sop_k)])))
         parts.append("</g>")
 
     parts.append("</g>")
     parts.append('<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="1.05" stroke-opacity="0.74"/>' % (num(acx), num(acy), num(ar), CREAM))
 
-    parts.append('<rect x="168" y="473" width="156" height="54" rx="10" fill="#050b18" fill-opacity="0.86" stroke="%s" stroke-width="0.8"/>' % BORDER_WARM)
+    parts.append('<rect x="168" y="473" width="156" height="54" rx="10" fill="#050b18" fill-opacity="0.92" stroke="%s" stroke-width="0.8"/>' % BORDER_WARM)
     parts.append(text(acx, 497, DISPLAY, INK_PRIMARY, 20.5, "middle", "700", ' letter-spacing="-0.2"', FONT_DISPLAY))
     parts.append(text(acx, 517, "@%s" % USERNAME, INK_MUTED, 11.0, "middle", "500"))
-    parts.extend(core_stage_butterfly_cameo())
+    parts.extend(eco_stage)
 
     parts.append('<line x1="484" y1="32" x2="484" y2="532" stroke="%s" stroke-width="0.85"/>' % BORDER_SUBTLE)
 
@@ -910,14 +1039,16 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
 def vangogh_nocturne_svg():
     width, height = 1200, 388
     clip_defs, frame_nodes = nocturne_card(width, height, "vg3", radius=16)
+    eco_in_defs, eco_top_defs, eco_stage = _ecosystem_bundle("vg3", "nocturne", width, height)
     parts = [
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 388" width="1200" height="388" role="img" aria-label="4K Calligraphic Synthesis of Van Gogh Starry Night, Sunflowers Garden and Country Road in Provence Cypresses">',
         REDUCED_MOTION_STYLE,
         "<defs>",
     ]
     parts.extend(nocturne_defs("vg3"))
+    parts.extend(celestial_defs("vg3"))
     parts.extend(clip_defs)
-    parts.extend(pup_defs("vg3"))
+    parts.extend(eco_in_defs)
     parts.extend(
         [
             '<radialGradient id="vg3-road-glow" cx="0.52" cy="0.86" r="0.46">',
@@ -927,6 +1058,7 @@ def vangogh_nocturne_svg():
             "</defs>",
         ]
     )
+    parts.extend(eco_top_defs)
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#vg3-clip)">')
     parts.append('<rect x="1" y="1" width="1198" height="386" fill="#061126"/>')
@@ -943,7 +1075,21 @@ def vangogh_nocturne_svg():
         )
     )
     parts.append('<rect x="1" y="1" width="1198" height="386" fill="url(#vg3-road-glow)" pointer-events="none"/>')
-    parts.extend(nocturne_garden_pup())
+    parts.extend(render_day_night_cycle("vg3", width, height, [(1, 1, 1198, 386, "panorama_sky")]))
+    parts.extend(
+        render_giant_meteors(
+            "vg3",
+            width,
+            height,
+            trajectories=[
+                (0.40, 1.95, 92.0, 18.0, 658.0, 214.0, 202.0),
+                (2.70, 4.30, 1108.0, 16.0, 512.0, 226.0, 220.0),
+                (4.85, 6.45, 388.0, 14.0, 996.0, 198.0, 182.0),
+                (7.55, 9.20, 918.0, 18.0, 264.0, 228.0, 216.0),
+            ],
+        )
+    )
+    parts.extend(eco_stage)
     parts.append("</g>")
     parts.append("</svg>")
     return "\n".join(parts)

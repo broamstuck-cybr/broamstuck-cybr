@@ -39,13 +39,13 @@ class CelestialMatrixStage {
 
     this.w = 1120;
     this.h = 206;
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-    this.canvas.width = Math.round(this.w * this.dpr);
-    this.canvas.height = Math.round(this.h * this.dpr);
-    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.dpr = 1;
+    this.canvas.width = this.w;
+    this.canvas.height = this.h;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    this._bakeUnderlay();
     this._buildCells();
+    this._bakeUnderlay();
     this._bindEvents();
     this.render();
     if (!this.reducedMotion) {
@@ -139,6 +139,78 @@ class CelestialMatrixStage {
       lc.fillStyle = leftScrim;
       lc.fillRect(0, 0, 56, this.h);
     }
+
+    lc.font = "600 10.5px 'Inter', system-ui, sans-serif";
+    lc.fillStyle = "#c5d4ea";
+    lc.textAlign = "center";
+    for (let i = 0; i < this.monthLabels.length; i++) {
+      lc.fillText(this.monthLabels[i].text, this.monthLabels[i].x, 16);
+    }
+
+    lc.font = "500 10px 'JetBrains Mono', ui-monospace, monospace";
+    lc.fillStyle = "#8fa5c4";
+    lc.textAlign = "right";
+    const rowDays = [[1, "Mon"], [3, "Wed"], [5, "Fri"]];
+    for (let i = 0; i < rowDays.length; i++) {
+      lc.fillText(rowDays[i][1], 38, 38 + rowDays[i][0] * 18.8);
+    }
+
+    const coordKey = new Map();
+    for (let i = 0; i < this.cells.length; i++) {
+      const cell = this.cells[i];
+      coordKey.set(`${cell.w}:${cell.r}`, cell);
+    }
+    for (let i = 0; i < this.cells.length; i++) {
+      const cell = this.cells[i];
+      if (cell.count < 2) continue;
+      const down = coordKey.get(`${cell.w}:${cell.r + 1}`);
+      if (down && down.count >= 2) {
+        lc.strokeStyle = (cell.count + down.count) >= 22 ? "rgba(253, 224, 71, 0.50)" : "rgba(125, 211, 252, 0.36)";
+        lc.lineWidth = 1.1;
+        lc.beginPath();
+        lc.moveTo(cell.x, cell.y);
+        lc.lineTo(down.x, down.y);
+        lc.stroke();
+      }
+      const right = coordKey.get(`${cell.w + 1}:${cell.r}`);
+      if (right && right.count >= 4 && cell.count >= 4) {
+        lc.strokeStyle = "rgba(94, 234, 212, 0.36)";
+        lc.lineWidth = 1.0;
+        lc.beginPath();
+        lc.moveTo(cell.x, cell.y);
+        lc.lineTo(right.x, right.y);
+        lc.stroke();
+      }
+    }
+
+    this.dynamicCells = [];
+    for (let i = 0; i < this.cells.length; i++) {
+      const cell = this.cells[i];
+      if (cell.count === 0) {
+        lc.strokeStyle = "#243b63";
+        lc.lineWidth = 0.85;
+        lc.beginPath();
+        lc.moveTo(cell.x - 1.7, cell.y);
+        lc.lineTo(cell.x + 1.7, cell.y);
+        lc.moveTo(cell.x, cell.y - 1.7);
+        lc.lineTo(cell.x, cell.y + 1.7);
+        lc.stroke();
+      } else if (cell.count <= 4) {
+        drawStarPolygon(lc, cell.x, cell.y, 4.2, 1.5, 4);
+        lc.fillStyle = "#7dd3fc";
+        lc.fill();
+      } else {
+        this.dynamicCells.push({ cell, idx: i });
+      }
+    }
+
+    lc.strokeStyle = "rgba(125, 211, 252, 0.34)";
+    lc.lineWidth = 1;
+    lc.beginPath();
+    lc.moveTo(36, 169);
+    lc.lineTo(this.w - 24, 169);
+    lc.stroke();
+
     this.underlay = c;
   }
 
@@ -273,66 +345,9 @@ class CelestialMatrixStage {
     const ctx = this.ctx;
     ctx.drawImage(this.underlay, 0, 0, this.w, this.h);
 
-    ctx.font = "600 10.5px 'Inter', system-ui, sans-serif";
-    ctx.fillStyle = "#c5d4ea";
-    ctx.textAlign = "center";
-    for (let i = 0; i < this.monthLabels.length; i++) {
-      ctx.fillText(this.monthLabels[i].text, this.monthLabels[i].x, 16);
-    }
-
-    ctx.font = "500 10px 'JetBrains Mono', ui-monospace, monospace";
-    ctx.fillStyle = "#8fa5c4";
-    ctx.textAlign = "right";
-    const rowDays = [[1, "Mon"], [3, "Wed"], [5, "Fri"]];
-    for (let i = 0; i < rowDays.length; i++) {
-      ctx.fillText(rowDays[i][1], 38, 38 + rowDays[i][0] * 18.8);
-    }
-
-    const coordKey = new Map();
-    for (let i = 0; i < this.cells.length; i++) {
-      const c = this.cells[i];
-      coordKey.set(`${c.w}:${c.r}`, c);
-    }
-
-    for (let i = 0; i < this.cells.length; i++) {
-      const c = this.cells[i];
-      if (c.count < 2) continue;
-      const down = coordKey.get(`${c.w}:${c.r + 1}`);
-      if (down && down.count >= 2) {
-        ctx.strokeStyle = (c.count + down.count) >= 22 ? "rgba(253, 224, 71, 0.50)" : "rgba(125, 211, 252, 0.36)";
-        ctx.lineWidth = 1.1;
-        ctx.beginPath();
-        ctx.moveTo(c.x, c.y);
-        ctx.lineTo(down.x, down.y);
-        ctx.stroke();
-      }
-      const right = coordKey.get(`${c.w + 1}:${c.r}`);
-      if (right && right.count >= 4 && c.count >= 4) {
-        ctx.strokeStyle = "rgba(94, 234, 212, 0.36)";
-        ctx.lineWidth = 1.0;
-        ctx.beginPath();
-        ctx.moveTo(c.x, c.y);
-        ctx.lineTo(right.x, right.y);
-        ctx.stroke();
-      }
-    }
-
-    for (let i = 0; i < this.cells.length; i++) {
-      const c = this.cells[i];
-      if (c.count === 0) {
-        ctx.strokeStyle = "#243b63";
-        ctx.lineWidth = 0.85;
-        ctx.beginPath();
-        ctx.moveTo(c.x - 1.7, c.y);
-        ctx.lineTo(c.x + 1.7, c.y);
-        ctx.moveTo(c.x, c.y - 1.7);
-        ctx.lineTo(c.x, c.y + 1.7);
-        ctx.stroke();
-      } else if (c.count <= 4) {
-        drawStarPolygon(ctx, c.x, c.y, 4.2, 1.5, 4);
-        ctx.fillStyle = "#7dd3fc";
-        ctx.fill();
-      } else if (c.count <= 19) {
+    for (let k = 0; k < this.dynamicCells.length; k++) {
+      const { cell: c, idx: i } = this.dynamicCells[k];
+      if (c.count <= 19) {
         drawStarPolygon(ctx, c.x, c.y, 5.4, 2.0, 6, this.time * 0.25 + i);
         ctx.fillStyle = "#34d399";
         ctx.fill();
@@ -363,15 +378,25 @@ class CelestialMatrixStage {
     }
 
     const waterY = 169;
-    ctx.strokeStyle = "rgba(125, 211, 252, 0.34)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(36, waterY);
-    ctx.lineTo(this.w - 24, waterY);
-    ctx.stroke();
-
-    ctx.font = "700 9.5px 'JetBrains Mono', ui-monospace, monospace";
-    ctx.textAlign = "center";
+    if (!this._waterSprites) {
+      const mk = (txt, col) => {
+        const wc = document.createElement("canvas");
+        wc.width = 26;
+        wc.height = 14;
+        const wctx = wc.getContext("2d");
+        wctx.font = "700 9.5px 'JetBrains Mono', ui-monospace, monospace";
+        wctx.textAlign = "center";
+        wctx.textBaseline = "middle";
+        wctx.fillStyle = col;
+        wctx.fillText(txt, 13, 7);
+        return wc;
+      };
+      this._waterSprites = {
+        goldHi: mk("≈~≈", "#fde047"),
+        goldLo: mk("~~", "#fde047"),
+        skyLo: mk("~~", "#7dd3fc")
+      };
+    }
     const maxW = Math.max(1, ...this.weeks52);
     for (let w = 0; w < 52; w++) {
       const val = this.weeks52[w] || 0;
@@ -381,8 +406,8 @@ class CelestialMatrixStage {
       const cursorBoost = Math.exp(-Math.pow((wx - this.pointerX) / 90, 2)) * 0.35;
       const shift = Math.sin(this.time * 1.6 + w * 0.5) * 2.2;
       ctx.globalAlpha = Math.min(0.95, 0.36 + norm * 0.48 + cursorBoost);
-      ctx.fillStyle = norm > 0.45 ? "#fde047" : "#7dd3fc";
-      ctx.fillText(norm > 0.55 ? "≈~≈" : "~~", wx + shift, waterY + 17 + (w % 2) * 6);
+      const sp = norm > 0.55 ? this._waterSprites.goldHi : (norm > 0.45 ? this._waterSprites.goldLo : this._waterSprites.skyLo);
+      ctx.drawImage(sp, Math.round(wx + shift - 13), waterY + 10 + (w % 2) * 6);
     }
     ctx.globalAlpha = 1;
   }
@@ -458,7 +483,20 @@ async function initObservatory() {
     matScroll.scrollLeft = matScroll.scrollWidth;
   }
 
-  new PortraitStage(document.getElementById("portrait-canvas"), portraitData);
+  const portraitStage = new PortraitStage(document.getElementById("portrait-canvas"), portraitData);
+  const rawPortraitRender = portraitStage.render.bind(portraitStage);
+  let portraitIdleTick = 0;
+  portraitStage.render = () => {
+    if (
+      !portraitStage.reducedMotion &&
+      !portraitStage.pointer.inside &&
+      Math.hypot(portraitStage.gaze.tx - portraitStage.gaze.x, portraitStage.gaze.ty - portraitStage.gaze.y) < 0.004
+    ) {
+      portraitIdleTick = (portraitIdleTick + 1) % 4;
+      if (portraitIdleTick !== 0) return;
+    }
+    rawPortraitRender();
+  };
 
   const radarReadout = document.getElementById("radar-readout");
   const updateRadarReadout = (selectedName) => {
@@ -654,10 +692,30 @@ async function initObservatory() {
   const dogCanvas = document.getElementById("pixel-dog-canvas");
   const dogHitbox = document.getElementById("pixel-dog-hitbox");
   if (dogLayer && dogCanvas && dogHitbox) {
-    pup = new StarlightPixelDog(dogLayer, dogCanvas, dogHitbox, (nx, ny, fx = 7, fy = -6) => {
-      sky.injectImpulse(nx, ny, fx, fy);
+    pup = new StarlightPixelDog(
+      dogLayer,
+      dogCanvas,
+      dogHitbox,
+      (nx, ny, fx = 7, fy = -6) => {
+        sky.injectImpulse(nx, ny, fx, fy);
+      },
+      () => sky.getEnvironmentState()
+    );
+    sky.setMeteorListener((meteorInfo) => {
+      if (pup) pup.notifyMeteor(meteorInfo);
     });
   }
+
+  window.__observatoryEcosystem = {
+    setCycleTime: (sec) => {
+      sky.setCycleTime(sec);
+      if (pup) {
+        pup._syncHitbox(true);
+        pup.render();
+      }
+    },
+    getState: () => sky.getEnvironmentState()
+  };
 
   document.querySelectorAll("[data-expand-3d]").forEach((btn) => {
     btn.addEventListener("click", () => {

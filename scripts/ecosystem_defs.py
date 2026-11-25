@@ -1,0 +1,2375 @@
+# SPDX-License-Identifier: MIT
+import random
+
+try:
+    from theme import num
+except ImportError:
+    def num(value, places=2):
+        val = ("%." + str(places) + "f") % float(value)
+        if "." in val:
+            val = val.rstrip("0").rstrip(".")
+        return "0" if val in ("", "-0") else val
+
+
+# WHY: Ordered dark-outline -> deep-shadow -> midtone -> highlight -> eye-detail -> specular for lossless underfill merging.
+ECO_PALETTE = {
+    "O": "#271306",
+    "k": "#334155",
+    "D": "#5c2408",
+    "n": "#422006",
+    "v": "#581c87",
+    "F": "#064e3b",
+    "N": "#1e3a8a",
+    "R": "#9a3412",
+    "u": "#713f12",
+    "V": "#be123c",
+    "J": "#047857",
+    "B": "#2563eb",
+    "I": "#0284c7",
+    "q": "#9333ea",
+    "g": "#64748b",
+    "r": "#c2410c",
+    "m": "#b45309",
+    "t": "#a16207",
+    "P": "#ea580c",
+    "M": "#d97706",
+    "A": "#10b981",
+    "H": "#f43f5e",
+    "G": "#f59e0b",
+    "c": "#eab308",
+    "p": "#fb923c",
+    "Y": "#34d399",
+    "y": "#84cc16",
+    "U": "#38bdf8",
+    "x": "#c084fc",
+    "s": "#94a3b8",
+    "K": "#fda4af",
+    "S": "#fde047",
+    "h": "#fde68a",
+    "Z": "#7dd3fc",
+    "T": "#a7f3d0",
+    "l": "#cbd5e1",
+    "L": "#fef3c7",
+    "X": "#e0f2fe",
+    "C": "#fffbeb",
+    "E": "#0f172a",
+    "W": "#ffffff",
+}
+
+LAYER_ORDER = tuple(ECO_PALETTE.keys())
+LAYER_RANK = {ch: idx for idx, ch in enumerate(LAYER_ORDER)}
+
+ANIMAL_SPECIES = (
+    "shiba_dog",
+    "red_fox",
+    "calico_cat",
+    "cottontail_rabbit",
+    "red_squirrel",
+    "tawny_owl",
+    "mallard_duck",
+    "hedgehog",
+    "spotted_deer",
+    "tree_frog",
+    "azure_bluebird",
+)
+
+ANIMATION_NAMES = (
+    "walk",
+    "trot",
+    "gallop",
+    "hop",
+    "binky_leap",
+    "graze_nibble",
+    "sniff_ground",
+    "drink_ripple",
+    "groom_paw",
+    "scratch_ear",
+    "stretch_bow",
+    "yawn",
+    "tail_wag_happy",
+    "ear_perk_alert",
+    "stargaze_meteor",
+    "chase_butterfly",
+    "boop_firefly",
+    "pounce_play",
+    "belly_roll",
+    "happy_spin",
+    "shake_fur",
+    "crouch_stalk",
+    "perch_sway",
+    "sleep_curl_breathe",
+    "sun_bask",
+)
+
+PROP_NAMES = (
+    "sunflower_cluster",
+    "lavender_tuft",
+    "chamomile_patch",
+    "dandelion_puff",
+    "clover_bed",
+    "wheat_sheaf",
+    "glow_mushroom_blue",
+    "amanita_mushroom",
+    "mossy_stone",
+    "hollow_oak_log",
+    "acorn_stash",
+    "wood_signpost",
+    "provence_stone_wall",
+    "dew_puddle",
+    "lilypad_lotus",
+    "stream_brook",
+    "pebble_bank",
+    "mini_footbridge",
+    "cattail_reeds",
+    "splash_fountain",
+    "iron_lantern",
+    "straw_nest",
+    "wood_birdhouse",
+    "oak_barrel",
+    "berry_bush",
+    "garden_bench",
+    "cypress_alcove",
+    "crystal_geode",
+    "starlight_windchime",
+    "weathervane",
+    "firefly_jar",
+    "wild_rose_bush",
+)
+
+PART_KEYS = ("lb", "tl", "bd", "lf", "hd", "ew")
+PART_SHORT = {"rig": "r", "lb": "b", "tl": "t", "bd": "d", "lf": "f", "hd": "h", "ew": "e", "sh": "s"}
+
+# WHY: Each sub-part is authored around its anatomical joint (0, 0) facing +X so GPU CSS transforms pivot cleanly.
+ANIMAL_CATALOG = {
+    "shiba_dog": {
+        "shadow": (10.5, 2.2),
+        "nocturnal": False,
+        "flying": False,
+        "joints": {"lb": (-5, -5), "tl": (-8, -10), "bd": (0, 0), "lf": (5, -5), "hd": (6, -11), "ew": (6, -16)},
+        "parts": {
+            "bd": (-9, -12, [
+                "..OOOOOOOOOO.....",
+                ".OLLLLGGGGGBBOO..",
+                "OGGGGGGGGGGBBSBO.",
+                "OMMMMMMGGGGNBBNO.",
+                "OMMMMMMMGGCCCCCO.",
+                ".OmmmmmCCCCCCCCO.",
+                "..OOOOOOOOOOOOO..",
+            ]),
+            "hd": (-3, -6, [
+                ".OOLLLLOO...",
+                "OGGGGGGLGO..",
+                "OGGCGGCGGGO.",
+                "OGWEGGWECEEO",
+                "OPCCCCCCCEEO",
+                ".OCCCKCCCCO.",
+                "..OOOOOOOO..",
+            ]),
+            "ew": (-3, -4, [
+                "OO....OO.",
+                "OMO..OMO.",
+                "OMKO.OMKO",
+                "OGLO.OGLO",
+            ]),
+            "tl": (-6, -6, [
+                "..OOOO.",
+                ".OCCLO.",
+                "OCCGGO.",
+                "OCGmO..",
+                ".OOOO..",
+            ]),
+            "lf": (-2, 0, [
+                "OMMO",
+                "OMCO",
+                "OCCO",
+                "OOO.",
+            ]),
+            "lb": (-2, 0, [
+                "OmMO",
+                "OmCO",
+                "OCCO",
+                ".OOO",
+            ]),
+        },
+    },
+    "red_fox": {
+        "shadow": (11.2, 2.1),
+        "nocturnal": True,
+        "flying": False,
+        "joints": {"lb": (-5, -5), "tl": (-8, -9), "bd": (0, 0), "lf": (5, -5), "hd": (6, -11), "ew": (6, -16)},
+        "parts": {
+            "bd": (-9, -11, [
+                "..OOOOOOOOOOO....",
+                ".OrrrrPPPPPPPOO..",
+                "ORRRRRrrrrPPPCCO.",
+                "ORRRRRRrrrCCCCCO.",
+                ".ODDRRRRCCCCCCCO.",
+                "..OOOOOOOOOOOOO..",
+            ]),
+            "hd": (-3, -6, [
+                ".OOrrrrOO....",
+                "OrrrrPPPPO...",
+                "OrPWErPPCCOO.",
+                "OrPEECCCCCPEO",
+                ".OCCCCCCCCOO.",
+                "..OOOOOOOO...",
+            ]),
+            "ew": (-3, -5, [
+                "OE....OE.",
+                "ODO..ODO.",
+                "OrKO.OrKO",
+                "OPCO.OPCO",
+            ]),
+            "tl": (-10, -5, [
+                "..OOOOOOO..",
+                ".OWWCCPPPO.",
+                "OWWCCCrrrRO",
+                "OCCCrrrrRO.",
+                ".OOOOOOOO..",
+            ]),
+            "lf": (-2, 0, [
+                "OrPO",
+                "ODDO",
+                "OEEO",
+                "OOO.",
+            ]),
+            "lb": (-2, 0, [
+                "ORrO",
+                "ODDO",
+                "OEEO",
+                ".OOO",
+            ]),
+        },
+    },
+    "calico_cat": {
+        "shadow": (9.6, 2.0),
+        "nocturnal": False,
+        "flying": False,
+        "joints": {"lb": (-5, -5), "tl": (-7, -10), "bd": (0, 0), "lf": (4, -5), "hd": (5, -11), "ew": (5, -16)},
+        "parts": {
+            "bd": (-8, -11, [
+                "..OOOOOOOOOO...",
+                ".OkkCCCpppCCO..",
+                "OkkkCCCppppCHO.",
+                "OCCCCCCppCCCSO.",
+                ".OCCCCCCCCCCCO.",
+                "..OOOOOOOOOOO..",
+            ]),
+            "hd": (-3, -6, [
+                ".OkkCCppOO.",
+                "OkkCCCCppCO",
+                "OCJWECJWECO",
+                "OCCCCKCCCCO",
+                ".OCCCCCCCO.",
+                "..OOOOOOO..",
+            ]),
+            "ew": (-3, -4, [
+                "OO...OO.",
+                "OkO..OpO",
+                "OkKO.OpKO",
+            ]),
+            "tl": (-5, -8, [
+                ".OOO..",
+                "OkkO..",
+                "OCCC..",
+                ".OppO.",
+                "..OCCO",
+                "..OOO.",
+            ]),
+            "lf": (-2, 0, [
+                "OpCO",
+                "OCCO",
+                "OWWO",
+                "OOO.",
+            ]),
+            "lb": (-2, 0, [
+                "OkCO",
+                "OCCO",
+                "OWWO",
+                ".OOO",
+            ]),
+        },
+    },
+    "cottontail_rabbit": {
+        "shadow": (8.6, 1.9),
+        "nocturnal": False,
+        "flying": False,
+        "joints": {"lb": (-3, -4), "tl": (-7, -7), "bd": (0, 0), "lf": (4, -4), "hd": (4, -10), "ew": (3, -15)},
+        "parts": {
+            "bd": (-7, -10, [
+                "..OOOOOOOO...",
+                ".OttthhhhOO..",
+                "OuuuutthhhCO.",
+                "OuuuutthCCCO.",
+                ".OuuuCCCCCCO.",
+                "..OOOOOOOOO..",
+            ]),
+            "hd": (-3, -5, [
+                ".OthhhhOO..",
+                "OtthWEEhCO.",
+                "OtthEEEhCKO",
+                ".OCCCCCCCO.",
+                "..OOOOOOO..",
+            ]),
+            "ew": (-2, -7, [
+                ".OO..OO.",
+                "OtuO.OtuO",
+                "OtKO.OtKO",
+                "OtKO.OtKO",
+                "OthO.OthO",
+                ".OO..OO.",
+            ]),
+            "tl": (-4, -3, [
+                ".OOO.",
+                "OWWCO",
+                "OCCCO",
+                ".OOO.",
+            ]),
+            "lf": (-2, 0, [
+                "OthO",
+                "OCCO",
+                "OOO.",
+            ]),
+            "lb": (-2, 0, [
+                "OuuO",
+                "OthCO",
+                "OCCCCO",
+                ".OOOO.",
+            ]),
+        },
+    },
+    "red_squirrel": {
+        "shadow": (8.2, 1.8),
+        "nocturnal": False,
+        "flying": False,
+        "joints": {"lb": (-3, -4), "tl": (-6, -8), "bd": (0, 0), "lf": (3, -4), "hd": (4, -10), "ew": (4, -14)},
+        "parts": {
+            "bd": (-6, -10, [
+                "..OOOOOOO...",
+                ".OrrrPPPPO..",
+                "ORRRrrrPLCO.",
+                "ORRRrrCCCCO.",
+                ".ODDRCCCCO..",
+                "..OOOOOOO...",
+            ]),
+            "hd": (-2, -5, [
+                ".OrrPPPOO.",
+                "OrrPWEEPCO",
+                "OrrPEEEPLO",
+                ".OCCCCCCO.",
+                "..OOOOOO..",
+            ]),
+            "ew": (-2, -4, [
+                "OO..OO",
+                "ORO.ORO",
+                "OPO.OPO",
+            ]),
+            "tl": (-7, -9, [
+                "..OOOOO.",
+                ".OPPLLLO",
+                "OrrrrPPO",
+                "ORRRrrPO",
+                "ODDRrrO.",
+                ".OOOOO..",
+            ]),
+            "lf": (-1, 0, [
+                "OPO",
+                "OrO",
+                "OOO",
+            ]),
+            "lb": (-2, 0, [
+                "ORO.",
+                "OrPO",
+                "OOOO",
+            ]),
+        },
+    },
+    "tawny_owl": {
+        "shadow": (8.8, 1.9),
+        "nocturnal": True,
+        "flying": True,
+        "joints": {"lb": (-2, -3), "tl": (-5, -5), "bd": (0, 0), "lf": (2, -3), "hd": (1, -12), "ew": (-1, -10)},
+        "parts": {
+            "bd": (-5, -12, [
+                "..OOOOOOO..",
+                ".OuuutttOO.",
+                "OnnuutthhCO",
+                "OnnuuhChChO",
+                "OnnuuhChCCO",
+                ".OnnuCCCCO.",
+                "..OOOOOOO..",
+            ]),
+            "hd": (-4, -6, [
+                ".OOOOOOOOO.",
+                "OthhCCChhtO",
+                "OhcWEccWEhO",
+                "OhcEEOScEhO",
+                ".OCCCCSCCO.",
+                "..OOOOOOO..",
+            ]),
+            "ew": (-4, -2, [
+                ".OOOOOO..",
+                "OnnuuttO.",
+                "OnnuutthO",
+                "OnnuuttO.",
+                ".OOOOOO..",
+            ]),
+            "tl": (-4, -2, [
+                "OOOOO",
+                "OnuhO",
+                "OnuOO",
+            ]),
+            "lf": (-1, 0, [
+                "OtO",
+                "OSO",
+                "OOO",
+            ]),
+            "lb": (-1, 0, [
+                "OuO",
+                "OSO",
+                "OOO",
+            ]),
+        },
+    },
+    "mallard_duck": {
+        "shadow": (9.8, 2.0),
+        "nocturnal": False,
+        "flying": False,
+        "joints": {"lb": (-2, -4), "tl": (-8, -8), "bd": (0, 0), "lf": (2, -4), "hd": (5, -11), "ew": (-2, -9)},
+        "parts": {
+            "bd": (-8, -10, [
+                "...OOOOOOOOO...",
+                "..OggggllWWOO..",
+                ".OgggglllmmRRO.",
+                "OggggllllmmmRRO",
+                ".OllllCCCCCCCO.",
+                "..OOOOOOOOOOO..",
+            ]),
+            "hd": (-2, -6, [
+                ".OFFFFOO....",
+                "OFJJJAAOO...",
+                "OFJWEAAYOOO.",
+                "OFJEEAAYSSPO",
+                ".OJJAAYPPPPO",
+                "..OOOO.OOOO.",
+            ]),
+            "ew": (-4, -2, [
+                ".OOOOOOO.",
+                "OgggBBWWO",
+                "OggNNBWWO",
+                ".OOOOOOO.",
+            ]),
+            "tl": (-4, -4, [
+                "OO...",
+                "OkOO.",
+                "OkkCO",
+                ".OOOO",
+            ]),
+            "lf": (-2, 0, [
+                ".OPO.",
+                ".OPO.",
+                "OPPPO",
+                "OOOOO",
+            ]),
+            "lb": (-2, 0, [
+                ".OPO.",
+                ".OPO.",
+                "OPPPO",
+                "OOOOO",
+            ]),
+        },
+    },
+    "hedgehog": {
+        "shadow": (8.4, 1.8),
+        "nocturnal": True,
+        "flying": False,
+        "joints": {"lb": (-3, -3), "tl": (-7, -5), "bd": (0, 0), "lf": (3, -3), "hd": (5, -6), "ew": (4, -9)},
+        "parts": {
+            "bd": (-7, -9, [
+                "..OnOnOnOnO..",
+                ".OnLunLunLuO.",
+                "OnuLuunLuutnO",
+                "OnuutLtutthhO",
+                "OnuutthhhhhCO",
+                ".OCCCCCCCCCO.",
+                "..OOOOOOOOO..",
+            ]),
+            "hd": (-2, -4, [
+                ".OthhhOO...",
+                "OthWEEhhOO.",
+                "OthEEEhhCEO",
+                ".OCCCChKKO.",
+                "..OOOOOOO..",
+            ]),
+            "ew": (-2, -3, [
+                ".OO.",
+                "OuKO",
+                "OhKO",
+            ]),
+            "tl": (-3, -2, [
+                "OOO",
+                "OutO",
+                ".OO.",
+            ]),
+            "lf": (-1, 0, [
+                "OtO",
+                "OKO",
+                "OOO",
+            ]),
+            "lb": (-1, 0, [
+                "OuO",
+                "OKO",
+                "OOO",
+            ]),
+        },
+    },
+    "spotted_deer": {
+        "shadow": (11.5, 2.2),
+        "nocturnal": False,
+        "flying": False,
+        "joints": {"lb": (-6, -8), "tl": (-9, -13), "bd": (0, 0), "lf": (5, -8), "hd": (6, -15), "ew": (5, -20)},
+        "parts": {
+            "bd": (-9, -15, [
+                "..OOOOOOOOOOO...",
+                ".OmmmCWmmCWppO..",
+                "ORmmmmmmppCWppO.",
+                "ORRmmmmppppCCCO.",
+                ".ORRmmmCCCCCCCO.",
+                "..OOOOOOOOOOOO..",
+            ]),
+            "hd": (-2, -7, [
+                ".OmmpppOO...",
+                "OmmpppCCOO..",
+                "OmpWEppCCEO.",
+                "OmpEEppCCCEO",
+                "OmmCCCCCKCO.",
+                "OmmOOOOOOO..",
+                "OmppO.......",
+            ]),
+            "ew": (-3, -5, [
+                "OD...OD..",
+                "OLO.OOLO.",
+                "OmKO.OmKO",
+                ".OO...OO.",
+            ]),
+            "tl": (-4, -4, [
+                ".OOO.",
+                "OmmWO",
+                "OCCWO",
+                ".OOO.",
+            ]),
+            "lf": (-2, 0, [
+                "OmO",
+                "OpO",
+                "OpO",
+                "OpO",
+                "OpO",
+                "OpO",
+                "ODO",
+                "OEO",
+            ]),
+            "lb": (-2, 0, [
+                "ORO",
+                "OmO",
+                "OmO",
+                "OpO",
+                "OpO",
+                "OpO",
+                "ODO",
+                "OEO",
+            ]),
+        },
+    },
+    "tree_frog": {
+        "shadow": (7.6, 1.7),
+        "nocturnal": True,
+        "flying": False,
+        "joints": {"lb": (-3, -3), "tl": (-5, -4), "bd": (0, 0), "lf": (3, -3), "hd": (3, -7), "ew": (4, -5)},
+        "parts": {
+            "bd": (-5, -8, [
+                "..OOOOOOO..",
+                ".OAAYYYyyO.",
+                "OJJAAYYYYSO",
+                "OJJAAASSCCO",
+                ".OCCCCCCCO.",
+                "..OOOOOOO..",
+            ]),
+            "hd": (-2, -5, [
+                ".OPOO.OPOO.",
+                "OPWEOOPWEO.",
+                "OAYYYYYyyYO",
+                "OAAYYYYYYCO",
+                ".OCCCCCCCO.",
+            ]),
+            "ew": (-2, -2, [
+                ".OOOO.",
+                "OSCCLO",
+                ".OOOO.",
+            ]),
+            "tl": (-3, -3, [
+                ".OOO.",
+                "OFJAO",
+                "OJAAO",
+                ".OOO.",
+            ]),
+            "lf": (-2, 0, [
+                ".OAO.",
+                "OPKPO",
+                "O.O.O",
+            ]),
+            "lb": (-2, 0, [
+                "OJAO.",
+                "OPKPO",
+                "O.O.O",
+            ]),
+        },
+    },
+    "azure_bluebird": {
+        "shadow": (7.4, 1.6),
+        "nocturnal": False,
+        "flying": True,
+        "joints": {"lb": (-1, -3), "tl": (-6, -7), "bd": (0, 0), "lf": (1, -3), "hd": (3, -10), "ew": (-1, -9)},
+        "parts": {
+            "bd": (-6, -10, [
+                "..OOOOOOO..",
+                ".ONBBBUUUO.",
+                "ONNBBBUrrrO",
+                "ONNBBUrpppO",
+                ".OCCCCCCCO.",
+                "..OOOOOOO..",
+            ]),
+            "hd": (-2, -5, [
+                ".OBUUUOO...",
+                "OBBUWEEUO..",
+                "OBBUEEEUEEO",
+                "OrrppCCCCO.",
+                ".OOOOOOOO..",
+            ]),
+            "ew": (-4, -2, [
+                ".OOOOOOO.",
+                "ONNBBUUZO",
+                "ONNNBUUOO",
+                ".OOOOOO..",
+            ]),
+            "tl": (-5, -3, [
+                "OOOOO.",
+                "ONNBUO",
+                ".ONBOO",
+            ]),
+            "lf": (-1, 0, [
+                "ODO",
+                "OEO",
+                "OO.",
+            ]),
+            "lb": (-1, 0, [
+                "ODO",
+                "OEO",
+                ".OO",
+            ]),
+        },
+    },
+}
+
+# WHY: 25 GPU-composited animation bindings using ONLY transform + opacity.
+ANIM_25 = {
+    "walk": {
+        "dur": "0.78s",
+        "rig": ("k-bob1", "0.39s"),
+        "lf": ("k-leg1", "0.78s"),
+        "lb": ("k-leg1r", "0.78s"),
+        "hd": ("k-nod1", "0.78s"),
+        "tl": ("k-wag1", "0.78s"),
+        "sh": ("k-sh1", "0.39s"),
+    },
+    "trot": {
+        "dur": "0.46s",
+        "rig": ("k-bob2", "0.23s"),
+        "lf": ("k-leg2", "0.46s"),
+        "lb": ("k-leg2r", "0.46s"),
+        "hd": ("k-nod1", "0.46s"),
+        "ew": ("k-ear1", "0.46s"),
+        "tl": ("k-wag2", "0.46s"),
+        "sh": ("k-sh2", "0.23s"),
+    },
+    "gallop": {
+        "dur": "0.38s",
+        "rig": ("k-gal", "0.38s"),
+        "lf": ("k-leg3", "0.38s"),
+        "lb": ("k-leg3r", "0.38s"),
+        "hd": ("k-nod2", "0.38s"),
+        "ew": ("k-ear2", "0.38s"),
+        "tl": ("k-wag3", "0.38s"),
+        "sh": ("k-sh3", "0.38s"),
+    },
+    "hop": {
+        "dur": "0.58s",
+        "rig": ("k-hop", "0.58s"),
+        "lf": ("k-leg2", "0.58s"),
+        "lb": ("k-leg2r", "0.58s"),
+        "ew": ("k-wing", "0.58s"),
+        "tl": ("k-wag1", "0.58s"),
+        "sh": ("k-sh3", "0.58s"),
+    },
+    "binky_leap": {
+        "dur": "0.86s",
+        "rig": ("k-binky", "0.86s"),
+        "lf": ("k-leg3", "0.86s"),
+        "lb": ("k-kick", "0.86s"),
+        "ew": ("k-ear3", "0.86s"),
+        "tl": ("k-wag3", "0.43s"),
+        "sh": ("k-sh4", "0.86s"),
+    },
+    "graze_nibble": {
+        "dur": "1.32s",
+        "bd": ("k-leanf", "1.32s"),
+        "hd": ("k-graze", "0.66s"),
+        "ew": ("k-ear1", "1.32s"),
+        "tl": ("k-wag1", "0.88s"),
+    },
+    "sniff_ground": {
+        "dur": "0.92s",
+        "bd": ("k-leanf", "0.92s"),
+        "hd": ("k-sniff", "0.46s"),
+        "ew": ("k-ear2", "0.46s"),
+        "tl": ("k-wag2", "0.36s"),
+    },
+    "drink_ripple": {
+        "dur": "1.64s",
+        "bd": ("k-drinkb", "1.64s"),
+        "hd": ("k-drinkh", "1.64s"),
+        "tl": ("k-wag1", "1.64s"),
+    },
+    "groom_paw": {
+        "dur": "1.16s",
+        "bd": ("k-sit", "1.16s"),
+        "lf": ("k-groom", "0.58s"),
+        "hd": ("k-groomh", "0.58s"),
+        "ew": ("k-ear1", "1.16s"),
+    },
+    "scratch_ear": {
+        "dur": "0.72s",
+        "bd": ("k-sit", "0.72s"),
+        "lb": ("k-scrat", "0.22s"),
+        "hd": ("k-scrath", "0.72s"),
+        "ew": ("k-ear3", "0.22s"),
+    },
+    "stretch_bow": {
+        "dur": "2.10s",
+        "bd": ("k-bowb", "2.10s"),
+        "lf": ("k-bowl", "2.10s"),
+        "hd": ("k-bowh", "2.10s"),
+        "tl": ("k-wag3", "0.70s"),
+    },
+    "yawn": {
+        "dur": "2.25s",
+        "bd": ("k-yawnb", "2.25s"),
+        "hd": ("k-yawnh", "2.25s"),
+        "ew": ("k-ear2", "2.25s"),
+    },
+    "tail_wag_happy": {
+        "dur": "0.32s",
+        "rig": ("k-bob1", "0.32s"),
+        "hd": ("k-perk", "1.28s"),
+        "ew": ("k-ear1", "0.64s"),
+        "tl": ("k-wag4", "0.26s"),
+    },
+    "ear_perk_alert": {
+        "dur": "1.45s",
+        "rig": ("k-alert", "1.45s"),
+        "hd": ("k-perk", "1.45s"),
+        "ew": ("k-ear4", "0.72s"),
+        "tl": ("k-wag1", "1.45s"),
+    },
+    "stargaze_meteor": {
+        "dur": "2.50s",
+        "bd": ("k-sit", "2.50s"),
+        "hd": ("k-star", "2.50s"),
+        "ew": ("k-ear1", "2.50s"),
+        "tl": ("k-wag1", "1.80s"),
+    },
+    "chase_butterfly": {
+        "dur": "0.64s",
+        "rig": ("k-chase", "0.64s"),
+        "lf": ("k-bat", "0.64s"),
+        "lb": ("k-leg2r", "0.64s"),
+        "hd": ("k-star", "0.64s"),
+        "ew": ("k-wing", "0.32s"),
+        "sh": ("k-sh3", "0.64s"),
+    },
+    "boop_firefly": {
+        "dur": "1.38s",
+        "rig": ("k-boop", "1.38s"),
+        "hd": ("k-booph", "1.38s"),
+        "ew": ("k-ear2", "0.69s"),
+        "tl": ("k-wag2", "0.46s"),
+    },
+    "pounce_play": {
+        "dur": "1.18s",
+        "rig": ("k-pounce", "1.18s"),
+        "lf": ("k-leg3", "1.18s"),
+        "lb": ("k-kick", "1.18s"),
+        "hd": ("k-nod2", "1.18s"),
+        "tl": ("k-wag3", "0.59s"),
+        "sh": ("k-sh4", "1.18s"),
+    },
+    "belly_roll": {
+        "dur": "1.68s",
+        "rig": ("k-roll", "1.68s"),
+        "lf": ("k-leg2", "0.34s"),
+        "lb": ("k-leg2r", "0.34s"),
+        "tl": ("k-wag2", "0.42s"),
+        "sh": ("k-sh2", "0.84s"),
+    },
+    "happy_spin": {
+        "dur": "1.08s",
+        "rig": ("k-spin", "1.08s"),
+        "lf": ("k-leg2", "0.36s"),
+        "lb": ("k-leg2r", "0.36s"),
+        "tl": ("k-wag4", "0.27s"),
+        "sh": ("k-sh2", "0.54s"),
+    },
+    "shake_fur": {
+        "dur": "0.74s",
+        "bd": ("k-shkb", "0.18s"),
+        "hd": ("k-shkh", "0.16s"),
+        "ew": ("k-ear3", "0.15s"),
+        "tl": ("k-wag4", "0.18s"),
+    },
+    "crouch_stalk": {
+        "dur": "1.24s",
+        "bd": ("k-stalk", "1.24s"),
+        "lf": ("k-leg1", "1.24s"),
+        "lb": ("k-leg1r", "1.24s"),
+        "hd": ("k-stalkh", "1.24s"),
+        "tl": ("k-wag1", "2.48s"),
+    },
+    "perch_sway": {
+        "dur": "2.20s",
+        "rig": ("k-sway", "2.20s"),
+        "hd": ("k-nod1", "2.20s"),
+        "ew": ("k-wing", "1.10s"),
+        "tl": ("k-wag1", "2.20s"),
+    },
+    "sleep_curl_breathe": {
+        "dur": "3.20s",
+        "bd": ("k-slpb", "3.20s"),
+        "hd": ("k-slph", "3.20s"),
+        "ew": ("k-slpe", "3.20s"),
+        "tl": ("k-slpt", "3.20s"),
+        "lf": ("k-slpl", "3.20s"),
+        "lb": ("k-slpl", "3.20s"),
+    },
+    "sun_bask": {
+        "dur": "2.90s",
+        "bd": ("k-baskb", "2.90s"),
+        "hd": ("k-baskh", "2.90s"),
+        "ew": ("k-ear1", "2.90s"),
+        "tl": ("k-wag1", "2.90s"),
+    },
+}
+
+PROP_CATALOG = {
+    "sunflower_cluster": {
+        "kind": "pollen",
+        "ox": -8,
+        "oy": -18,
+        "grid": [
+            "....SSS.....SS..",
+            "...SGGGS...SGmS.",
+            "...SGDFGS..SGGS.",
+            "....SSGS....AA..",
+            "..SS..A..SS.YA..",
+            ".SGGS.YA.SGmJA..",
+            "..SS..JA..AAJF..",
+            "...T..JA..JAA...",
+            "..YA.AYJ.AJAF...",
+            "..JA.JAA.JAAF...",
+            "...JAJAAJJAF....",
+            "...FFJJJJFFF....",
+            "..FFFFFFFFFFF...",
+        ],
+    },
+    "lavender_tuft": {
+        "kind": "pollen",
+        "ox": -7,
+        "oy": -15,
+        "grid": [
+            "..x..q..x..q..",
+            ".qx..xq.qx.xq.",
+            ".vq..qv.vq.qv.",
+            "..q..x...q..x.",
+            "..v..q..vq.qv.",
+            "..A..A...A..A.",
+            ".TYA.YA.AY.AYT",
+            "..JA.JA.AJ.AJ.",
+            "..JJAAJAAJJAF.",
+            "...FFJJJJFFF..",
+            "..FFFFFFFFFF..",
+        ],
+    },
+    "chamomile_patch": {
+        "kind": "pollen",
+        "ox": -8,
+        "oy": -11,
+        "grid": [
+            "..WCW....WCW...",
+            ".WCSCW..WCSCW..",
+            "..WCW..WCW.WCW.",
+            "...A..WCSCW.A..",
+            ".WCW..AYCW.YA..",
+            "WCSCW.JA..AJT..",
+            ".WCW.AYAAJAJA..",
+            "..JJFAJJAAJFF..",
+            "..FFFFFFFFFFF..",
+        ],
+    },
+    "dandelion_puff": {
+        "kind": "dandelion",
+        "ox": -7,
+        "oy": -14,
+        "grid": [
+            "...XWX...SS...",
+            "..WXlXW.SGGS..",
+            "..WlXlW..SS...",
+            "...XWX...A....",
+            "....A...YA.XWX",
+            "...YA..AJ.WXlW",
+            "...JA..JA..XWX",
+            "..AYAAJAA..JA.",
+            "..FFJJJFF.FJF.",
+            "..FFFFFFFFFFF.",
+        ],
+    },
+    "clover_bed": {
+        "kind": "flora",
+        "ox": -8,
+        "oy": -7,
+        "grid": [
+            "..yy.CKC.yy.YY..",
+            ".yyyy.C.yyyyYYY.",
+            "..AAyyAyyAAJCKC.",
+            ".YYJAAJJAAJJAC..",
+            "FFJJAAFFAAJJFFF.",
+            ".FFFFFFFFFFFFF..",
+        ],
+    },
+    "wheat_sheaf": {
+        "kind": "flora",
+        "ox": -6,
+        "oy": -15,
+        "grid": [
+            ".L.S.L.S.L..",
+            "SLGSGLGSGLS.",
+            ".SGGSGSGGS..",
+            "..GGGGGGG...",
+            "..mmGGGmm...",
+            "...VVHVV....",
+            "...VHHHV....",
+            "..mmGGGmm...",
+            ".mGGGGGGGm..",
+            ".DmmmmmmmD..",
+            "..DDDDDDD...",
+        ],
+    },
+    "glow_mushroom_blue": {
+        "kind": "glow_mush",
+        "ox": -7,
+        "oy": -12,
+        "grid": [
+            "....ZZZZZ.....",
+            "..ZZUUUUUZZ...",
+            ".ZUUUXXXUUUZ..",
+            ".NIIIIIIIIIN..",
+            "...llCCCll.ZZZ",
+            "...llCCCllZUUZ",
+            "ZZZ.lCCCl.NIIN",
+            "ZUUZ.lCl...lCl",
+            "NIIN.lCl..llCl",
+            ".lClFFJAAJJFF.",
+            ".FFFFFFFFFFFF.",
+        ],
+    },
+    "amanita_mushroom": {
+        "kind": "shelter",
+        "ox": -7,
+        "oy": -11,
+        "grid": [
+            "...HHHHHHH....",
+            "..HHWWHHWHH...",
+            ".VHHHHHHHHHV..",
+            ".VVVWWWWWWVV..",
+            "....hCCCCh.HHH",
+            "....hCCCChHWHH",
+            "....hCCCh.VVVV",
+            "...hhCCChh.hCh",
+            "..FFJAAAJJFhCh",
+            "..FFFFFFFFFFF.",
+        ],
+    },
+    "mossy_stone": {
+        "kind": "shelter",
+        "ox": -8,
+        "oy": -9,
+        "grid": [
+            "...YYYYAAYY....",
+            "..YAAAAJJAAYY..",
+            ".FAJJJssssJAAF.",
+            ".FJJssllllssggE",
+            "EkkgsllllggggkE",
+            "EkkkggggggggkkE",
+            ".EEEEEEEEEEEEE.",
+        ],
+    },
+    "hollow_oak_log": {
+        "kind": "shelter",
+        "ox": -10,
+        "oy": -9,
+        "grid": [
+            "...YYAA........GL..",
+            ".OOOOOOOOOOOOOOmmO.",
+            "ODuuuuummmmuuuuDDDO",
+            "ODuEEEDuuuuuuuDDDDO",
+            "ODEEEEEDmmmmuuuuEEO",
+            "ODuEEEDDDDDDDDDDEEO",
+            ".OOOOOOOOOOOOOOOOO.",
+        ],
+    },
+    "acorn_stash": {
+        "kind": "shelter",
+        "ox": -6,
+        "oy": -7,
+        "grid": [
+            "...OO...OO..",
+            "..DnDO.DnDO.",
+            ".ODnnDODnnDO",
+            "..OmGO.OmLO.",
+            ".rrOOpp.OOrr",
+            "PrrrrrrrrPP.",
+        ],
+    },
+    "wood_signpost": {
+        "kind": "shelter",
+        "ox": -7,
+        "oy": -17,
+        "grid": [
+            ".....OOO......",
+            ".OOOOOOOOOOO..",
+            "OMMMMSCMMMMPO.",
+            "OmmmmmmmmmmO..",
+            ".OOOOOOuOOOO..",
+            "......OuO.....",
+            "......OuO.....",
+            "......OuO.....",
+            "......OuO.....",
+            ".....FJuJF....",
+            "....FFFFFFF...",
+        ],
+    },
+    "provence_stone_wall": {
+        "kind": "shelter",
+        "ox": -11,
+        "oy": -10,
+        "grid": [
+            "..YYAA........AAYY...",
+            ".OOOOOO.OOOO.OOOOOOO.",
+            "OsssllgOthhhOsslllggO",
+            "OggggkkOuuuuOggggkkkO",
+            "OOOOOOO.OOOO.OOOOOOOO",
+            "OthhhOOsslllgOOssllgO",
+            "OuuuuOOggggkkOOggggkO",
+            ".OOOOOOOOOOOOOOOOOOO.",
+        ],
+    },
+    "dew_puddle": {
+        "kind": "water",
+        "ox": -10,
+        "oy": -6,
+        "grid": [
+            "...FFJJNNNNNNJJFF...",
+            ".FJNNIIUUUUUUUINNJF.",
+            "FJNIIUUZZXXXZZUUINJF",
+            "FJNIUUUZZUUUUUUUINJF",
+            ".FFJNNIIIIIIIIINNJF.",
+            "...FFFFNNNNNNFFFF...",
+        ],
+    },
+    "lilypad_lotus": {
+        "kind": "water",
+        "ox": -9,
+        "oy": -8,
+        "grid": [
+            ".....K.W.K........",
+            "....KKWCWKK.......",
+            "....VHHSHHV.......",
+            "..FFJJVVVJJAAYY...",
+            ".FJJAAAAAAAAYYY.AF",
+            "NIFFJJAAAAAAJJ..IN",
+            ".NIIFFFFFFFFFIIIN.",
+        ],
+    },
+    "stream_brook": {
+        "kind": "water",
+        "ox": -11,
+        "oy": -7,
+        "grid": [
+            "..gFFNNNNNNNNNNFFs..",
+            ".gkFNIIUUUUUUZZINFk.",
+            "NIUUZZWWUUUUZZWWUUIN",
+            "NIIUUUUUZZUUUUUUUUIN",
+            ".FFNNIIIIIIIIIIINFF.",
+            "...FFFFNNNNNNFFFF...",
+        ],
+    },
+    "pebble_bank": {
+        "kind": "shelter",
+        "ox": -8,
+        "oy": -6,
+        "grid": [
+            "....sss....ll...",
+            "..sslllgg.sllg..",
+            ".EkglllggEkggkE.",
+            "EthEEEEEssEEEEE.",
+            "EtuO.EkkllggkE..",
+            ".EE...EEEEEEE...",
+        ],
+    },
+    "mini_footbridge": {
+        "kind": "water",
+        "ox": -11,
+        "oy": -11,
+        "grid": [
+            "..OO.....OO.....OO..",
+            "..OMO...OMMO...OMO..",
+            "..OOOOOOOOOOOOOOO...",
+            ".OMMMLLLMMMMLLLMMO..",
+            "OmmmmmmmmmmmmmmmmmO.",
+            "ODDDDOOOOOOOODDDDDO.",
+            "OO..NIIUUUUUUIIN..OO",
+            "....NIIUZZZZUIIN....",
+        ],
+    },
+    "cattail_reeds": {
+        "kind": "flora",
+        "ox": -6,
+        "oy": -17,
+        "grid": [
+            "..L.....L...",
+            "..n..L..n...",
+            ".Dn..n..nD..",
+            ".Dn..u..nD..",
+            ".un..u..nu..",
+            "..A.YA..A...",
+            ".YA.JA.AYT..",
+            ".JA.JA.AJA..",
+            "..JAJAAJA...",
+            "..JJAAJJF...",
+            "..FFFFFFFF..",
+        ],
+    },
+    "splash_fountain": {
+        "kind": "fountain",
+        "ox": -9,
+        "oy": -15,
+        "grid": [
+            ".......XWX........",
+            "......ZUWUZ.......",
+            ".....ZUU.UUZ......",
+            ".....EsssssE......",
+            "....EslllllsE.....",
+            "......EgggE.......",
+            "..EkkkkkkkkkkkE...",
+            ".EssUUZZZZZUUsSE..".replace("S", "s"),
+            ".EggIIIIIIIIggkE..",
+            "..EkkkkkkkkkkkE...",
+            "...EEEEEEEEEEE....",
+        ],
+    },
+    "iron_lantern": {
+        "kind": "lantern",
+        "ox": -6,
+        "oy": -19,
+        "grid": [
+            "....EEEEE...",
+            "...EkssskE..",
+            "..EkE...EkE.",
+            "..EkEEEEEkE.",
+            ".EEkGGGGkEE.",
+            "..EkSWWSkE..",
+            "..EkSWWSkE..",
+            "..EEGGGGEE..",
+            "....EkkE....",
+            "....EkE.....",
+            "....EkE.....",
+            "....EkE.....",
+            "...EEkEE....",
+            "..EEEEEE....",
+        ],
+    },
+    "straw_nest": {
+        "kind": "shelter",
+        "ox": -7,
+        "oy": -7,
+        "grid": [
+            "....ZX..XZ....",
+            "...ZWWXZWWX...",
+            ".OOtLLLZZLLtO.",
+            "OutGGttttGGtuO",
+            "OnuuuuuuuuuunO",
+            ".OnnnnnnnnnnO.",
+            "..OOOOOOOOOO..",
+        ],
+    },
+    "wood_birdhouse": {
+        "kind": "hang",
+        "ox": -6,
+        "oy": -18,
+        "grid": [
+            ".....FF.....",
+            "...FFYYFF...",
+            "..FJJYYJJF..",
+            ".FJJAAAAJJF.",
+            "..OOOOOOOO..",
+            "..OMMMMMMO..",
+            "..OMMEEMMO..",
+            "..OMMEEMMO..",
+            "..OmmSSmmO..",
+            "..OOOOOOOO..",
+            ".....OuO....",
+            ".....OuO....",
+            ".....OuO....",
+            "....OOOOO...",
+        ],
+    },
+    "oak_barrel": {
+        "kind": "shelter",
+        "ox": -6,
+        "oy": -11,
+        "grid": [
+            "..OOOOOOOO..",
+            ".OmmMMMMmmO.",
+            "EkkkkkkkkkkE",
+            "OummMMMMmmuO",
+            "OummMMMMmmuO",
+            "EssssssssssE",
+            "OummMMMMmmuO",
+            ".ODuuuuuuDO.",
+            "..OOOOOOOO..",
+        ],
+    },
+    "berry_bush": {
+        "kind": "flora",
+        "ox": -8,
+        "oy": -11,
+        "grid": [
+            "....YYYYAAY.....",
+            "..YYAAHWHAAYY...",
+            ".YAAJJVVVJJAAY..",
+            ".FAJAAAYYAAHWHF.",
+            "FAJJHWHAAJJVVVJF",
+            "FAJJVVVJJAAAAJJF",
+            ".FFJJJJJJJJJJFF.",
+            "..FFFFFFFFFFFF..",
+        ],
+    },
+    "garden_bench": {
+        "kind": "shelter",
+        "ox": -10,
+        "oy": -10,
+        "grid": [
+            ".E..OOOOOOOOOOOO..E.",
+            ".EkOMMMLLLLLLMMMOKE.".replace("K", "k"),
+            ".EkOmmmmmmmmmmmmOkE.",
+            ".Ek.E..........E.kE.",
+            "EEkOOOOOOOOOOOOOOkEE",
+            "EkOMMMMLLLLLLMMMMOkE",
+            ".E..E..........E..E.",
+            ".E..E..........E..E.",
+        ],
+    },
+    "cypress_alcove": {
+        "kind": "flora",
+        "ox": -6,
+        "oy": -21,
+        "grid": [
+            ".....F......",
+            "....FJF.....",
+            "....JYA.....",
+            "...FJAA.....",
+            "...JAAYF....",
+            "..FJAAJF....",
+            "..JAAYJJF...",
+            "..FAAJJAF...",
+            ".FJAAYJAAF..",
+            ".FAAJJAAJF..",
+            ".FFJJAAJFF..",
+            "..FFJJJFF...",
+            "....OuO.....",
+            "...OOOOO....",
+        ],
+    },
+    "crystal_geode": {
+        "kind": "crystal",
+        "ox": -7,
+        "oy": -10,
+        "grid": [
+            "....xW..Wx....",
+            "...qxUxxUxq...",
+            "..EvqqUUqqvE..",
+            ".EkvqqxxqqvkE.",
+            "EkkvvqqqqvvkkE",
+            "EkkvvvvvvvvkkE",
+            ".EEEEEEEEEEEE.",
+        ],
+    },
+    "starlight_windchime": {
+        "kind": "hang",
+        "ox": -6,
+        "oy": -16,
+        "grid": [
+            ".....SS.....",
+            "..GGGGGGGG..",
+            "..Z..X..Z..W",
+            "..Z..X..Z..Z",
+            "..s..Z..s..Z",
+            "..s..Z..s..s",
+            ".....s.....s",
+            "....S.......",
+        ],
+    },
+    "weathervane": {
+        "kind": "hang",
+        "ox": -6,
+        "oy": -17,
+        "grid": [
+            ".....SW.....",
+            "..SSGGGGSS..",
+            "....GGGG....",
+            ".....Ek.....",
+            "..s..Ek..s..",
+            ".ssssssssss.",
+            ".....Ek.....",
+            ".....Ek.....",
+            ".....Ek.....",
+            "....EEEE....",
+        ],
+    },
+    "firefly_jar": {
+        "kind": "firefly_jar",
+        "ox": -5,
+        "oy": -10,
+        "grid": [
+            "...uuuu...",
+            "..ummmmu..",
+            ".EssssssE.",
+            ".EXZWWZXE.",
+            ".EXSSWZXE.",
+            ".EZZUWZSE.",
+            ".EXZZZZXE.",
+            "..EEEEEE..",
+        ],
+    },
+    "wild_rose_bush": {
+        "kind": "pollen",
+        "ox": -8,
+        "oy": -11,
+        "grid": [
+            "...HKH....HKH...",
+            "..HVWVH..HVWVH..",
+            "...VVV.AA.VVV...",
+            ".HKH..YAAY..HKH.",
+            "HVWVH.JAAJ.HVWVH",
+            ".VVV.AJAAJA.VVV.",
+            "..FFJJAAAAJJFF..",
+            "..FFFFFFFFFFFF..",
+        ],
+    },
+}
+
+PROPS_32 = PROP_CATALOG
+
+BF_FRAMES = {
+    "bfm": (
+        [
+            "...E...E...",
+            "EEE.E.E.EEE",
+            "EWUXEEEXUWE",
+            "EUXUEEEUXUE",
+            ".EUIEEEIUE.",
+            "..EEIUIEE..",
+            "..EUXEXUE..",
+        ],
+        [
+            "...E...E...",
+            ".EEE.E.EEE.",
+            ".EWUXEXUWE.",
+            "..EUIEIUE..",
+            "..EEUIUEE..",
+            "...EU.UE...",
+            "...........",
+        ],
+        [
+            "...E.E.....",
+            "...EEEEE...",
+            "....EUXWE..",
+            "...EUXXUE..",
+            "...EEIEE...",
+            "....EEE....",
+            "...........",
+        ],
+    ),
+    "bfg": (
+        [
+            "...E...E...",
+            "EEE.E.E.EEE",
+            "EWSGEEEGSWE",
+            "EGSGEEEGSGE",
+            ".EGPEEEPGE.",
+            "..EEPGPEE..",
+            "..EGPEPGE..",
+        ],
+        [
+            "...E...E...",
+            ".EEE.E.EEE.",
+            ".EWSGEGSWE.",
+            "..EPPEPPE..",
+            "..EEPGPEE..",
+            "...EP.PE...",
+            "...........",
+        ],
+        [
+            "...E.E.....",
+            "...EEEEE...",
+            "....EGSWE..",
+            "...EGGSGE..",
+            "...EEPEE...",
+            "....EEE....",
+            "...........",
+        ],
+    ),
+}
+
+EMOTE_GRIDS = {
+    "sparkle": (-3, -21, [
+        "...S...",
+        ".Z.W.Z.",
+        "..WWW..",
+        "SWWWWWS",
+        "..WWW..",
+        ".Z.W.Z.",
+        "...S...",
+    ]),
+    "heart": (-3, -21, [
+        ".KK.HH.",
+        "KHHHHHH",
+        ".HHHHH.",
+        "..HHH..",
+        "...H...",
+    ]),
+    "zzz": (-3, -21, [
+        "..SSS",
+        "...S.",
+        "..SSS",
+        "ZZZ..",
+        ".Z...",
+        "ZZZ..",
+    ]),
+    "note": (-3, -21, [
+        "..SSSS",
+        "..S..S",
+        "..S..S",
+        "TTS.TT",
+    ]),
+}
+
+
+def _norm_scene(scene_kind):
+    s = (scene_kind or "nocturne").lower()
+    if "mat" in s or "01" in s:
+        return "matrix"
+    if "core" in s or "02" in s:
+        return "core"
+    return "nocturne"
+
+
+def _compute_merged_spans(rows, ox=0, oy=0):
+    present = {ch for row in rows for ch in row if ch != "."}
+    spans_by_col = []
+    for ch in LAYER_ORDER:
+        if ch not in present:
+            continue
+        rank = LAYER_RANK[ch]
+        runs = []
+        for r_idx, row in enumerate(rows):
+            w = len(row)
+            c_idx = 0
+            while c_idx < w:
+                if row[c_idx] != ch:
+                    c_idx += 1
+                    continue
+                last_need = c_idx
+                scan = c_idx + 1
+                while scan < w:
+                    cell = row[scan]
+                    if cell == ch:
+                        last_need = scan
+                        scan += 1
+                    elif cell != "." and LAYER_RANK[cell] > rank:
+                        scan += 1
+                    else:
+                        break
+                runs.append([ox + c_idx, oy + r_idx, last_need - c_idx + 1, 1])
+                c_idx = last_need + 1
+
+        merged = []
+        active = {}
+        for x, y, rw, rh in runs:
+            key = (x, rw)
+            prev = active.get(key)
+            if prev is not None and prev[1] + prev[3] == y:
+                prev[3] += rh
+            else:
+                item = [x, y, rw, rh]
+                merged.append(item)
+                active[key] = item
+        spans_by_col.append((ECO_PALETTE[ch], merged))
+    return spans_by_col
+
+
+def _merge_grid_rects(rows, ox=0, oy=0):
+    # WHY: Preserves merged horizontal/vertical <rect> runs for modular articulated animal sub-parts.
+    elems = []
+    for hex_col, merged in _compute_merged_spans(rows, ox, oy):
+        rects = []
+        for x, y, rw, rh in merged:
+            xa = ' x="%d"' % x if x else ""
+            ya = ' y="%d"' % y if y else ""
+            rects.append('<rect%s%s width="%d" height="%d"/>' % (xa, ya, rw, rh))
+        elems.append('<g fill="%s">%s</g>' % (hex_col, "".join(rects)))
+    return "".join(elems)
+
+
+def _merge_grid_paths(rows, ox=0, oy=0):
+    # WHY: Lossless crispEdges axis-aligned path encoding shrinks pixel micro-habitat <defs> by >3.5x.
+    elems = []
+    for hex_col, merged in _compute_merged_spans(rows, ox, oy):
+        cmds = []
+        cx, cy = None, None
+        for x, y, rw, rh in merged:
+            abs_m = "M%d%s%d" % (x, "" if y < 0 else " ", y)
+            if cx is not None:
+                dx, dy = x - cx, y - cy
+                rel_m = "m%d%s%d" % (dx, "" if dy < 0 else " ", dy)
+                move_s = rel_m if len(rel_m) < len(abs_m) else abs_m
+            else:
+                move_s = abs_m
+            close_h = ("H%d" % x) if len("H%d" % x) < len("h-%d" % rw) else ("h-%d" % rw)
+            cmds.append("%sh%dv%d%sz" % (move_s, rw, rh, close_h))
+            cx, cy = x, y
+        elems.append('<path fill="%s" d="%s"/>' % (hex_col, "".join(cmds)))
+    return "".join(elems)
+
+
+def _build_css(prefix):
+    # WHY: 100% GPU-composited CSS transforms/opacity with per-species joint pivots and strict reduced-motion freeze.
+    p = prefix
+    kf = [
+        ".eco-stage{shape-rendering:crispEdges}",
+        ".eco-calm,.%s-eco-calm{display:none}" % p,
+        ".%s-r,.%s-s,.%s-sway,.%s-rip{transform-origin:0 0}" % (p, p, p, p),
+        ".%s-r,.%s-b,.%s-t,.%s-d,.%s-f,.%s-h,.%s-e,.%s-s{animation-timing-function:ease-in-out;animation-iteration-count:infinite}"
+        % (p, p, p, p, p, p, p, p),
+        ".%s-s{fill:#030712;fill-opacity:.52}" % p,
+    ]
+    origin_groups = {}
+    for s_idx, sp_name in enumerate(ANIMAL_SPECIES):
+        joints = ANIMAL_CATALOG[sp_name]["joints"]
+        for pk in PART_KEYS:
+            jx, jy = joints[pk]
+            origin_groups.setdefault((jx, jy), []).append(".%s-sp%d .%s-%s" % (p, s_idx, p, PART_SHORT[pk]))
+    for (jx, jy), sels in origin_groups.items():
+        kf.append("%s{transform-origin:%dpx %dpx}" % (",".join(sels), jx, jy))
+
+    kf.extend([
+        "@keyframes %s-k-bob1{50%%{transform:translateY(-1.1px)}}" % p,
+        "@keyframes %s-k-bob2{50%%{transform:translateY(-2.3px)}}" % p,
+        "@keyframes %s-k-gal{0%%,100%%{transform:rotate(4deg)}45%%{transform:translateY(-4.6px) rotate(-7deg)}}" % p,
+        "@keyframes %s-k-hop{0%%,100%%{transform:scale(1.06,.92)}45%%{transform:translateY(-6.5px) rotate(-8deg) scale(.96,1.05)}}" % p,
+        "@keyframes %s-k-binky{0%%,100%%{transform:scale(1.08,.9)}35%%{transform:translateY(-10px) rotate(-13deg)}65%%{transform:translateY(-8px) rotate(10deg)}}" % p,
+        "@keyframes %s-k-leg1{0%%,100%%{transform:rotate(-18deg)}50%%{transform:rotate(18deg)}}" % p,
+        "@keyframes %s-k-leg1r{0%%,100%%{transform:rotate(18deg)}50%%{transform:rotate(-18deg)}}" % p,
+        "@keyframes %s-k-leg2{0%%,100%%{transform:rotate(-27deg)}50%%{transform:rotate(27deg)}}" % p,
+        "@keyframes %s-k-leg2r{0%%,100%%{transform:rotate(27deg)}50%%{transform:rotate(-27deg)}}" % p,
+        "@keyframes %s-k-leg3{0%%,100%%{transform:rotate(-38deg)}50%%{transform:rotate(32deg)}}" % p,
+        "@keyframes %s-k-leg3r{0%%,100%%{transform:rotate(36deg)}50%%{transform:rotate(-30deg)}}" % p,
+        "@keyframes %s-k-kick{45%%{transform:rotate(42deg)}75%%{transform:rotate(-16deg)}}" % p,
+        "@keyframes %s-k-nod1{0%%,100%%{transform:rotate(-3deg)}50%%{transform:rotate(4deg)}}" % p,
+        "@keyframes %s-k-nod2{0%%,100%%{transform:rotate(-10deg)}50%%{transform:rotate(8deg)}}" % p,
+        "@keyframes %s-k-ear1{0%%,100%%{transform:rotate(-4deg)}50%%{transform:rotate(5deg)}}" % p,
+        "@keyframes %s-k-ear2{0%%,100%%{transform:rotate(-12deg)}50%%{transform:rotate(8deg)}}" % p,
+        "@keyframes %s-k-ear3{0%%,100%%{transform:rotate(-22deg)}50%%{transform:rotate(14deg)}}" % p,
+        "@keyframes %s-k-ear4{0%%,70%%,100%%{transform:rotate(-18deg)}35%%{transform:rotate(-4deg)}}" % p,
+        "@keyframes %s-k-wing{0%%,100%%{transform:rotate(6deg)}50%%{transform:rotate(-28deg) scaleY(.78)}}" % p,
+        "@keyframes %s-k-wag1{0%%,100%%{transform:rotate(-9deg)}50%%{transform:rotate(11deg)}}" % p,
+        "@keyframes %s-k-wag2{0%%,100%%{transform:rotate(-16deg)}50%%{transform:rotate(20deg)}}" % p,
+        "@keyframes %s-k-wag3{0%%,100%%{transform:rotate(-20deg)}50%%{transform:rotate(28deg)}}" % p,
+        "@keyframes %s-k-wag4{0%%,100%%{transform:rotate(-26deg)}50%%{transform:rotate(34deg)}}" % p,
+        "@keyframes %s-k-sh1{50%%{transform:scale(.93,.95)}}" % p,
+        "@keyframes %s-k-sh2{50%%{transform:scale(.86,.9)}}" % p,
+        "@keyframes %s-k-sh3{0%%,100%%{transform:scale(1.04,1)}45%%{transform:scale(.74,.8)}}" % p,
+        "@keyframes %s-k-sh4{0%%,100%%{transform:scale(1.06,1)}45%%{transform:scale(.64,.72)}}" % p,
+        "@keyframes %s-k-leanf{0%%,100%%{transform:rotate(5deg) translateY(.8px)}50%%{transform:rotate(7deg) translateY(1.2px)}}" % p,
+        "@keyframes %s-k-graze{0%%,100%%{transform:translate(1px,2px) rotate(22deg)}50%%{transform:translate(1.5px,2.8px) rotate(29deg)}}" % p,
+        "@keyframes %s-k-sniff{0%%,100%%{transform:translate(1px,1.5px) rotate(18deg)}50%%{transform:translate(2.4px,2.2px) rotate(25deg)}}" % p,
+        "@keyframes %s-k-drinkb{35%%,65%%{transform:rotate(8deg) translateY(1.4px)}}" % p,
+        "@keyframes %s-k-drinkh{0%%,100%%{transform:rotate(-8deg)}35%%,62%%{transform:translate(1px,2.5px) rotate(28deg)}}" % p,
+        "@keyframes %s-k-sit{0%%,100%%{transform:rotate(-9deg) translateY(1px)}50%%{transform:rotate(-11deg) translateY(1.4px)}}" % p,
+        "@keyframes %s-k-groom{0%%,100%%{transform:rotate(-44deg) translate(1px,-2px)}50%%{transform:rotate(-62deg) translate(2px,-3px)}}" % p,
+        "@keyframes %s-k-groomh{0%%,100%%{transform:rotate(8deg)}50%%{transform:rotate(16deg)}}" % p,
+        "@keyframes %s-k-scrat{0%%,100%%{transform:rotate(-42deg) translate(2px,-2px)}50%%{transform:rotate(-58deg) translate(2px,-3px)}}" % p,
+        "@keyframes %s-k-scrath{0%%,100%%{transform:rotate(12deg)}50%%{transform:rotate(17deg)}}" % p,
+        "@keyframes %s-k-bowb{35%%,70%%{transform:rotate(12deg) translateY(1.8px)}}" % p,
+        "@keyframes %s-k-bowl{35%%,70%%{transform:rotate(-44deg)}}" % p,
+        "@keyframes %s-k-bowh{35%%,70%%{transform:rotate(-14deg)}}" % p,
+        "@keyframes %s-k-yawnb{45%%,65%%{transform:scale(1.06,1.08)}}" % p,
+        "@keyframes %s-k-yawnh{40%%,68%%{transform:rotate(-25deg) translate(-1px,-1px)}}" % p,
+        "@keyframes %s-k-perk{0%%,100%%{transform:rotate(-10deg)}50%%{transform:rotate(-16deg)}}" % p,
+        "@keyframes %s-k-alert{0%%,100%%{transform:scale(.98,1.04)}50%%{transform:translateY(-1.2px) scale(.96,1.08)}}" % p,
+        "@keyframes %s-k-star{0%%,100%%{transform:rotate(-24deg)}45%%{transform:rotate(-34deg)}75%%{transform:rotate(-28deg)}}" % p,
+        "@keyframes %s-k-chase{45%%{transform:translate(1px,-5.5px) rotate(-11deg)}}" % p,
+        "@keyframes %s-k-bat{0%%,100%%{transform:rotate(-12deg)}45%%{transform:rotate(-52deg)}}" % p,
+        "@keyframes %s-k-boop{45%%{transform:translate(2.5px,-1px)}72%%{transform:translate(-1px,-3px)}}" % p,
+        "@keyframes %s-k-booph{0%%,100%%{transform:rotate(-6deg)}45%%{transform:rotate(-18deg)}72%%{transform:rotate(-24deg)}}" % p,
+        "@keyframes %s-k-pounce{0%%,38%%{transform:translate(-1px,1.6px) scale(1.12,.82)}68%%{transform:translate(4px,-7.2px) rotate(-13deg)}}" % p,
+        "@keyframes %s-k-roll{30%%,70%%{transform:translateY(-5.5px) rotate(172deg)}50%%{transform:translateY(-5.5px) rotate(160deg)}}" % p,
+        "@keyframes %s-k-spin{25%%,75%%{transform:translateY(-4px) scale(.18,1.04)}50%%{transform:translateY(-2px) scale(-1,1)}}" % p,
+        "@keyframes %s-k-shkb{0%%,100%%{transform:translateX(-1px) rotate(-4deg)}50%%{transform:translateX(1px) rotate(4deg)}}" % p,
+        "@keyframes %s-k-shkh{0%%,100%%{transform:rotate(-11deg)}50%%{transform:rotate(11deg)}}" % p,
+        "@keyframes %s-k-stalk{0%%,100%%{transform:translateY(2px) scale(1.08,.84)}50%%{transform:translate(.8px,2.3px) scale(1.1,.82)}}" % p,
+        "@keyframes %s-k-stalkh{0%%,100%%{transform:translate(1.5px,1.5px) rotate(7deg)}50%%{transform:translate(2.2px,1.8px) rotate(11deg)}}" % p,
+        "@keyframes %s-k-sway{0%%,100%%{transform:rotate(-3.5deg)}50%%{transform:rotate(3.5deg)}}" % p,
+        "@keyframes %s-k-slpb{0%%,100%%{transform:translateY(2.5px) scale(1.06,.83)}50%%{transform:translateY(2.2px) scale(1.1,.88)}}" % p,
+        "@keyframes %s-k-slph{0%%,100%%{transform:translate(-1.5px,2.8px) rotate(18deg)}50%%{transform:translate(-1.5px,2.4px) rotate(15deg)}}" % p,
+        "@keyframes %s-k-slpe{0%%,100%%{transform:translate(-1px,2.6px) rotate(14deg)}50%%{transform:translate(-1px,2.3px) rotate(11deg)}}" % p,
+        "@keyframes %s-k-slpt{0%%,100%%{transform:translate(2px,2px) rotate(-24deg)}50%%{transform:translate(2px,2px) rotate(-20deg)}}" % p,
+        "@keyframes %s-k-slpl{0%%,100%%{transform:scaleY(.45)}}" % p,
+        "@keyframes %s-k-baskb{0%%,100%%{transform:translateY(1.8px) scale(1.1,.87)}50%%{transform:translateY(1.5px) scale(1.13,.9)}}" % p,
+        "@keyframes %s-k-baskh{0%%,100%%{transform:rotate(-14deg)}50%%{transform:rotate(-19deg)}}" % p,
+        "@keyframes %s-night-env{0%%,23%%{opacity:.96}33%%,69%%{opacity:.04}80%%,100%%{opacity:.96}}" % p,
+        "@keyframes %s-ltn-env{0%%,23%%{opacity:.95}31%%,71%%{opacity:0}81%%,100%%{opacity:.95}}" % p,
+        "@keyframes %s-ff-pulse{0%%,100%%{transform:scale(.72);opacity:.38}50%%{transform:scale(1.24);opacity:1}}" % p,
+        "@keyframes %s-breeze{0%%,100%%{transform:skewX(-3.2deg)}50%%{transform:skewX(3.6deg)}}" % p,
+        "@keyframes %s-pend{0%%,100%%{transform:rotate(-5deg)}50%%{transform:rotate(5.5deg)}}" % p,
+        "@keyframes %s-rip{0%%{transform:scale(.35);opacity:.88}80%%,100%%{transform:scale(1.55,1.45);opacity:0}}" % p,
+        "@keyframes %s-glint{0%%,100%%{opacity:.3}50%%{opacity:.98}}" % p,
+        "@keyframes %s-q3a{0%%{opacity:1}26%%{opacity:0}}" % p,
+        "@keyframes %s-q3b{0%%{opacity:0}26%%{opacity:1}74%%{opacity:0}}" % p,
+        "@keyframes %s-q3c{0%%{opacity:0}74%%{opacity:1}}" % p,
+        "@keyframes %s-q4a{0%%{opacity:1}24%%{opacity:0}}" % p,
+        "@keyframes %s-q4b{0%%{opacity:0}24%%{opacity:1}50%%{opacity:0}}" % p,
+        "@keyframes %s-q4c{0%%{opacity:0}50%%{opacity:1}76%%{opacity:0}}" % p,
+        "@keyframes %s-q4d{0%%{opacity:0}76%%{opacity:1}}" % p,
+        ".%s-q30{animation:%s-q3a 60s step-end infinite}" % (p, p),
+        ".%s-q31{animation:%s-q3b 60s step-end infinite}" % (p, p),
+        ".%s-q32{animation:%s-q3c 60s step-end infinite}" % (p, p),
+        ".%s-q40{animation:%s-q4a 60s step-end infinite}" % (p, p),
+        ".%s-q41{animation:%s-q4b 60s step-end infinite}" % (p, p),
+        ".%s-q42{animation:%s-q4c 60s step-end infinite}" % (p, p),
+        ".%s-q43{animation:%s-q4d 60s step-end infinite}" % (p, p),
+        ".%s-night-glow{animation:%s-night-env 60s ease-in-out infinite}" % (p, p),
+        ".%s-ltn-glow{animation:%s-ltn-env 60s ease-in-out infinite}" % (p, p),
+        ".%s-breeze{animation:%s-breeze 4.6s ease-in-out infinite}" % (p, p),
+        ".%s-pend{animation:%s-pend 3.8s ease-in-out infinite}" % (p, p),
+        ".%s-rip{animation:%s-rip 2.8s ease-out infinite}" % (p, p),
+        ".%s-glint{animation:%s-glint 2.1s ease-in-out infinite}" % (p, p),
+    ])
+    for a_idx, anim_name in enumerate(ANIMATION_NAMES):
+        spec = ANIM_25[anim_name]
+        for part_key in ("rig", "bd", "hd", "lf", "lb", "tl", "ew", "sh"):
+            if part_key in spec:
+                kname, kdur = spec[part_key]
+                kf.append(
+                    ".%s-a%d .%s-%s{animation:%s-%s %s infinite}"
+                    % (p, a_idx, p, PART_SHORT[part_key], p, kname, kdur)
+                )
+    kf.append(
+        "@keyframes %s-seed{0%%,25%%,65%%,100%%{opacity:0;transform:translate(0,-8px)}40%%{opacity:.95;transform:translate(4px,-18px)}55%%{opacity:0;transform:translate(7px,-24px)}}" % p
+    )
+    kf.append(
+        ".%s-seed{animation:%s-seed 60s ease-out infinite}" % (p, p)
+    )
+    kf.append(
+        ".%s-ffp{animation:%s-ff-pulse 2.2s ease-in-out infinite;transform-origin:0 0}" % (p, p)
+    )
+    kf.append(
+        "@media (prefers-reduced-motion: reduce){"
+        ".eco-live,.%s-eco-live,.pup-live{display:none !important;animation:none !important}"
+        ".eco-live *,.%s-eco-live *{animation:none !important}"
+        ".eco-calm,.%s-eco-calm,.pup-calm{display:inline !important;animation:none !important}"
+        "}" % (p, p, p)
+    )
+    return "<style>%s</style>" % "".join(kf)
+
+
+def render_ecosystem_defs(prefix, scene_kind="nocturne"):
+    _ = _norm_scene(scene_kind)
+    p = prefix
+    defs = [
+        '<radialGradient id="%s-eco-ltn-cone" cx="0.5" cy="0.18" r="0.82">' % p,
+        '<stop offset="0%" stop-color="#fef08a" stop-opacity="0.62"/>',
+        '<stop offset="52%" stop-color="#f59e0b" stop-opacity="0.22"/>',
+        '<stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<radialGradient id="%s-eco-mush-glow" cx="0.5" cy="0.5" r="0.5">' % p,
+        '<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.64"/>',
+        '<stop offset="58%" stop-color="#34d399" stop-opacity="0.22"/>',
+        '<stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<radialGradient id="%s-eco-ff-gold" cx="0.5" cy="0.5" r="0.5">' % p,
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>',
+        '<stop offset="34%" stop-color="#fde047" stop-opacity="0.78"/>',
+        '<stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>',
+        "</radialGradient>",
+        '<radialGradient id="%s-eco-ff-em" cx="0.5" cy="0.5" r="0.5">' % p,
+        '<stop offset="0%" stop-color="#fefce8" stop-opacity="0.96"/>',
+        '<stop offset="36%" stop-color="#6ee7b7" stop-opacity="0.74"/>',
+        '<stop offset="100%" stop-color="#10b981" stop-opacity="0"/>',
+        "</radialGradient>",
+    ]
+
+    for s_idx, sp_name in enumerate(ANIMAL_SPECIES):
+        sp = ANIMAL_CATALOG[sp_name]
+        joints = sp["joints"]
+        for pk in PART_KEYS:
+            jx, jy = joints[pk]
+            ox, oy, grid = sp["parts"][pk]
+            defs.append(
+                '<g id="%s-%d%s">%s</g>'
+                % (p, s_idx, PART_SHORT[pk], _merge_grid_paths(grid, ox + jx, oy + jy))
+            )
+        rx, ry = sp["shadow"]
+        full_uses = ['<ellipse class="%s-s" cy="-1.2" rx="%s" ry="%s"/>' % (p, num(rx, 1), num(ry, 1))]
+        for pk in PART_KEYS:
+            full_uses.append('<use href="#%s-%d%s"/>' % (p, s_idx, PART_SHORT[pk]))
+        defs.append('<g id="%s-s%d-full">%s</g>' % (p, s_idx, "".join(full_uses)))
+
+    for p_idx, pr_name in enumerate(PROP_NAMES):
+        pr = PROP_CATALOG[pr_name]
+        defs.append('<g id="%s-pr%d">%s</g>' % (p, p_idx, _merge_grid_paths(pr["grid"], pr["ox"], pr["oy"])))
+
+    for bf_code, frames in BF_FRAMES.items():
+        for f_i, f_grid in enumerate(frames):
+            defs.append('<g id="%s-eco-%s%d">%s</g>' % (p, bf_code, f_i, _merge_grid_paths(f_grid, -5, -4)))
+        defs.append(
+            '<g id="%s-%s-fl">'
+            '<g opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0;0;0" dur=".4s" repeatCount="indefinite"/><use href="#%s-eco-%s0"/></g>'
+            '<g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;1" dur=".4s" repeatCount="indefinite"/><use href="#%s-eco-%s1"/></g>'
+            '<g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;1;0" dur=".4s" repeatCount="indefinite"/><use href="#%s-eco-%s2"/></g>'
+            "</g>" % (p, bf_code, p, bf_code, p, bf_code, p, bf_code)
+        )
+
+    for em_key, (ex, ey, egrid) in EMOTE_GRIDS.items():
+        defs.append('<g id="%s-em-%s">%s</g>' % (p, em_key, _merge_grid_paths(egrid, ex, ey)))
+
+    defs.append('<g id="%s-ff0"><circle r="5.4" fill="url(#%s-eco-ff-gold)"/><rect x="-1" y="-1" width="2" height="2" fill="#fef9c3"/></g>' % (p, p))
+    defs.append('<g id="%s-ff1"><circle r="5.2" fill="url(#%s-eco-ff-em)"/><rect x="-1" y="-1" width="2" height="2" fill="#d1fae5"/></g>' % (p, p))
+
+    return "%s<defs>%s</defs>" % (_build_css(p), "".join(defs))
+
+
+def _firefly_zones(scene):
+    if scene == "matrix":
+        return [
+            (48, 44, 260, 228),
+            (890, 44, 1152, 228),
+            (318, 256, 962, 283),
+            (340, 62, 860, 214),
+        ]
+    if scene == "core":
+        return [
+            (26, 28, 104, 88),
+            (392, 28, 470, 88),
+            (26, 468, 152, 552),
+            (340, 468, 472, 552),
+            (742, 22, 942, 62),
+            (516, 540, 1168, 558),
+        ]
+    return [
+        (42, 48, 380, 348),
+        (380, 56, 820, 356),
+        (820, 48, 1158, 348),
+    ]
+
+
+def render_fireflies_svg(prefix, scene_kind="nocturne", width=1200, height=388, count=None):
+    # WHY: Cubic Bezier 60fps drift + 60s nocturnal luminescence envelope (bright 0-16s & 46-60s, shaded 20-42s).
+    scene = _norm_scene(scene_kind)
+    p = prefix
+    rng = random.Random("eco-ff-%s-%d-%d" % (scene, int(width), int(height)))
+    zones = _firefly_zones(scene)
+    n_ff = count if count is not None else (16 if scene == "nocturne" else (14 if scene == "matrix" else 12))
+
+    live_items = []
+    calm_items = []
+    for i in range(n_ff):
+        zx0, zy0, zx1, zy1 = zones[i % len(zones)]
+        x0 = rng.uniform(zx0 + 8, zx1 - 8)
+        y0 = rng.uniform(zy0 + 5, zy1 - 5)
+        dx1 = rng.uniform(-32, 32)
+        dy1 = rng.uniform(-16, 16)
+        dx2 = rng.uniform(-34, 34)
+        dy2 = rng.uniform(-18, 18)
+        x1 = min(zx1 - 4, max(zx0 + 4, x0 + dx1))
+        y1 = min(zy1 - 3, max(zy0 + 3, y0 + dy1))
+        x2 = min(zx1 - 4, max(zx0 + 4, x0 + dx2))
+        y2 = min(zy1 - 3, max(zy0 + 3, y0 + dy2))
+        path_d = "M%s,%s C%s,%s %s,%s %s,%s C%s,%s %s,%s %s,%s" % (
+            num(x0, 1), num(y0, 1),
+            num(x1, 1), num(y1, 1),
+            num(x2, 1), num(y2, 1),
+            num((x1 + x2) * 0.5, 1), num((y1 + y2) * 0.5, 1),
+            num(x0 - dx1 * 0.5, 1), num(y0 - dy1 * 0.5, 1),
+            num(x0 + dx2 * 0.4, 1), num(y0 - dy2 * 0.4, 1),
+            num(x0, 1), num(y0, 1),
+        )
+        ff_ref = "#%s-ff0" % p if i % 3 != 0 else "#%s-ff1" % p
+        drift_dur = rng.uniform(9.5, 16.5)
+        delay = -rng.uniform(0.2, 14.0)
+
+        live_items.append(
+            '<g><animateMotion path="%s" dur="%ss" begin="%ss" repeatCount="indefinite"/>'
+            '<use class="%s-ffp" href="%s" style="animation-delay:%ss"/></g>'
+            % (path_d, num(drift_dur, 1), num(delay, 1), p, ff_ref, num(delay * 0.3, 1))
+        )
+        if i % 2 == 0:
+            calm_items.append(
+                '<use href="%s" x="%s" y="%s" opacity="0.86"/>'
+                % (ff_ref, num(x0, 1), num(y0, 1))
+            )
+
+    return (
+        '<g class="eco-live %s-eco-live %s-night-glow" data-firefly-count="%d">%s</g>'
+        '<g class="eco-calm %s-eco-calm">%s</g>'
+        % (p, p, n_ff, "".join(live_items), p, "".join(calm_items))
+    )
+
+
+def _scene_props_layout(scene):
+    # WHY: Every scene mounts all 32 props in verified non-overlapping habitat coordinates clear of all text/UI boxes.
+    if scene == "matrix":
+        return [
+            ("cypress_alcove", 40, 247.0, 1.12, None),
+            ("provence_stone_wall", 66, 247.0, 1.15, None),
+            ("iron_lantern", 92, 246.0, 1.10, None),
+            ("sunflower_cluster", 114, 247.0, 1.15, (0.28, 0.38)),
+            ("wood_birdhouse", 138, 247.0, 1.10, None),
+            ("straw_nest", 158, 247.0, 1.12, None),
+            ("hollow_oak_log", 184, 247.0, 1.15, None),
+            ("acorn_stash", 206, 247.0, 1.15, (0.42, 0.54)),
+            ("berry_bush", 228, 247.0, 1.12, None),
+            ("mossy_stone", 252, 247.0, 1.12, None),
+            ("firefly_jar", 272, 247.0, 1.12, None),
+            ("lavender_tuft", 316, 287.5, 1.24, None),
+            ("dandelion_puff", 352, 287.5, 1.26, (0.24, 0.36)),
+            ("chamomile_patch", 394, 287.5, 1.24, None),
+            ("glow_mushroom_blue", 436, 287.5, 1.22, None),
+            ("clover_bed", 478, 287.5, 1.24, None),
+            ("wood_signpost", 518, 287.5, 1.14, None),
+            ("wild_rose_bush", 560, 287.5, 1.22, (0.50, 0.62)),
+            ("garden_bench", 608, 287.5, 1.20, None),
+            ("wheat_sheaf", 654, 287.5, 1.18, None),
+            ("amanita_mushroom", 696, 287.5, 1.20, None),
+            ("crystal_geode", 738, 287.5, 1.20, None),
+            ("oak_barrel", 780, 287.5, 1.16, None),
+            ("mini_footbridge", 824, 287.5, 1.20, None),
+            ("stream_brook", 866, 287.5, 1.20, None),
+            ("dew_puddle", 906, 287.5, 1.22, (0.62, 0.76)),
+            ("lilypad_lotus", 940, 287.5, 1.20, None),
+            ("cattail_reeds", 966, 287.5, 1.16, None),
+            ("pebble_bank", 928, 247.0, 1.15, None),
+            ("splash_fountain", 968, 247.0, 1.14, None),
+            ("starlight_windchime", 1098, 247.0, 1.14, None),
+            ("weathervane", 1146, 247.0, 1.14, None),
+        ]
+    if scene == "core":
+        return [
+            ("wood_birdhouse", 34, 82, 1.12, None),
+            ("starlight_windchime", 66, 72, 1.14, None),
+            ("weathervane", 426, 74, 1.14, None),
+            ("straw_nest", 454, 82, 1.14, None),
+            ("cypress_alcove", 28, 556, 1.18, None),
+            ("iron_lantern", 52, 555, 1.14, None),
+            ("sunflower_cluster", 78, 556, 1.20, (0.26, 0.38)),
+            ("dandelion_puff", 106, 556, 1.20, (0.44, 0.56)),
+            ("lavender_tuft", 134, 556, 1.18, None),
+            ("clover_bed", 184, 558, 1.12, None),
+            ("chamomile_patch", 246, 558, 1.10, None),
+            ("pebble_bank", 306, 558, 1.12, None),
+            ("dew_puddle", 354, 556, 1.20, (0.60, 0.74)),
+            ("lilypad_lotus", 388, 556, 1.18, None),
+            ("cattail_reeds", 418, 556, 1.16, None),
+            ("wild_rose_bush", 446, 556, 1.18, None),
+            ("firefly_jar", 470, 556, 1.16, None),
+            ("mossy_stone", 530, 349.0, 1.08, None),
+            ("acorn_stash", 558, 349.0, 1.10, (0.30, 0.44)),
+            ("glow_mushroom_blue", 590, 349.0, 1.08, None),
+            ("crystal_geode", 854, 349.0, 1.08, None),
+            ("amanita_mushroom", 888, 349.0, 1.08, None),
+            ("hollow_oak_log", 926, 349.0, 1.04, None),
+            ("provence_stone_wall", 518, 560.5, 1.06, None),
+            ("wood_signpost", 566, 560.5, 1.00, None),
+            ("wheat_sheaf", 614, 560.5, 1.04, None),
+            ("berry_bush", 666, 560.5, 1.06, (0.48, 0.60)),
+            ("garden_bench", 726, 560.5, 1.06, None),
+            ("oak_barrel", 784, 560.5, 1.04, None),
+            ("mini_footbridge", 848, 560.5, 1.06, None),
+            ("stream_brook", 914, 560.5, 1.06, None),
+            ("splash_fountain", 1148, 560.5, 1.02, None),
+        ]
+    return [
+        ("cypress_alcove", 38, 344, 1.38, None),
+        ("provence_stone_wall", 78, 346, 1.34, None),
+        ("iron_lantern", 118, 350, 1.34, None),
+        ("sunflower_cluster", 154, 356, 1.38, (0.24, 0.36)),
+        ("wheat_sheaf", 192, 358, 1.32, None),
+        ("oak_barrel", 228, 360, 1.30, None),
+        ("wood_signpost", 264, 362, 1.28, None),
+        ("lavender_tuft", 302, 366, 1.36, (0.38, 0.50)),
+        ("dandelion_puff", 342, 368, 1.38, (0.28, 0.42)),
+        ("chamomile_patch", 384, 370, 1.34, None),
+        ("clover_bed", 426, 372, 1.34, None),
+        ("hollow_oak_log", 470, 368, 1.34, None),
+        ("acorn_stash", 506, 370, 1.32, (0.46, 0.58)),
+        ("glow_mushroom_blue", 542, 366, 1.36, None),
+        ("amanita_mushroom", 580, 368, 1.32, None),
+        ("mossy_stone", 618, 366, 1.32, None),
+        ("garden_bench", 662, 362, 1.34, None),
+        ("firefly_jar", 702, 364, 1.32, None),
+        ("wild_rose_bush", 740, 366, 1.34, (0.52, 0.66)),
+        ("berry_bush", 782, 368, 1.34, None),
+        ("crystal_geode", 822, 366, 1.34, None),
+        ("mini_footbridge", 868, 362, 1.34, None),
+        ("stream_brook", 914, 364, 1.34, None),
+        ("pebble_bank", 954, 366, 1.30, None),
+        ("dew_puddle", 994, 364, 1.36, (0.60, 0.74)),
+        ("lilypad_lotus", 1034, 362, 1.34, None),
+        ("cattail_reeds", 1068, 358, 1.32, None),
+        ("splash_fountain", 1104, 352, 1.28, None),
+        ("wood_birdhouse", 1138, 346, 1.28, None),
+        ("straw_nest", 1166, 344, 1.26, None),
+        ("starlight_windchime", 96, 314, 1.24, None),
+        ("weathervane", 1152, 312, 1.24, None),
+    ]
+
+
+def _render_props_layer(prefix, scene):
+    p = prefix
+    prop_idx_map = {nm: idx for idx, nm in enumerate(PROP_NAMES)}
+    layout = _scene_props_layout(scene)
+    live = []
+    calm = []
+
+    for i, (pr_name, px, py, sc, visit_win) in enumerate(layout):
+        p_idx = prop_idx_map[pr_name]
+        kind = PROP_CATALOG[pr_name]["kind"]
+        px_s, py_s, sc_s = num(px, 1), num(py, 1), num(sc, 2)
+        ref = "#%s-pr%d" % (p, p_idx)
+        calm.append('<use href="%s" transform="translate(%s %s) scale(%s)"/>' % (ref, px_s, py_s, sc_s))
+
+        extras = []
+        inner_cls = ""
+        inner_style = ""
+        if kind == "lantern":
+            extras.append(
+                '<g class="%s-ltn-glow">'
+                '<polygon points="0,-14 -20,2 -10,4 10,4 20,2" fill="url(#%s-eco-ltn-cone)"/>'
+                '<ellipse cy="1" rx="15" ry="2.8" fill="#fde047" fill-opacity="0.26"/>'
+                "</g>" % (p, p)
+            )
+        elif kind == "glow_mush":
+            extras.append('<circle class="%s-night-glow" cy="-6" r="12" fill="url(#%s-eco-mush-glow)"/>' % (p, p))
+        elif kind == "firefly_jar":
+            extras.append('<circle class="%s-night-glow" cy="-5" r="9.5" fill="url(#%s-eco-ff-gold)"/>' % (p, p))
+        elif kind == "crystal":
+            extras.append('<circle class="%s-glint" cy="-7" r="7.5" fill="url(#%s-eco-mush-glow)"/>' % (p, p))
+        elif kind in ("water", "fountain"):
+            delay = num(-(i * 0.73) % 2.8, 2)
+            extras.append(
+                '<ellipse class="%s-rip" cy="-2.5" rx="7.5" ry="1.8" fill="none" stroke="#bae6fd" stroke-width="0.7" style="animation-delay:%ss"/>'
+                % (p, delay)
+            )
+        elif kind in ("flora", "pollen", "dandelion"):
+            inner_cls = ' class="%s-breeze"' % p
+            inner_style = ' style="animation-delay:%ss"' % num(-(i * 0.61) % 4.4, 2)
+        elif kind == "hang":
+            inner_cls = ' class="%s-pend"' % p
+            inner_style = ' style="animation-delay:%ss"' % num(-(i * 0.53) % 3.6, 2)
+
+        if visit_win is not None and kind in ("dandelion", "pollen"):
+            seed_col = "#ffffff" if kind == "dandelion" else "#fde047"
+            extras.append('<rect class="%s-seed" x="-1" y="-1" width="1.6" height="1.6" fill="%s"/>' % (p, seed_col))
+            extras.append('<rect class="%s-seed" x="2" y="-3" width="1.5" height="1.5" fill="%s" style="animation-delay:-9s"/>' % (p, seed_col))
+
+        live.append(
+            '<g data-prop="%s" transform="translate(%s %s) scale(%s)">%s<use%s%s href="%s"/></g>'
+            % (pr_name, px_s, py_s, sc_s, "".join(extras), inner_cls, inner_style, ref)
+        )
+
+    return "".join(live), "".join(calm), len(layout)
+
+
+def _scene_menagerie_cast(scene):
+    # WHY: Synchronizes diurnal/nocturnal habits across the 60s Day-Night cycle while exercising all 25 ANIMATION_NAMES.
+    if scene == "matrix":
+        return [
+            ("shiba_dog", 1.38, [
+                (0.00, 588, 287.5, "stargaze_meteor", 1, "sparkle"),
+                (0.24, 588, 287.5, "stretch_bow", 1, None),
+                (0.50, 488, 287.5, "trot", -1, None),
+                (0.76, 636, 287.5, "belly_roll", 1, "heart"),
+                (1.00, 588, 287.5, "stargaze_meteor", 1, None),
+            ]),
+            ("red_fox", 1.36, [
+                (0.00, 424, 287.5, "crouch_stalk", 1, None),
+                (0.24, 504, 287.5, "pounce_play", 1, "sparkle"),
+                (0.50, 442, 287.5, "sleep_curl_breathe", -1, "zzz"),
+                (0.76, 482, 287.5, "boop_firefly", 1, None),
+                (1.00, 424, 287.5, "crouch_stalk", 1, None),
+            ]),
+            ("calico_cat", 1.34, [
+                (0.00, 610, 287.5, "groom_paw", -1, None),
+                (0.26, 674, 287.5, "sun_bask", 1, "heart"),
+                (0.74, 616, 287.5, "scratch_ear", -1, None),
+                (1.00, 610, 287.5, "groom_paw", -1, None),
+            ]),
+            ("cottontail_rabbit", 1.36, [
+                (0.00, 344, 287.5, "ear_perk_alert", 1, None),
+                (0.26, 382, 287.5, "binky_leap", 1, "sparkle"),
+                (0.74, 396, 287.5, "graze_nibble", -1, None),
+                (1.00, 344, 287.5, "ear_perk_alert", 1, None),
+            ]),
+            ("red_squirrel", 1.34, [
+                (0.00, 196, 247.0, "tail_wag_happy", 1, None),
+                (0.26, 226, 247.0, "happy_spin", 1, "note"),
+                (0.74, 206, 247.0, "shake_fur", -1, None),
+                (1.00, 196, 247.0, "tail_wag_happy", 1, None),
+            ]),
+            ("tawny_owl", 1.38, [
+                (0.00, 146, 118.0, "gallop", 1, None),
+                (0.26, 138, 228.0, "sleep_curl_breathe", -1, "zzz"),
+                (0.74, 232, 108.0, "perch_sway", 1, "sparkle"),
+                (1.00, 146, 118.0, "gallop", 1, None),
+            ]),
+            ("mallard_duck", 1.34, [
+                (0.00, 898, 287.5, "sleep_curl_breathe", -1, None),
+                (0.26, 918, 287.5, "drink_ripple", 1, None),
+                (0.74, 938, 287.5, "walk", -1, "note"),
+                (1.00, 898, 287.5, "sleep_curl_breathe", -1, None),
+            ]),
+            ("hedgehog", 1.34, [
+                (0.00, 716, 287.5, "sniff_ground", 1, None),
+                (0.26, 748, 287.5, "sleep_curl_breathe", -1, "zzz"),
+                (0.74, 728, 287.5, "walk", 1, None),
+                (1.00, 716, 287.5, "sniff_ground", 1, None),
+            ]),
+            ("spotted_deer", 1.28, [
+                (0.00, 804, 287.5, "stargaze_meteor", -1, None),
+                (0.26, 868, 287.5, "gallop", 1, "sparkle"),
+                (0.74, 824, 287.5, "graze_nibble", -1, None),
+                (1.00, 804, 287.5, "stargaze_meteor", -1, None),
+            ]),
+            ("tree_frog", 1.36, [
+                (0.00, 938, 247.0, "hop", 1, "note"),
+                (0.26, 954, 247.0, "sun_bask", -1, None),
+                (0.74, 934, 247.0, "yawn", 1, None),
+                (1.00, 938, 247.0, "hop", 1, None),
+            ]),
+            ("azure_bluebird", 1.34, [
+                (0.00, 1084, 247.0, "perch_sway", -1, None),
+                (0.26, 986, 134.0, "chase_butterfly", -1, "note"),
+                (0.74, 1068, 247.0, "sleep_curl_breathe", -1, "zzz"),
+                (1.00, 1084, 247.0, "perch_sway", -1, None),
+            ]),
+        ]
+    if scene == "core":
+        return [
+            ("shiba_dog", 1.28, [
+                (0.00, 92, 556.0, "stargaze_meteor", 1, "sparkle"),
+                (0.24, 134, 556.0, "stretch_bow", 1, None),
+                (0.50, 246, 558.0, "trot", 1, None),
+                (0.76, 114, 556.0, "belly_roll", -1, "heart"),
+                (1.00, 92, 556.0, "stargaze_meteor", 1, None),
+            ]),
+            ("red_fox", 1.26, [
+                (0.00, 434, 556.0, "crouch_stalk", -1, None),
+                (0.24, 398, 556.0, "pounce_play", -1, "sparkle"),
+                (0.50, 438, 556.0, "sleep_curl_breathe", 1, "zzz"),
+                (0.76, 416, 556.0, "boop_firefly", -1, None),
+                (1.00, 434, 556.0, "crouch_stalk", -1, None),
+            ]),
+            ("calico_cat", 1.22, [
+                (0.00, 544, 349.0, "groom_paw", 1, None),
+                (0.26, 578, 349.0, "sun_bask", -1, "heart"),
+                (0.74, 554, 349.0, "scratch_ear", 1, None),
+                (1.00, 544, 349.0, "groom_paw", 1, None),
+            ]),
+            ("cottontail_rabbit", 1.18, [
+                (0.00, 642, 560.5, "ear_perk_alert", 1, None),
+                (0.26, 686, 560.5, "binky_leap", 1, None),
+                (0.74, 638, 560.5, "graze_nibble", -1, None),
+                (1.00, 642, 560.5, "ear_perk_alert", 1, None),
+            ]),
+            ("red_squirrel", 1.22, [
+                (0.00, 916, 349.0, "tail_wag_happy", -1, None),
+                (0.26, 886, 349.0, "happy_spin", 1, "note"),
+                (0.74, 904, 349.0, "shake_fur", -1, None),
+                (1.00, 916, 349.0, "tail_wag_happy", -1, None),
+            ]),
+            ("tawny_owl", 1.24, [
+                (0.00, 58, 54.0, "perch_sway", 1, "sparkle"),
+                (0.26, 36, 66.0, "sleep_curl_breathe", 1, "zzz"),
+                (0.74, 84, 44.0, "gallop", 1, None),
+                (1.00, 58, 54.0, "perch_sway", 1, None),
+            ]),
+            ("mallard_duck", 1.24, [
+                (0.00, 346, 556.0, "sleep_curl_breathe", 1, None),
+                (0.26, 368, 556.0, "drink_ripple", 1, None),
+                (0.74, 382, 556.0, "walk", -1, "note"),
+                (1.00, 346, 556.0, "sleep_curl_breathe", 1, None),
+            ]),
+            ("hedgehog", 1.18, [
+                (0.00, 804, 560.5, "sniff_ground", 1, None),
+                (0.26, 828, 560.5, "sleep_curl_breathe", -1, None),
+                (0.74, 812, 560.5, "walk", 1, None),
+                (1.00, 804, 560.5, "sniff_ground", 1, None),
+            ]),
+            ("spotted_deer", 1.04, [
+                (0.00, 984, 560.5, "stargaze_meteor", -1, None),
+                (0.26, 1068, 560.5, "gallop", 1, None),
+                (0.74, 960, 560.5, "drink_ripple", -1, None),
+                (1.00, 984, 560.5, "stargaze_meteor", -1, None),
+            ]),
+            ("tree_frog", 1.18, [
+                (0.00, 1118, 560.5, "hop", -1, None),
+                (0.26, 1132, 560.5, "sun_bask", 1, None),
+                (0.74, 1122, 560.5, "yawn", -1, None),
+                (1.00, 1118, 560.5, "hop", -1, None),
+            ]),
+            ("azure_bluebird", 1.22, [
+                (0.00, 452, 66.0, "sleep_curl_breathe", -1, None),
+                (0.26, 842, 42.0, "chase_butterfly", 1, "note"),
+                (0.74, 442, 58.0, "perch_sway", -1, None),
+                (1.00, 452, 66.0, "sleep_curl_breathe", -1, None),
+            ]),
+        ]
+    return [
+        ("shiba_dog", 1.56, [
+            (0.00, 142, 356.0, "stargaze_meteor", 1, "sparkle"),
+            (0.24, 198, 362.0, "stretch_bow", 1, None),
+            (0.50, 336, 368.0, "trot", 1, None),
+            (0.76, 248, 364.0, "belly_roll", -1, "heart"),
+            (1.00, 142, 356.0, "stargaze_meteor", 1, None),
+        ]),
+        ("red_fox", 1.52, [
+            (0.00, 526, 368.0, "crouch_stalk", 1, None),
+            (0.24, 604, 368.0, "pounce_play", 1, "sparkle"),
+            (0.50, 488, 368.0, "sleep_curl_breathe", -1, "zzz"),
+            (0.76, 558, 368.0, "boop_firefly", 1, None),
+            (1.00, 526, 368.0, "crouch_stalk", 1, None),
+        ]),
+        ("calico_cat", 1.48, [
+            (0.00, 662, 354.0, "groom_paw", 1, None),
+            (0.26, 692, 364.0, "sun_bask", 1, "heart"),
+            (0.74, 650, 364.0, "scratch_ear", -1, None),
+            (1.00, 662, 354.0, "groom_paw", 1, None),
+        ]),
+        ("cottontail_rabbit", 1.50, [
+            (0.00, 362, 370.0, "ear_perk_alert", 1, None),
+            (0.26, 408, 372.0, "binky_leap", 1, "sparkle"),
+            (0.74, 424, 372.0, "graze_nibble", -1, None),
+            (1.00, 362, 370.0, "ear_perk_alert", 1, None),
+        ]),
+        ("red_squirrel", 1.46, [
+            (0.00, 496, 368.0, "tail_wag_happy", 1, None),
+            (0.26, 528, 370.0, "happy_spin", 1, "note"),
+            (0.74, 504, 370.0, "shake_fur", -1, None),
+            (1.00, 496, 368.0, "tail_wag_happy", 1, None),
+        ]),
+        ("tawny_owl", 1.50, [
+            (0.00, 186, 122.0, "gallop", 1, None),
+            (0.26, 1138, 326.0, "sleep_curl_breathe", -1, "zzz"),
+            (0.74, 412, 98.0, "perch_sway", 1, "sparkle"),
+            (1.00, 186, 122.0, "gallop", 1, None),
+        ]),
+        ("mallard_duck", 1.48, [
+            (0.00, 982, 364.0, "sleep_curl_breathe", -1, None),
+            (0.26, 1008, 364.0, "drink_ripple", 1, None),
+            (0.74, 1036, 362.0, "walk", 1, "note"),
+            (1.00, 982, 364.0, "sleep_curl_breathe", -1, None),
+        ]),
+        ("hedgehog", 1.48, [
+            (0.00, 764, 368.0, "sniff_ground", 1, None),
+            (0.26, 796, 366.0, "sleep_curl_breathe", -1, "zzz"),
+            (0.74, 776, 368.0, "walk", 1, None),
+            (1.00, 764, 368.0, "sniff_ground", 1, None),
+        ]),
+        ("spotted_deer", 1.44, [
+            (0.00, 848, 362.0, "stargaze_meteor", -1, None),
+            (0.26, 938, 364.0, "gallop", 1, "sparkle"),
+            (0.74, 878, 362.0, "graze_nibble", -1, None),
+            (1.00, 848, 362.0, "stargaze_meteor", -1, None),
+        ]),
+        ("tree_frog", 1.50, [
+            (0.00, 1082, 356.0, "hop", -1, "note"),
+            (0.26, 1062, 358.0, "sun_bask", 1, None),
+            (0.74, 1082, 356.0, "yawn", -1, None),
+            (1.00, 1082, 356.0, "hop", -1, None),
+        ]),
+        ("azure_bluebird", 1.46, [
+            (0.00, 1166, 338.0, "sleep_curl_breathe", -1, None),
+            (0.26, 768, 152.0, "chase_butterfly", -1, "note"),
+            (0.74, 264, 344.0, "perch_sway", 1, None),
+            (1.00, 1166, 338.0, "sleep_curl_breathe", -1, None),
+        ]),
+    ]
+
+
+def _render_single_animal(prefix, actor_idx, species, scale, segments):
+    p = prefix
+    s_idx = ANIMAL_SPECIES.index(species)
+    rx, ry = ANIMAL_CATALOG[species]["shadow"]
+
+    pos_kt = ";".join(num(s[0], 3) for s in segments)
+    pos_vals = ";".join("%s %s" % (num(s[1], 1), num(s[2], 1)) for s in segments)
+    active = segments[:-1]
+    sc_s = num(scale, 2)
+
+    shadow_el = '<ellipse class="%s-s" cy="-1.2" rx="%s" ry="%s"/>' % (p, num(rx, 1), num(ry, 1))
+    rig_parts = ['<use class="%s-%s" href="#%s-%d%s"/>' % (p, PART_SHORT[pk], p, s_idx, PART_SHORT[pk]) for pk in PART_KEYS]
+    rig_inner = '<g class="%s-r">%s</g>' % (p, "".join(rig_parts))
+
+    n_ph = len(active)
+    used_anims = [s[3] for s in active]
+    slots_svg = []
+    for ph_i, s in enumerate(active):
+        anim_name = s[3]
+        a_idx = ANIMATION_NAMES.index(anim_name)
+        q_cls = "%s-q%d%d" % (p, n_ph, ph_i)
+        flip_attr = "" if s[4] >= 0 else ' transform="scale(-1 1)"'
+        slots_svg.append(
+            '<g class="%s %s-a%d" data-anim="%s"%s>%s%s</g>'
+            % (q_cls, p, a_idx, anim_name, flip_attr, shadow_el, rig_inner)
+        )
+
+    emotes_svg = []
+    for ph_i, s in enumerate(active):
+        if s[5]:
+            q_cls = "%s-q%d%d" % (p, n_ph, ph_i)
+            emotes_svg.append('<use class="%s" href="#%s-em-%s"/>' % (q_cls, p, s[5]))
+
+    live_node = (
+        '<g id="%s-eco-act-%d" class="%s-sp%d" data-species="%s" data-anims="%s" transform="translate(%s %s)">'
+        '<animateTransform attributeName="transform" type="translate" values="%s" keyTimes="%s" dur="60s" repeatCount="indefinite"/>'
+        '<g transform="scale(%s)">%s%s</g></g>'
+        % (
+            p,
+            actor_idx,
+            p,
+            s_idx,
+            species,
+            ",".join(used_anims),
+            num(segments[0][1], 1),
+            num(segments[0][2], 1),
+            pos_vals,
+            pos_kt,
+            sc_s,
+            "".join(slots_svg),
+            "".join(emotes_svg),
+        )
+    )
+
+    calm_seg = active[len(active) // 2]
+    calm_tr = ("scale(%s)" % sc_s) if calm_seg[4] >= 0 else ("scale(-%s %s)" % (sc_s, sc_s))
+    calm_node = '<use href="#%s-s%d-full" transform="translate(%s %s) %s"/>' % (
+        p, s_idx, num(calm_seg[1], 1), num(calm_seg[2], 1), calm_tr
+    )
+    return live_node, calm_node
+
+
+def _render_butterflies_layer(prefix, scene):
+    p = prefix
+    if scene == "matrix":
+        paths = [
+            ("bfm", "M 366,262 C 448,228 566,242 642,264 C 572,278 446,278 366,262 Z", "19s", 1.35),
+            ("bfg", "M 744,264 C 818,236 912,240 956,264 C 896,278 806,278 744,264 Z", "22s", 1.32),
+            ("bfm", "M 88,186 C 148,142 236,154 258,196 C 212,222 132,216 88,186 Z", "24s", 1.28),
+        ]
+    elif scene == "core":
+        paths = [
+            ("bfm", "M 54,518 C 88,486 136,494 144,528 C 118,544 76,542 54,518 Z", "18s", 1.30),
+            ("bfg", "M 358,520 C 392,486 446,494 458,528 C 424,544 382,542 358,520 Z", "21s", 1.28),
+            ("bfm", "M 754,48 C 808,26 894,30 926,52 C 874,64 798,62 754,48 Z", "23s", 1.22),
+        ]
+    else:
+        paths = [
+            ("bfm", "M 164,316 C 268,256 418,268 486,324 C 396,348 254,344 164,316 Z", "21s", 1.48),
+            ("bfg", "M 548,318 C 658,258 812,268 896,322 C 792,346 648,344 548,318 Z", "24s", 1.46),
+            ("bfm", "M 862,306 C 948,254 1068,262 1126,312 C 1046,336 936,332 862,306 Z", "19.5s", 1.42),
+            ("bfg", "M 92,268 C 172,218 278,228 318,278 C 254,298 154,294 92,268 Z", "26s", 1.38),
+        ]
+
+    live = []
+    calm = []
+    for idx, (code, d_path, dur_s, sc) in enumerate(paths):
+        sc_s = num(sc, 2)
+        f1 = "#%s-eco-%s1" % (p, code)
+        live.append(
+            '<g><animateMotion path="%s" dur="%s" begin="%ss" repeatCount="indefinite"/>'
+            '<use href="#%s-%s-fl" transform="scale(%s)"/></g>'
+            % (d_path, dur_s, num(-idx * 4.3, 1), p, code, sc_s)
+        )
+        m_coords = d_path.split("C")[0].replace("M", "").strip().split(",")
+        calm.append(
+            '<use href="%s" transform="translate(%s %s) scale(%s)"/>'
+            % (f1, m_coords[0].strip(), m_coords[1].strip(), sc_s)
+        )
+    return "".join(live), "".join(calm)
+
+
+def render_ecosystem_stage(prefix, scene_kind="nocturne", width=1200, height=388):
+    scene = _norm_scene(scene_kind)
+    p = prefix
+    props_live, props_calm, n_props = _render_props_layer(p, scene)
+    bf_live, bf_calm = _render_butterflies_layer(p, scene)
+    cast = _scene_menagerie_cast(scene)
+
+    animals_live = []
+    animals_calm = []
+    for idx, (sp_name, sc, segs) in enumerate(cast):
+        lnode, cnode = _render_single_animal(p, idx, sp_name, sc, segs)
+        animals_live.append(lnode)
+        animals_calm.append(cnode)
+
+    ff_markup = render_fireflies_svg(p, scene, width, height)
+
+    return (
+        '<g id="%s-eco-stage" class="eco-stage" data-scene="%s" data-species-count="%d" data-anim-count="%d" data-props-count="%d" data-cycle-seconds="60" pointer-events="none">'
+        '<g class="eco-live %s-eco-live">%s%s%s</g>'
+        '<g class="eco-calm %s-eco-calm">%s%s%s</g>'
+        "%s</g>"
+        % (
+            p,
+            scene,
+            len(cast),
+            len(ANIMATION_NAMES),
+            n_props,
+            p,
+            props_live,
+            "".join(animals_live),
+            bf_live,
+            p,
+            props_calm,
+            "".join(animals_calm),
+            bf_calm,
+            ff_markup,
+        )
+    )

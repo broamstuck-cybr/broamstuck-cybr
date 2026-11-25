@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-11-25T09:29:20Z",
+  "updatedAt": "2026-11-25T11:26:17Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
-    "bytes": 81151248,
+    "bytes": 81176946,
     "bytesCompact": "81.2M",
-    "commits": 970,
+    "commits": 971,
     "stars": 21,
-    "contributions": 1005,
+    "contributions": 1006,
     "repos": 10
   },
   "streaks": {
@@ -66,7 +66,7 @@
       8,
       28,
       69,
-      46
+      47
     ]
   },
   "days": {
@@ -437,7 +437,7 @@
     "2026-11-22": 14,
     "2026-11-23": 9,
     "2026-11-24": 20,
-    "2026-11-25": 3
+    "2026-11-25": 4
   },
   "langs5d": [
     {
@@ -445,7 +445,7 @@
       "bytes": 61480003,
       "bytesCompact": "61.5M",
       "percent": 76,
-      "percentExact": 75.76,
+      "percentExact": 75.74,
       "repos": 4,
       "d2Volume": 0.864,
       "d3Breadth": 0.667,
@@ -498,12 +498,12 @@
     },
     {
       "name": "Python",
-      "bytes": 440073,
-      "bytesCompact": "440.1K",
+      "bytes": 465771,
+      "bytesCompact": "465.8K",
       "percent": 0,
-      "percentExact": 0.54,
+      "percentExact": 0.57,
       "repos": 4,
-      "d2Volume": 0.696,
+      "d2Volume": 0.698,
       "d3Breadth": 0.667,
       "d4Gravity": 0.65,
       "d5Velocity": 0.759,
@@ -526,6 +526,13 @@
     }
   ],
   "events": [
+    {
+      "sha": "bacf265",
+      "repo": "broamstuck-cybr",
+      "message": "feat(profile): add pixel butterflies, meadow flora, and natural dog interactions",
+      "time": "10:01",
+      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/bacf2652c9a98265d8553aea7d875e582507643f"
+    },
     {
       "sha": "7644813",
       "repo": "broamstuck-cybr",
@@ -574,13 +581,6 @@
       "message": "chore(profile): sync live SVG telemetry after repository showcase rollout",
       "time": "12:16",
       "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/00c2ba1f9ddd5110213a00eae4928c0ea3bd2278"
-    },
-    {
-      "sha": "ee01b75",
-      "repo": "resourcepack",
-      "message": "docs(edunext_bank): remove emoji from README for release audit compliance",
-      "time": "12:13",
-      "url": "https://github.com/broamstuck-cybr/resourcepack/commit/ee01b75f5398290b957b353dc781b98b1fdb2741"
     }
   ],
   "forums": [

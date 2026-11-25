@@ -1,9 +1,9 @@
 :root {
   --bg: #040814;
   --bg-deep: #040917;
-  --surface-shell: rgba(5, 11, 24, 0.56);
-  --surface: rgba(6, 13, 28, 0.88);
-  --surface-hud: rgba(5, 11, 24, 0.78);
+  --surface-shell: rgba(5, 11, 24, 0.62);
+  --surface: rgba(6, 13, 28, 0.90);
+  --surface-hud: rgba(5, 11, 24, 0.88);
   --surface-well: rgba(4, 9, 20, 0.94);
   --surface-console: #040812;
   --surface-pill: rgba(13, 27, 52, 0.86);
@@ -146,8 +146,6 @@ main.observatory-shell {
   z-index: 1;
   width: min(100%, 1168px);
   background: var(--surface-shell);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--border);
   border-radius: var(--radius-shell);
   padding: var(--space-4);
