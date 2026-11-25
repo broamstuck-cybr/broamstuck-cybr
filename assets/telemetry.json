@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-11-24T16:16:21Z",
+  "updatedAt": "2026-11-25T05:15:29Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
-    "bytes": 81091091,
+    "bytes": 81068033,
     "bytesCompact": "81.1M",
-    "commits": 966,
+    "commits": 967,
     "stars": 21,
-    "contributions": 1001,
+    "contributions": 1002,
     "repos": 10
   },
   "streaks": {
     "longest": 20,
-    "current": 9,
+    "current": 0,
     "peak": 92,
     "weeks52": [
       0,
@@ -66,7 +66,7 @@
       8,
       28,
       69,
-      42
+      43
     ]
   },
   "days": {
@@ -436,7 +436,8 @@
     "2026-11-21": 10,
     "2026-11-22": 14,
     "2026-11-23": 9,
-    "2026-11-24": 19
+    "2026-11-24": 20,
+    "2026-11-25": 0
   },
   "langs5d": [
     {
@@ -444,12 +445,12 @@
       "bytes": 61480003,
       "bytesCompact": "61.5M",
       "percent": 76,
-      "percentExact": 75.82,
+      "percentExact": 75.84,
       "repos": 4,
-      "d2Volume": 1.004,
+      "d2Volume": 0.864,
       "d3Breadth": 0.667,
-      "d4Gravity": 0.616,
-      "d5Velocity": 0.986,
+      "d4Gravity": 0.65,
+      "d5Velocity": 1.0,
       "color": "#fb923c",
       "highlight": "#fed7aa"
     },
@@ -460,10 +461,10 @@
       "percent": 12,
       "percentExact": 11.64,
       "repos": 3,
-      "d2Volume": 0.703,
+      "d2Volume": 0.737,
       "d3Breadth": 0.5,
-      "d4Gravity": 0.557,
-      "d5Velocity": 0.696,
+      "d4Gravity": 0.596,
+      "d5Velocity": 0.728,
       "color": "#38bdf8",
       "highlight": "#bae6fd"
     },
@@ -472,12 +473,12 @@
       "bytes": 7058906,
       "bytesCompact": "7.1M",
       "percent": 9,
-      "percentExact": 8.7,
+      "percentExact": 8.71,
       "repos": 6,
-      "d2Volume": 0.656,
+      "d2Volume": 0.917,
       "d3Breadth": 1.0,
       "d4Gravity": 1.0,
-      "d5Velocity": 0.892,
+      "d5Velocity": 0.926,
       "color": "#fbbf24",
       "highlight": "#fef08a"
     },
@@ -488,24 +489,24 @@
       "percent": 3,
       "percentExact": 3.37,
       "repos": 4,
-      "d2Volume": 0.507,
+      "d2Volume": 0.758,
       "d3Breadth": 0.667,
-      "d4Gravity": 0.616,
-      "d5Velocity": 0.737,
+      "d4Gravity": 0.65,
+      "d5Velocity": 0.769,
       "color": "#2dd4bf",
       "highlight": "#99f6e4"
     },
     {
       "name": "Python",
-      "bytes": 379916,
-      "bytesCompact": "379.9K",
+      "bytes": 356858,
+      "bytesCompact": "356.9K",
       "percent": 0,
-      "percentExact": 0.47,
+      "percentExact": 0.44,
       "repos": 4,
-      "d2Volume": 0.226,
+      "d2Volume": 0.689,
       "d3Breadth": 0.667,
-      "d4Gravity": 0.616,
-      "d5Velocity": 0.727,
+      "d4Gravity": 0.65,
+      "d5Velocity": 0.759,
       "color": "#4ade80",
       "highlight": "#bbf7d0"
     },
@@ -516,15 +517,22 @@
       "percent": 0,
       "percentExact": 0.0,
       "repos": 1,
-      "d2Volume": 0.001,
+      "d2Volume": 0.283,
       "d3Breadth": 0.167,
-      "d4Gravity": 0.379,
-      "d5Velocity": 0.519,
+      "d4Gravity": 0.434,
+      "d5Velocity": 0.549,
       "color": "#a5b4fc",
       "highlight": "#e0e7ff"
     }
   ],
   "events": [
+    {
+      "sha": "048392c",
+      "repo": "broamstuck-cybr",
+      "message": "feat(profile): build English Starry Night, Milky Way & Solar Orrery observatory, 5D astrolabe, 156x86 portrait & 360 3D F-Forum stage",
+      "time": "16:28",
+      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/048392cadf85080259e3b897ef49330855625006"
+    },
     {
       "sha": "a2e91d7",
       "repo": "broamstuck-cybr",
@@ -573,13 +581,6 @@
       "message": "docs(readme): add animated SVG banner, architecture overview & verified pack/bank inventory",
       "time": "12:09",
       "url": "https://github.com/broamstuck-cybr/resourcepack/commit/4e3cd709fe07c8fb080c7222f3f11dcae68e6bc1"
-    },
-    {
-      "sha": "cab431a",
-      "repo": "shoptify-winter-reverser-engine",
-      "message": "docs(readme): add animated SVG banner, architecture diagram & real capture gallery from snapshot/screenshots",
-      "time": "12:09",
-      "url": "https://github.com/broamstuck-cybr/shoptify-winter-reverser-engine/commit/cab431a6f409dc1355f3306964f304f79a020628"
     }
   ],
   "forums": [
@@ -587,9 +588,8 @@
       "id": "v3",
       "repo": "f_forumv3",
       "title": "F-Forum v3",
-      "badge": "CITADEL 3D",
-      "subtitle": "Spatial UI/3D Workbench & 7,750-Specimen Vault",
-      "summary": "Third-generation spatial studio combining 7,750 directly viewable UI and 3D specimens with a sandboxed live workbench, community feed, and real-time messenger.",
+      "subtitle": "7,750 UI/3D specimens, live studio & chat",
+      "summary": "7,750 UI/3D specimens, live studio & chat.",
       "repoUrl": "https://github.com/broamstuck-cybr/f_forumv3",
       "liveUrl": "https://fforum3.vercel.app",
       "domain": "fforum3.vercel.app",
@@ -601,9 +601,8 @@
       "id": "v2",
       "repo": "F-Forum_v2",
       "title": "F-Forum v2",
-      "badge": "VIADUCT 3D",
-      "subtitle": "Generational Catenary Bridge Architecture",
-      "summary": "Architectural transition bridge linking the original student learning forum to the modular third-generation spatial workbench and public specimen archive.",
+      "subtitle": "Twin-pylon catenary suspension viaduct",
+      "summary": "Twin-pylon catenary suspension viaduct.",
       "repoUrl": "https://github.com/broamstuck-cybr/F-Forum_v2",
       "liveUrl": "https://github.com/broamstuck-cybr/F-Forum_v2",
       "domain": "v2-bridge",
@@ -615,9 +614,8 @@
       "id": "v1",
       "repo": "f-forum",
       "title": "F-Forum v1",
-      "badge": "ROTUNDA 3D",
-      "subtitle": "Campus Q&A Forum, Student Clubs & Exam Vault",
-      "summary": "First-generation student forum uniting subject Q&A with math typesetting, PDF exam archives, flashcards, student clubs, and real-time chat.",
+      "subtitle": "Campus Q&A, math codex, clubs & live chat",
+      "summary": "Campus Q&A, math codex, clubs & live chat.",
       "repoUrl": "https://github.com/broamstuck-cybr/f-forum",
       "liveUrl": "https://f-forum.vercel.app",
       "domain": "f-forum.vercel.app",

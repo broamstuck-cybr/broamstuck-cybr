@@ -3,88 +3,58 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BroAmStuck (@broamstuck-cybr) — Celestial 5D &amp; 360° 3D Observatory</title>
-  <meta name="description" content="Interactive GitHub engineering observatory featuring a hydrodynamic Starry Night &amp; Milky Way sky, 8-planet Solar Orrery, Ultra-HD glyph portrait, 5D Schlegel Stack Astrolabe, and 360-degree 3D F-Forum models." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23040814'/%3E%3Ccircle cx='12' cy='12' r='5' fill='%23fde047'/%3E%3C/svg%3E" />
+  <title>BroAmStuck (@broamstuck-cybr) — Van Gogh Calligraphic Observatory &amp; 3D Portfolio</title>
+  <meta name="description" content="Interactive 4K calligraphic Van Gogh Starry Night, Sunflowers and Provence Cypress observatory, 216x126 portrait, 3D stack architecture and Blender-sculpted 360-degree F-Forum models." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23040814'/%3E%3Cpath d='M12 3l2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6L12 3z' fill='%23fde047'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <canvas id="sky-canvas" aria-hidden="true"></canvas>
 
-  <main class="observatory-shell">
-    <h1 class="sr-only">BroAmStuck Interactive Celestial Engineering Observatory and 360-Degree 3D F-Forum Showcase</h1>
+  <main class="observatory-shell" data-signature="saint-remy-observatory">
+    <h1 class="sr-only">BroAmStuck — Interactive Van Gogh Calligraphic Observatory and 360-Degree 3D Engineering Showcase</h1>
 
-    <header class="sky-panorama" aria-label="Interactive Starry Sky, Milky Way and Solar Orrery Window">
-      <canvas id="panorama-canvas" role="img" aria-label="Interactive Vincent van Gogh Starry Night, Milky Way and 8-planet Solar System liquid sky. Drag or move cursor to stir impasto waves and hover planets to inspect."></canvas>
-      <div class="sky-hud-top">
-        <p class="sky-hud__title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="12" cy="12" r="4" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" />
-          </svg>
-          <span>Saint-R&eacute;my Liquid Sky &middot; Milky Way &middot; Solar Orrery</span>
-        </p>
-        <div class="sky-hud__controls">
-          <button type="button" class="hud-btn" data-turbulence="0" aria-pressed="false">Calm</button>
-          <button type="button" class="hud-btn" data-turbulence="1" aria-pressed="true">Swirl</button>
-          <button type="button" class="hud-btn" data-turbulence="2" aria-pressed="false">Tempest</button>
-          <button type="button" class="hud-btn" id="orbit-speed-btn">Orbits: 1x</button>
-          <button type="button" class="hud-btn" id="stir-sky-btn">Stir Wave</button>
+    <header class="sky-observatory" aria-label="Interactive Starry Night, Solar System, Provence Cypresses and Sunflowers Sky">
+      <div class="sky-dome">
+        <canvas id="panorama-canvas" role="img" aria-label="Interactive 4K calligraphic synthesis of Van Gogh Starry Night, Solar System orbits, Provence cypresses and Sunflowers. Move or drag pointer to flow and gaze."></canvas>
+        <div class="sky-hud">
+          <span id="sky-readout" class="sky-readout" aria-live="polite">BroAmStuck &middot; @broamstuck-cybr</span>
         </div>
-      </div>
-      <div class="sky-hud-bottom">
-        <span id="sky-readout" class="sky-hud__readout" aria-live="polite">Drag or glide across sky to stir liquid impasto &middot; Tap planets or Moon to inspect</span>
       </div>
     </header>
 
     <section class="board" aria-labelledby="matrix-heading">
       <div class="board-head">
-        <div class="board-head__left">
-          <h2 id="matrix-heading" class="board-title">Celestial Activity Matrix &middot; 52 Weeks</h2>
-          <span class="board-meta"><strong id="mat-total">1001</strong> contributions &middot; <strong id="mat-streak">20-day</strong> longest streak</span>
-        </div>
-        <div class="filter-group" role="group" aria-label="Filter contribution intensity">
-          <button type="button" class="chip-btn is-active" data-mat-filter="all">All Days</button>
-          <button type="button" class="chip-btn" data-mat-filter="supernova">Supernova 20+</button>
-          <button type="button" class="chip-btn" data-mat-filter="radiant">Radiant 5&ndash;19</button>
-          <button type="button" class="chip-btn" data-mat-filter="spark">Spark 1&ndash;4</button>
+        <h2 id="matrix-heading" class="board-stat">
+          <strong id="mat-total">1,002</strong> contributions &middot; <strong id="mat-streak">20d</strong> streak
+        </h2>
+        <div class="matrix-meta">
+          <span id="matrix-inspector" class="matrix-inspector" aria-live="polite"></span>
+          <span class="matrix-legend" aria-hidden="true">
+            <span>Less</span>
+            <svg viewBox="0 0 12 12" class="legend-star legend-star--1"><path d="M6 1l1.4 3.6L11 6 7.4 7.4 6 11 4.6 7.4 1 6l3.6-1.4z" fill="currentColor"/></svg>
+            <svg viewBox="0 0 12 12" class="legend-star legend-star--2"><path d="M6 0.6l1.6 3.8L11.4 6 7.6 7.6 6 11.4 4.4 7.6 0.6 6l3.8-1.6z" fill="currentColor"/></svg>
+            <svg viewBox="0 0 12 12" class="legend-star legend-star--3"><path d="M6 0.4l1.7 3.9L11.6 6 7.7 7.7 6 11.6 4.3 7.7 0.4 6l3.9-1.7z" fill="currentColor"/></svg>
+            <span>More</span>
+          </span>
         </div>
       </div>
 
       <div class="matrix-scroll">
-        <canvas id="matrix-canvas" tabindex="0" role="img" aria-label="Interactive 52-week contribution constellation with liquid horizon reflection. Use arrow keys or pointer to inspect daily commits."></canvas>
-      </div>
-
-      <div class="matrix-footer">
-        <span id="matrix-inspector" class="matrix-inspector" aria-live="polite">Select or hover any star node to inspect daily telemetry</span>
-        <span class="matrix-legend" aria-hidden="true">
-          <span>Quiet</span>
-          <span class="legend-dot legend-dot--0"></span>
-          <span class="legend-dot legend-dot--1"></span>
-          <span class="legend-dot legend-dot--2"></span>
-          <span class="legend-dot legend-dot--3"></span>
-          <span class="legend-dot legend-dot--4"></span>
-          <span>Supernova</span>
-        </span>
+        <canvas id="matrix-canvas" tabindex="0" role="img" aria-label="Interactive 52-week contribution star constellation. Hover or use arrow keys to inspect daily commits."></canvas>
       </div>
     </section>
 
     <section class="board" aria-labelledby="core-heading">
-      <h2 id="core-heading" class="sr-only">Optical Portrait, 5D Stack Astrolabe, Core Telemetry and GitHub Console</h2>
+      <h2 id="core-heading" class="sr-only">BroAmStuck Portrait, Stack Architecture and Recent Activity</h2>
       <div class="core-grid">
         <div class="portrait-col">
           <div class="portrait-stage-wrap">
-            <canvas id="portrait-canvas" role="img" aria-label="Ultra-HD optical character portrait of BroAmStuck with interactive 3.2x glyph magnifier loupe"></canvas>
+            <canvas id="portrait-canvas" role="img" aria-label="Ultra-HD 216x126 4K calligraphic portrait of BroAmStuck under Van Gogh Starry Night with interactive 2.5D gaze parallax and optical loupe"></canvas>
           </div>
           <div class="portrait-identity">
             <p class="portrait-name">BroAmStuck</p>
-            <p class="portrait-handle">@broamstuck-cybr &middot; 156&times;86 Directional Glyph Weave</p>
-            <p class="portrait-hint">Hover or drag over portrait for optical glyph loupe</p>
-          </div>
-          <div class="filter-group" role="group" aria-label="Portrait optical rendering mode">
-            <button type="button" class="chip-btn is-active" data-portrait-mode="weave">Glyph Weave</button>
-            <button type="button" class="chip-btn" data-portrait-mode="impasto">Impasto</button>
-            <button type="button" class="chip-btn" data-portrait-mode="relief">Relief</button>
+            <p class="portrait-handle">@broamstuck-cybr</p>
           </div>
         </div>
 
@@ -92,47 +62,33 @@
           <div class="radar-metrics-row">
             <div class="radar-box">
               <div class="radar-top">
-                <div>
-                  <h3 class="board-title">5D Stack Astrolabe &middot; Schlegel Hyper-Radar</h3>
-                  <div class="radar-subtitle">D1 Domain &middot; D2 Byte Share &middot; D3 Repo Breadth &middot; D4 4D Gravity &middot; D5 Phase</div>
-                </div>
-                <button type="button" class="chip-btn" id="radar-orbit-btn" aria-pressed="true">5D Orbit: On</button>
+                <h3 class="board-title">Stack Architecture</h3>
+                <span id="radar-readout" class="radar-readout" aria-live="polite"></span>
               </div>
-
-              <canvas id="radar-canvas" tabindex="0" role="img" aria-label="Interactive 5D Schlegel Stack Astrolabe. Drag 360 degrees or click a language vertex to inspect telemetry."></canvas>
-
-              <div class="radar-controls">
-                <div id="lang-pills" class="lang-pills" role="group" aria-label="Select language axis"></div>
-                <label class="w-slider-wrap" for="w-fold-range">
-                  <span>4D W-Fold</span>
-                  <input id="w-fold-range" class="range-input" type="range" min="-0.85" max="0.85" step="0.05" value="-0.45" />
-                </label>
-              </div>
-
-              <div id="radar-readout" class="radar-readout" aria-live="polite"></div>
+              <canvas id="radar-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree faceted polyhedral stack architecture crystal. Drag to orbit or select any language vertex."></canvas>
             </div>
 
-            <div class="metrics-stack" role="group" aria-label="Core engineering telemetry counters">
+            <div class="metrics-stack" role="group" aria-label="Engineering metrics">
               <button type="button" class="metric-card" data-metric="chars">
                 <span id="val-chars" class="metric-val metric-val--gold">81.1M</span>
-                <span class="metric-lbl">Source Characters</span>
+                <span class="metric-lbl">Source</span>
               </button>
               <button type="button" class="metric-card" data-metric="commits">
-                <span id="val-commits" class="metric-val">966</span>
-                <span class="metric-lbl">Annual Commits</span>
+                <span id="val-commits" class="metric-val">967</span>
+                <span class="metric-lbl">Commits</span>
               </button>
               <button type="button" class="metric-card" data-metric="stars">
                 <span class="metric-val metric-val--gold">
                   <span id="val-stars">21</span>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77 5.82 21 7 14.14 2 9.27l7.1-1.01L12 2z" />
                   </svg>
                 </span>
-                <span class="metric-lbl">Stars Earned</span>
+                <span class="metric-lbl">Stars</span>
               </button>
               <button type="button" class="metric-card" data-metric="contribs">
-                <span id="val-contribs" class="metric-val metric-val--ok">1001</span>
-                <span class="metric-lbl">Total Contributions</span>
+                <span id="val-contribs" class="metric-val metric-val--ok">1,002</span>
+                <span class="metric-lbl">Total</span>
               </button>
             </div>
           </div>
@@ -141,12 +97,9 @@
             <div class="console-bar">
               <span class="console-prompt">
                 <span class="console-prompt__sigil">$</span>
-                <span>gh activity --recent --format=telemetry</span>
+                <span>gh activity</span>
               </span>
-              <div class="filter-group">
-                <div id="console-filters" class="filter-group" role="group" aria-label="Filter console by repository"></div>
-                <button type="button" class="chip-btn" id="console-sync-btn">Live Sync</button>
-              </div>
+              <button type="button" class="chip-btn" id="console-sync-btn">Sync</button>
             </div>
             <div id="console-list" class="console-list" aria-live="polite"></div>
           </div>
@@ -154,111 +107,113 @@
       </div>
     </section>
 
-    <section class="trilogy-grid" aria-label="Interactive 360-degree 3D F-Forum Architectural Trilogy">
+    <section class="trilogy-grid" aria-label="Interactive 360-degree 3D F-Forum Architecture">
       <article class="forum-card">
         <div class="forum-viewport">
-          <canvas id="stage-v3" class="stage-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree 3D Astral UI Citadel model for F-Forum v3. Drag to orbit."></canvas>
-          <span class="viewport-badge">CITADEL 3D &middot; DRAG 360&deg;</span>
-          <div class="viewport-toolbar">
-            <button type="button" class="mini-btn" data-wire-toggle="v3">Wire</button>
-            <button type="button" class="mini-btn" data-expand-3d="v3">Expand 360&deg;</button>
-          </div>
+          <canvas id="stage-v3" class="stage-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree 3D Glass Villa model for F-Forum v3. Drag to orbit or scroll to zoom."></canvas>
+          <button type="button" class="mini-btn viewport-expand" data-expand-3d="v3" aria-label="Expand F-Forum v3 360-degree stage">360&deg;</button>
         </div>
-        <div class="forum-body">
-          <div class="forum-title-row">
-            <h3 class="forum-title">F-Forum v3</h3>
-            <span class="forum-domain">fforum3.vercel.app</span>
+        <div class="forum-content">
+          <div class="forum-body">
+            <div class="forum-title-row">
+              <h3 class="forum-title">F-Forum v3</h3>
+              <span class="forum-domain">fforum3.vercel.app</span>
+            </div>
+            <p class="forum-desc">7,750 UI/3D specimens, live studio &amp; chat.</p>
           </div>
-          <p class="forum-desc">Spatial UI/3D workbench pairing 7,750 directly viewable specimens with a live build studio and real-time community.</p>
-        </div>
-        <div class="forum-footer">
-          <span class="forum-meta">
-            <span><span class="lang-dot lang-dot--ts"></span> TypeScript</span>
-            <span>1 Star</span>
-          </span>
-          <div class="forum-actions">
-            <a class="action-link" href="https://fforum3.vercel.app" target="_blank" rel="noopener noreferrer">Live App</a>
-            <a class="action-link" href="https://github.com/broamstuck-cybr/f_forumv3" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <div class="forum-footer">
+            <span class="forum-meta">
+              <span class="lang-tag lang-tag--ts">TypeScript</span>
+              <span>1 Star</span>
+            </span>
+            <div class="forum-actions">
+              <a class="action-link" href="https://fforum3.vercel.app" target="_blank" rel="noopener noreferrer">Live</a>
+              <a class="action-link" href="https://github.com/broamstuck-cybr/f_forumv3" target="_blank" rel="noopener noreferrer">Code</a>
+            </div>
           </div>
         </div>
       </article>
 
       <article class="forum-card">
         <div class="forum-viewport">
-          <canvas id="stage-v2" class="stage-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree 3D Twin-Pylon Catenary Suspension Viaduct model for F-Forum v2. Drag to orbit."></canvas>
-          <span class="viewport-badge">VIADUCT 3D &middot; DRAG 360&deg;</span>
-          <div class="viewport-toolbar">
-            <button type="button" class="mini-btn" data-wire-toggle="v2">Wire</button>
-            <button type="button" class="mini-btn" data-expand-3d="v2">Expand 360&deg;</button>
-          </div>
+          <canvas id="stage-v2" class="stage-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree 3D Twin-Pylon Catenary Suspension Viaduct model for F-Forum v2. Drag to orbit or scroll to zoom."></canvas>
+          <button type="button" class="mini-btn viewport-expand" data-expand-3d="v2" aria-label="Expand F-Forum v2 360-degree stage">360&deg;</button>
         </div>
-        <div class="forum-body">
-          <div class="forum-title-row">
-            <h3 class="forum-title">F-Forum v2</h3>
-            <span class="forum-domain">v2-bridge</span>
+        <div class="forum-content">
+          <div class="forum-body">
+            <div class="forum-title-row">
+              <h3 class="forum-title">F-Forum v2</h3>
+              <span class="forum-domain">v2-bridge</span>
+            </div>
+            <p class="forum-desc">Twin-pylon catenary suspension viaduct.</p>
           </div>
-          <p class="forum-desc">Generational catenary suspension bridge linking the original campus forum lineage to the third-generation spatial studio.</p>
-        </div>
-        <div class="forum-footer">
-          <span class="forum-meta">
-            <span><span class="lang-dot lang-dot--ts"></span> TypeScript</span>
-            <span>1 Star</span>
-          </span>
-          <div class="forum-actions">
-            <a class="action-link" href="https://github.com/broamstuck-cybr/F-Forum_v2" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <div class="forum-footer">
+            <span class="forum-meta">
+              <span class="lang-tag lang-tag--ts">TypeScript</span>
+              <span>1 Star</span>
+            </span>
+            <div class="forum-actions">
+              <a class="action-link" href="https://github.com/broamstuck-cybr/F-Forum_v2" target="_blank" rel="noopener noreferrer">Code</a>
+            </div>
           </div>
         </div>
       </article>
 
       <article class="forum-card">
         <div class="forum-viewport">
-          <canvas id="stage-v1" class="stage-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree 3D Socratic Rotunda and Open Codex Pavilion model for F-Forum v1. Drag to orbit."></canvas>
-          <span class="viewport-badge">ROTUNDA 3D &middot; DRAG 360&deg;</span>
-          <div class="viewport-toolbar">
-            <button type="button" class="mini-btn" data-wire-toggle="v1">Wire</button>
-            <button type="button" class="mini-btn" data-expand-3d="v1">Expand 360&deg;</button>
-          </div>
+          <canvas id="stage-v1" class="stage-canvas" tabindex="0" role="img" aria-label="Interactive 360-degree 3D Campus Codex Sanctuary model for F-Forum v1. Drag to orbit or scroll to zoom."></canvas>
+          <button type="button" class="mini-btn viewport-expand" data-expand-3d="v1" aria-label="Expand F-Forum v1 360-degree stage">360&deg;</button>
         </div>
-        <div class="forum-body">
-          <div class="forum-title-row">
-            <h3 class="forum-title">F-Forum v1</h3>
-            <span class="forum-domain">f-forum.vercel.app</span>
+        <div class="forum-content">
+          <div class="forum-body">
+            <div class="forum-title-row">
+              <h3 class="forum-title">F-Forum v1</h3>
+              <span class="forum-domain">f-forum.vercel.app</span>
+            </div>
+            <p class="forum-desc">Campus Q&amp;A, math codex, clubs &amp; live chat.</p>
           </div>
-          <p class="forum-desc">First-generation academic agora uniting subject Q&amp;A, PDF exam archives, flashcards, student clubs, and live chat.</p>
-        </div>
-        <div class="forum-footer">
-          <span class="forum-meta">
-            <span><span class="lang-dot lang-dot--html"></span> HTML</span>
-            <span>2 Stars</span>
-          </span>
-          <div class="forum-actions">
-            <a class="action-link" href="https://f-forum.vercel.app" target="_blank" rel="noopener noreferrer">Live App</a>
-            <a class="action-link" href="https://github.com/broamstuck-cybr/f-forum" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <div class="forum-footer">
+            <span class="forum-meta">
+              <span class="lang-tag lang-tag--html">HTML</span>
+              <span>2 Stars</span>
+            </span>
+            <div class="forum-actions">
+              <a class="action-link" href="https://f-forum.vercel.app" target="_blank" rel="noopener noreferrer">Live</a>
+              <a class="action-link" href="https://github.com/broamstuck-cybr/f-forum" target="_blank" rel="noopener noreferrer">Code</a>
+            </div>
           </div>
         </div>
       </article>
+    </section>
+
+    <section class="garden-observatory" aria-label="Interactive Calligraphic Synthesis of Van Gogh Starry Night, Sunflowers Garden and Country Road in Provence">
+      <canvas id="garden-canvas" role="img" aria-label="4K calligraphic synthesis of Van Gogh Starry Night sky, Arles Sunflowers garden and Country Road in Provence cypresses, wheatfield and nocturnal road. Move cursor to swirl brushstrokes and turn heliotropic sunflowers."></canvas>
     </section>
   </main>
 
   <dialog id="stage-modal" class="stage-modal" aria-labelledby="modal-title">
     <div class="modal-head">
       <div>
-        <h2 id="modal-title" class="modal-title">F-Forum 360&deg; Architectural Stage</h2>
+        <h2 id="modal-title" class="modal-title">F-Forum 360&deg; Stage</h2>
         <p id="modal-desc" class="forum-desc"></p>
       </div>
-      <button type="button" class="hud-btn" id="modal-close-btn">Close</button>
+      <div class="filter-group">
+        <button type="button" class="chip-btn is-active" data-modal-variant="v3">v3</button>
+        <button type="button" class="chip-btn" data-modal-variant="v2">v2</button>
+        <button type="button" class="chip-btn" data-modal-variant="v1">v1</button>
+        <button type="button" class="chip-btn" id="modal-wire-btn">Wire</button>
+        <button type="button" class="chip-btn" id="modal-close-btn">Close</button>
+      </div>
     </div>
     <div class="modal-stage-wrap">
-      <canvas id="modal-3d-canvas" tabindex="0" role="img" aria-label="Full-stage panoramic 360-degree 3D architectural model. Drag in any direction or scroll wheel to zoom."></canvas>
+      <canvas id="modal-3d-canvas" tabindex="0" role="img" aria-label="Full-stage 360-degree 3D architectural model. Drag in any direction or scroll wheel to zoom."></canvas>
     </div>
     <div class="modal-controls">
-      <div class="filter-group">
-        <button type="button" class="chip-btn" data-cam-preset="iso">Iso Orbit</button>
-        <button type="button" class="chip-btn" data-cam-preset="top">Top Plan</button>
-        <button type="button" class="chip-btn" data-cam-preset="front">Front Elevation</button>
-        <button type="button" class="chip-btn" id="modal-wire-btn">Blueprint Wire</button>
-      </div>
-      <a id="modal-live-link" class="action-link" href="https://fforum3.vercel.app" target="_blank" rel="noopener noreferrer">Open Live Deployment</a>
+      <label class="w-slider-wrap" for="modal-explode-range">
+        <span>Explode</span>
+        <input id="modal-explode-range" class="range-input" type="range" min="0" max="1" step="0.05" value="0" />
+      </label>
+      <a id="modal-live-link" class="action-link" href="https://fforum3.vercel.app" target="_blank" rel="noopener noreferrer">Open Deployment</a>
     </div>
   </dialog>
 

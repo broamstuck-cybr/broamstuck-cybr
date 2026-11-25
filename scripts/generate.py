@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 import datetime
 import json
 import math
@@ -27,12 +28,12 @@ from theme import (
     IVORY_WARM,
     LANG_PALETTE,
     MILKY_CORE,
-    MILKY_DUST,
     REDUCED_MOTION_STYLE,
     SKY_SOFT,
     TEAL_MIST,
     compact,
     esc,
+    load_vangogh_scene,
     nocturne_card,
     nocturne_defs,
     num,
@@ -109,7 +110,7 @@ def collect_events(limit=8):
                 continue
             for commit in reversed((event.get("payload") or {}).get("commits") or []):
                 sha = (commit.get("sha") or "")[:7]
-                if sha in seen:
+                if not sha or sha in seen:
                     continue
                 seen.add(sha)
                 repo_s = repo_label((event.get("repo") or {}).get("name"))
@@ -131,7 +132,7 @@ def collect_events(limit=8):
         )
         for item in ((search or {}).get("items") or []):
             sha = (item.get("sha") or "")[:7]
-            if sha in seen:
+            if not sha or sha in seen:
                 continue
             seen.add(sha)
             detail = item.get("commit") or {}
@@ -150,6 +151,14 @@ def collect_events(limit=8):
     return commits[:limit]
 
 
+def load_cached_telemetry():
+    path = os.path.join(ASSETS, "telemetry.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
 def collect():
     data = {
         "days": {},
@@ -165,61 +174,92 @@ def collect():
         "events": [],
         "bytes": 0,
     }
-    query = (
-        "query($login:String!){user(login:$login){"
-        "contributionsCollection{totalCommitContributions "
-        "contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}"
-        "repositories(first:100,ownerAffiliations:OWNER,isFork:false,privacy:PUBLIC){totalCount "
-        "nodes{name description homepageUrl stargazerCount diskUsage primaryLanguage{name} "
-        "languages(first:20,orderBy:{field:SIZE,direction:DESC})"
-        "{edges{size node{name}}}}}}}"
-    )
-    result = request_json(GQL, {"query": query, "variables": {"login": USERNAME}})
-    if result and result.get("data") and result["data"].get("user"):
-        user = result["data"]["user"]
-        collection = user.get("contributionsCollection") or {}
-        calendar = collection.get("contributionCalendar") or {}
-        data["total"] = int(calendar.get("totalContributions") or 0)
-        data["commits"] = int(collection.get("totalCommitContributions") or 0)
-        for week in calendar.get("weeks") or []:
-            week_sum = 0
-            for day in week.get("contributionDays") or []:
-                c = int(day.get("contributionCount") or 0)
-                data["days"][day.get("date")] = c
-                week_sum += c
-            data["weeks"].append(week_sum)
-        repos = user.get("repositories") or {}
-        data["repos"] = int(repos.get("totalCount") or 0)
-        sizes = {}
-        lang_repos = {}
-        lang_stars = {}
-        for node in repos.get("nodes") or []:
-            name = node.get("name") or ""
-            stars = int(node.get("stargazerCount") or 0)
-            data["stars"] += stars
-            if name:
-                data["repo_map"][name] = {
-                    "name": name,
-                    "description": node.get("description") or "",
-                    "homepage": node.get("homepageUrl") or "",
-                    "stars": stars,
-                    "lang": ((node.get("primaryLanguage") or {}).get("name")) or "TypeScript",
-                }
-            seen_in_repo = set()
-            for edge in (node.get("languages") or {}).get("edges") or []:
-                lang_name = ((edge.get("node") or {}).get("name")) or ""
-                edge_size = int(edge.get("size") or 0)
-                if lang_name and edge_size > 0:
-                    data["bytes"] += edge_size
-                    sizes[lang_name] = sizes.get(lang_name, 0) + edge_size
-                    if lang_name not in seen_in_repo:
-                        seen_in_repo.add(lang_name)
-                        lang_repos[lang_name] = lang_repos.get(lang_name, 0) + 1
-                        lang_stars[lang_name] = lang_stars.get(lang_name, 0) + max(1, stars + 1)
-        data["langs"] = sorted(sizes.items(), key=lambda item: item[1], reverse=True)
-        data["lang_repos"] = lang_repos
-        data["lang_stars"] = lang_stars
-    data["events"] = collect_events()
+    if TOKEN:
+        query = (
+            "query($login:String!){user(login:$login){"
+            "contributionsCollection{totalCommitContributions "
+            "contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}"
+            "repositories(first:100,ownerAffiliations:OWNER,isFork:false,privacy:PUBLIC){totalCount "
+            "nodes{name description homepageUrl stargazerCount diskUsage primaryLanguage{name} "
+            "languages(first:20,orderBy:{field:SIZE,direction:DESC})"
+            "{edges{size node{name}}}}}}}"
+        )
+        result = request_json(GQL, {"query": query, "variables": {"login": USERNAME}})
+        if result and result.get("data") and result["data"].get("user"):
+            user = result["data"]["user"]
+            collection = user.get("contributionsCollection") or {}
+            calendar = collection.get("contributionCalendar") or {}
+            data["total"] = int(calendar.get("totalContributions") or 0)
+            data["commits"] = int(collection.get("totalCommitContributions") or 0)
+            for week in calendar.get("weeks") or []:
+                week_sum = 0
+                for day in week.get("contributionDays") or []:
+                    c = int(day.get("contributionCount") or 0)
+                    data["days"][day.get("date")] = c
+                    week_sum += c
+                data["weeks"].append(week_sum)
+            repos = user.get("repositories") or {}
+            data["repos"] = int(repos.get("totalCount") or 0)
+            sizes = {}
+            lang_repos = {}
+            lang_stars = {}
+            for node in repos.get("nodes") or []:
+                name = node.get("name") or ""
+                stars = int(node.get("stargazerCount") or 0)
+                data["stars"] += stars
+                if name:
+                    data["repo_map"][name] = {
+                        "name": name,
+                        "description": node.get("description") or "",
+                        "homepage": node.get("homepageUrl") or "",
+                        "stars": stars,
+                        "lang": ((node.get("primaryLanguage") or {}).get("name")) or "TypeScript",
+                    }
+                seen_in_repo = set()
+                for edge in (node.get("languages") or {}).get("edges") or []:
+                    lang_name = ((edge.get("node") or {}).get("name")) or ""
+                    edge_size = int(edge.get("size") or 0)
+                    if lang_name and edge_size > 0:
+                        data["bytes"] += edge_size
+                        sizes[lang_name] = sizes.get(lang_name, 0) + edge_size
+                        if lang_name not in seen_in_repo:
+                            seen_in_repo.add(lang_name)
+                            lang_repos[lang_name] = lang_repos.get(lang_name, 0) + 1
+                            lang_stars[lang_name] = lang_stars.get(lang_name, 0) + max(1, stars + 1)
+            data["langs"] = sorted(sizes.items(), key=lambda item: item[1], reverse=True)
+            data["lang_repos"] = lang_repos
+            data["lang_stars"] = lang_stars
+
+    if not data["days"]:
+        cached = load_cached_telemetry()
+        if cached:
+            m = cached.get("metrics") or {}
+            data["days"] = cached.get("days") or {}
+            data["weeks"] = ((cached.get("streaks") or {}).get("weeks52")) or []
+            data["total"] = int(m.get("contributions") or 0)
+            data["commits"] = int(m.get("commits") or 0)
+            data["stars"] = int(m.get("stars") or 0)
+            data["repos"] = int(m.get("repos") or 0)
+            data["bytes"] = int(m.get("bytes") or 0)
+            for l in cached.get("langs5d") or []:
+                nm = l["name"]
+                data["langs"].append((nm, int(l.get("bytes") or 0)))
+                data["lang_repos"][nm] = int(l.get("repos") or 1)
+                data["lang_stars"][nm] = max(1, int(round((float(l.get("d4Gravity") or 0.5) - 0.38) * 10)))
+            data["langs"].sort(key=lambda item: item[1], reverse=True)
+            for f in cached.get("forums") or []:
+                r_key = f.get("repo")
+                if r_key:
+                    data["repo_map"][r_key] = {
+                        "name": r_key,
+                        "lang": f.get("lang") or "TypeScript",
+                        "stars": int(f.get("stars") or 1),
+                    }
+            data["events"] = cached.get("events") or []
+
+    fresh_events = collect_events()
+    if fresh_events:
+        data["events"] = fresh_events
     return data
 
 
@@ -260,13 +300,13 @@ def lang_percentages(langs):
 
 
 def starry_matrix_svg(day_map, total_contribs, streaks):
-    width, height = 1200, 296
+    width, height = 1200, 304
     clip_defs, frame_nodes = nocturne_card(width, height, "mat", radius=16)
     weeks52 = streaks["weeks52"]
     max_w = max(weeks52) if any(weeks52) else 1
 
     parts = [
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 296" width="1200" height="296" role="img" aria-label="Celestial 52-Week Activity Matrix under Van Gogh Starry Sky, Milky Way and Solar System">',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 304" width="1200" height="304" role="img" aria-label="52-Week Contribution Constellation under Van Gogh Starry Night">',
         REDUCED_MOTION_STYLE,
         "<defs>",
     ]
@@ -276,8 +316,8 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         [
             '<linearGradient id="mat-water" x1="0" y1="0" x2="1" y2="0">',
             '<stop offset="0%%" stop-color="%s" stop-opacity="0"/>' % BORDER_WARM,
-            '<stop offset="32%%" stop-color="%s" stop-opacity="0.55"/>' % CERULEAN,
-            '<stop offset="68%%" stop-color="%s" stop-opacity="0.65"/>' % CREAM,
+            '<stop offset="30%%" stop-color="%s" stop-opacity="0.52"/>' % CERULEAN,
+            '<stop offset="68%%" stop-color="%s" stop-opacity="0.62"/>' % CREAM,
             '<stop offset="100%%" stop-color="%s" stop-opacity="0"/>' % BORDER_WARM,
             "</linearGradient>",
             "</defs>",
@@ -286,38 +326,30 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#mat-clip)">')
 
-    # Saint-Remy Starry Night + Milky Way + Waning Crescent Moon + Heliocentric Solar System Orrery
     parts.extend(
         van_gogh_starry_backdrop(
             "mat",
             width,
             height,
-            seed=1889,
-            avoid_boxes=[(22, 12, 680, 36), (975, 12, 205, 36), (620, 46, 360, 26)],
-            moon_pos=(836.0, 29.0, 7.6),
-            vortex_centers=[
-                (445.0, 134.0, 1.45, 112.0),
-                (672.0, 152.0, -1.15, 94.0),
-                (224.0, 118.0, 0.92, 86.0),
-            ],
-            stroke_count=148,
-            star_aureoles=6,
-            opacity_scale=0.92,
+            avoid_boxes=[],
+            opacity_scale=0.76,
+            glyph_stride=1,
+            stroke_limit=2400,
+            layer_key="panorama",
         )
     )
-    parts.extend(solar_system_orrery("mat", cx=568.0, cy=148.0, scale_x=290.0, scale_y=64.0, tilt_deg=-9.5, opacity=0.46))
+    parts.extend(solar_system_orrery(cx=564.0, cy=150.0, scale_x=290.0, scale_y=64.0, tilt_deg=-9.5, opacity=0.46))
 
-    parts.append(text(34, 35, "Celestial Activity Matrix · 52 Weeks", INK_PRIMARY, 14.2, "start", "700", "", FONT_DISPLAY))
+    parts.append('<rect x="30" y="16" width="234" height="28" rx="8" fill="#050b18" fill-opacity="0.78" stroke="%s" stroke-width="0.9"/>' % BORDER_WARM)
+    parts.append('<rect x="984" y="16" width="190" height="28" rx="8" fill="#050b18" fill-opacity="0.78" stroke="%s" stroke-width="0.9"/>' % BORDER_WARM)
     parts.append(
         raw_text(
-            306,
+            42,
             35,
-            '<tspan fill="%s">%d contributions</tspan><tspan fill="%s">  ·  </tspan>'
-            '<tspan fill="%s">%d-day longest streak</tspan><tspan fill="%s">  ·  </tspan>'
-            '<tspan fill="%s">Milky Way &amp; Solar Orrery</tspan>'
-            % (CREAM, total_contribs, INK_FAINT, INK_SECOND, streaks["longest"], INK_FAINT, SKY_SOFT),
-            INK_SECOND,
-            11.4,
+            '<tspan fill="%s" font-weight="700">%s</tspan><tspan fill="%s">&#160;contributions&#160;&#160;&#183;&#160;&#160;</tspan><tspan fill="%s" font-weight="600">%dd</tspan><tspan fill="%s">&#160;streak</tspan>'
+            % (CREAM, "{:,}".format(total_contribs), INK_SECOND, SKY_SOFT, streaks["longest"], INK_SECOND),
+            INK_PRIMARY,
+            13.2,
             "start",
             "500",
             "",
@@ -325,28 +357,26 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         )
     )
 
-    parts.append(text(1012, 35, "Quiet", INK_MUTED, 10.2, "end", "500", "", FONT_DISPLAY))
-    legend_specs = [
-        (1028, 2.2, "#1e3252", 0),
-        (1046, 3.2, CERULEAN, 0),
-        (1066, 4.1, EMERALD_MID, 0),
-        (1088, 5.0, FIREFLY_GOLD, 8.5),
-        (1112, 5.8, IVORY_WARM, 11.5),
-    ]
-    for lx, lr, lcol, halo in legend_specs:
-        if halo > 0:
-            parts.append('<circle cx="%d" cy="31" r="%s" fill="url(#mat-ff-gold)"/>' % (lx, num(halo)))
-        parts.append('<circle cx="%d" cy="31" r="%s" fill="%s"/>' % (lx, num(lr), lcol))
-    parts.append(text(1128, 35, "Supernova", INK_MUTED, 10.2, "start", "500", "", FONT_DISPLAY))
+    parts.append(text(1022, 35, "Less", INK_MUTED, 10.0, "end", "500", "", FONT_DISPLAY))
+    for idx_l, (lx, pts_n, r_out, r_in, lcol) in enumerate((
+        (1038, 4, 3.0, 1.0, "#2c4875"),
+        (1056, 4, 4.2, 1.6, SKY_SOFT),
+        (1076, 6, 5.0, 2.0, EMERALD_MID),
+        (1098, 8, 5.8, 2.3, FIREFLY_GOLD),
+        (1122, 8, 6.8, 2.6, CADMIUM),
+    )):
+        parts.append('<path d="%s" fill="%s"/>' % (star_path(lx, 31, r_out, r_in, pts_n), lcol))
+    parts.append(text(1138, 35, "More", INK_MUTED, 10.0, "start", "500", "", FONT_DISPLAY))
 
-    today = datetime.date.today()
+    ordered_dates = sorted(day_map.keys())
+    today = datetime.date.fromisoformat(ordered_dates[-1]) if ordered_dates else datetime.date.today()
     days_since_sun = (today.weekday() + 1) % 7
     end_sunday = today - datetime.timedelta(days=days_since_sun)
     start_sunday = end_sunday - datetime.timedelta(weeks=51)
 
-    grid_x = 70.0
+    grid_x = 76.0
     grid_y = 82.0
-    pitch_x = 21.3
+    pitch_x = 21.1
     pitch_y = 19.6
 
     month_names = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
@@ -360,11 +390,11 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
                 continue
             last_month = d.month
             if w - last_printed_w >= 3:
-                parts.append(text(grid_x + w * pitch_x, 64, month_names[d.month - 1], INK_MUTED, 10.2, "middle", "600", "", FONT_DISPLAY))
+                parts.append(text(grid_x + w * pitch_x, 63, month_names[d.month - 1], INK_SECOND, 10.2, "middle", "600", "", FONT_DISPLAY))
                 last_printed_w = w
 
     for row, lbl in ((1, "Mon"), (3, "Wed"), (5, "Fri")):
-        parts.append(text(50, grid_y + row * pitch_y + 3.8, lbl, INK_MUTED, 9.8, "end", "500"))
+        parts.append(text(58, grid_y + row * pitch_y + 3.6, lbl, INK_MUTED, 9.6, "end", "500"))
 
     coords = {}
     for w in range(52):
@@ -385,79 +415,66 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         if (nw, nr) in coords and coords[(nw, nr)][2] >= 2 and abs(nw - w) <= 1 and not (r == 6 and nw != w):
             nx, ny, nc, _ = coords[(nw, nr)]
             col = CADMIUM if (c + nc) >= 22 else SKY_SOFT
-            op = min(0.55, 0.18 + (c + nc) / 100.0)
-            parts.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.1" stroke-opacity="%s"/>' % (num(cx), num(cy), num(nx), num(ny), col, num(op)))
+            op = min(0.68, 0.26 + (c + nc) / 86.0)
+            parts.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.2" stroke-opacity="%s"/>' % (num(cx), num(cy), num(nx), num(ny), col, num(op)))
         if (w + 1, r) in coords and coords[(w + 1, r)][2] >= 4 and c >= 4:
             nx, ny, nc, _ = coords[(w + 1, r)]
             col = CREAM if (c + nc) >= 30 else TEAL_MIST
-            op = min(0.46, 0.16 + (c + nc) / 120.0)
-            parts.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.95" stroke-opacity="%s"/>' % (num(cx), num(cy), num(nx), num(ny), col, num(op)))
+            op = min(0.56, 0.22 + (c + nc) / 100.0)
+            parts.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.05" stroke-opacity="%s"/>' % (num(cx), num(cy), num(nx), num(ny), col, num(op)))
     parts.append("</g>")
 
     for (w, r), (cx, cy, c, _) in coords.items():
         if c == 0:
-            parts.append('<circle cx="%s" cy="%s" r="2.1" fill="#182a49" fill-opacity="0.88"/>' % (num(cx), num(cy)))
-            parts.append('<circle cx="%s" cy="%s" r="0.8" fill="#365382"/>' % (num(cx), num(cy)))
-        elif c <= 3:
-            parts.append('<circle cx="%s" cy="%s" r="5.2" fill="%s" fill-opacity="0.16"/>' % (num(cx), num(cy), CERULEAN))
-            parts.append('<circle cx="%s" cy="%s" r="3.0" fill="%s"/>' % (num(cx), num(cy), SKY_SOFT))
-        elif c <= 10:
-            parts.append('<circle cx="%s" cy="%s" r="6.8" fill="%s" fill-opacity="0.18"/>' % (num(cx), num(cy), EMERALD_MID))
-            parts.append('<circle cx="%s" cy="%s" r="3.8" fill="%s"/>' % (num(cx), num(cy), EMERALD_SOFT))
-            parts.append('<circle cx="%s" cy="%s" r="1.4" fill="%s"/>' % (num(cx), num(cy), IVORY_WARM))
-        elif c <= 25:
-            parts.append('<circle cx="%s" cy="%s" r="9.8" fill="url(#mat-ff-gold)"/>' % (num(cx), num(cy)))
-            parts.append('<circle cx="%s" cy="%s" r="5.8" fill="none" stroke="%s" stroke-width="0.75" stroke-dasharray="2.4 2" stroke-opacity="0.65"/>' % (num(cx), num(cy), CADMIUM))
-            parts.append('<circle cx="%s" cy="%s" r="4.3" fill="%s"/>' % (num(cx), num(cy), FIREFLY_GOLD))
-            parts.append('<circle cx="%s" cy="%s" r="1.8" fill="#ffffff"/>' % (num(cx), num(cy)))
-        else:
-            parts.append('<circle cx="%s" cy="%s" r="13.8" fill="url(#mat-ff-gold)"/>' % (num(cx), num(cy)))
-            parts.append('<circle cx="%s" cy="%s" r="7.4" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3 2.2" stroke-opacity="0.8"/>' % (num(cx), num(cy), CADMIUM))
-            parts.append('<circle cx="%s" cy="%s" r="5.2" fill="%s"/>' % (num(cx), num(cy), CREAM))
-            parts.append('<circle cx="%s" cy="%s" r="2.3" fill="#ffffff"/>' % (num(cx), num(cy)))
             parts.append(
-                '<path d="M%s %s V%s M%s %s H%s" stroke="#ffffff" stroke-width="0.85" stroke-opacity="0.78"/>'
-                % (num(cx), num(cy - 8.4), num(cy + 8.4), num(cx - 8.4), num(cy), num(cx + 8.4))
+                '<path d="M%s %s H%s M%s %s V%s" stroke="#243b63" stroke-width="0.85" stroke-opacity="0.82"/>'
+                % (num(cx - 1.7, 1), num(cy, 1), num(cx + 1.7, 1), num(cx, 1), num(cy - 1.7, 1), num(cy + 1.7, 1))
             )
+        elif c <= 3:
+            parts.append('<path d="%s" fill="%s"/>' % (star_path(cx, cy, 4.2, 1.5, 4), SKY_SOFT))
+        elif c <= 10:
+            parts.append('<path d="%s" fill="%s" stroke="%s" stroke-width="0.5"/>' % (star_path(cx, cy, 5.4, 2.1, 6), EMERALD_SOFT, IVORY_WARM))
+        elif c <= 24:
+            parts.append('<circle cx="%s" cy="%s" r="6.6" fill="none" stroke="%s" stroke-width="0.95" stroke-dasharray="3 2.2" stroke-opacity="0.78"/>' % (num(cx, 1), num(cy, 1), CADMIUM))
+            parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.55"/>' % (star_path(cx, cy, 5.8, 2.2, 8), FIREFLY_GOLD))
+        else:
+            parts.append(
+                '<circle cx="%s" cy="%s" r="8.2" fill="none" stroke="%s" stroke-width="1.1" stroke-dasharray="3.5 2.2" stroke-opacity="0.88">'
+                '<animateTransform attributeName="transform" type="rotate" from="0 %s %s" to="360 %s %s" dur="18s" repeatCount="indefinite"/>'
+                "</circle>"
+                % (num(cx, 1), num(cy, 1), CADMIUM, num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1))
+            )
+            parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.7"/>' % (star_path(cx, cy, 7.2, 2.6, 8), CREAM))
 
-    # Liquid Starry-Sky Mirror Horizon & Fluid Reflection Ripples
-    water_y = 236.0
-    parts.append('<line x1="48" y1="%s" x2="1166" y2="%s" stroke="url(#mat-water)" stroke-width="1.15"/>' % (num(water_y), num(water_y)))
+    water_y = 244.0
+    parts.append('<line x1="48" y1="%s" x2="1168" y2="%s" stroke="url(#mat-water)" stroke-width="1.15"/>' % (num(water_y), num(water_y)))
     for w in range(52):
         val = weeks52[w]
         if val <= 0:
             continue
         norm = (val / float(max_w)) ** 0.62
         wx = grid_x + w * pitch_x
-        for ri in range(1, 4):
-            rw = (4.0 + norm * 12.0) * (1.0 - ri * 0.18)
-            ry = water_y + ri * 8.2 + (w % 2) * 1.6
-            op = norm * (0.52 - ri * 0.11)
-            col = CADMIUM if norm > 0.45 else SKY_SOFT
-            parts.append(
-                '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.25" stroke-linecap="round" stroke-opacity="%s">'
-                '<animate attributeName="x1" values="%s;%s;%s" dur="%ss" repeatCount="indefinite"/>'
-                '<animate attributeName="x2" values="%s;%s;%s" dur="%ss" repeatCount="indefinite"/>'
-                "</line>"
-                % (
-                    num(wx - rw), num(ry), num(wx + rw), num(ry), col, num(op),
-                    num(wx - rw), num(wx - rw - 2.4), num(wx - rw), num(4.4 + (w % 5) * 0.7, 1),
-                    num(wx + rw), num(wx + rw + 2.4), num(wx + rw), num(4.4 + (w % 5) * 0.7, 1),
-                )
-            )
+        glyph_str = "≈~≈" if norm > 0.55 else ("~~" if norm > 0.25 else "~")
+        col = CADMIUM if norm > 0.45 else SKY_SOFT
+        parts.append(text(wx, water_y + 16 + (w % 2) * 6, glyph_str, col, 9.6, "middle", "700", ' opacity="%s"' % num(0.38 + norm * 0.52, 2)))
 
     parts.append("</g>")
     parts.append("</svg>")
     return "\n".join(parts)
 
 
-def _project_5d(cx, cy, x, y, z, w_coord=0.0):
-    # WHY: Schlegel 4D->3D perspective fold coupled with axonometric 3D->2D projection encodes 5 true engineering dimensions.
-    w_scale = 1.0 / (1.0 + 0.28 * (1.0 - w_coord))
-    xw = x * w_scale
+def _project_so4_5d(cx, cy, x, y, z, w_coord=1.0, hyper_angle=0.52):
+    ca, sa = math.cos(hyper_angle), math.sin(hyper_angle)
+    x4 = x * ca - w_coord * 18.0 * sa
+    w4 = (x / 98.0) * sa + w_coord * ca
+    z4 = z * math.cos(hyper_angle * 0.5) + w_coord * 14.0 * math.sin(hyper_angle * 0.5)
+
+    w_scale = 1.0 / max(0.55, 1.36 - 0.30 * w4)
+    xw = x4 * w_scale
     yw = y * w_scale
-    zw = z * w_scale + w_coord * 14.0
-    yaw = math.radians(-22.0)
+    zw = z4 * w_scale
+
+    yaw = math.radians(-24.0)
     tilt = math.radians(56.0)
     rx = xw * math.cos(yaw) - yw * math.sin(yaw)
     ry = xw * math.sin(yaw) + yw * math.cos(yaw)
@@ -466,9 +483,9 @@ def _project_5d(cx, cy, x, y, z, w_coord=0.0):
     return sx, sy, ry
 
 
-def render_5d_stack_astrolabe(langs, lang_repos, lang_stars, total_repos):
-    cx, cy = 708.0, 214.0
-    radius_max = 96.0
+def render_stack_crystal(langs, lang_repos, lang_stars):
+    cx, cy = 712.0, 206.0
+    radius_max = 94.0
     crown_z = 58.0
     apex_z = 74.0
 
@@ -481,70 +498,38 @@ def render_5d_stack_astrolabe(langs, lang_repos, lang_stars, total_repos):
     max_stars = max([lang_stars.get(a, 1) for a in axes] + [1])
 
     elems = [
-        text(508, 42, "5D Stack Astrolabe · Schlegel Hyper-Radar", INK_PRIMARY, 13.8, "start", "700", "", FONT_DISPLAY),
-        text(508, 338, "D1 Domain · D2 Byte Share · D3 Repo Breadth · D4 4D Gravity · D5 Phase", INK_MUTED, 9.5, "start", "500", "", FONT_DISPLAY),
+        text(508, 42, "Stack Architecture", INK_PRIMARY, 14.0, "start", "700", "", FONT_DISPLAY),
     ]
 
-    # 1. Graduated Celestial Armillary Azimuth Ring & Degree Ticks
     arm_pts = []
     for deg in range(0, 360, 6):
         rad = math.radians(deg)
-        px, py, _ = _project_5d(cx, cy, math.cos(rad) * (radius_max * 1.10), math.sin(rad) * (radius_max * 1.10), 0.0, 1.0)
+        px, py, _ = _project_so4_5d(cx, cy, math.cos(rad) * (radius_max * 1.12), math.sin(rad) * (radius_max * 1.12), 0.0, 1.0, 0.0)
         arm_pts.append((px, py))
         if deg % 15 == 0:
-            in_len = 0.99 if deg % 60 == 0 else 1.04
-            ix, iy, _ = _project_5d(cx, cy, math.cos(rad) * (radius_max * in_len), math.sin(rad) * (radius_max * in_len), 0.0, 1.0)
+            in_len = 0.99 if deg % 60 == 0 else 1.05
+            ix, iy, _ = _project_so4_5d(cx, cy, math.cos(rad) * (radius_max * in_len), math.sin(rad) * (radius_max * in_len), 0.0, 1.0, 0.0)
             elems.append(
                 '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="%s" stroke-opacity="%s"/>'
-                % (num(ix, 1), num(iy, 1), num(px, 1), num(py, 1), CREAM if deg % 60 == 0 else SKY_SOFT, "1.1" if deg % 60 == 0 else "0.7", "0.7" if deg % 60 == 0 else "0.36")
+                % (num(ix, 1), num(iy, 1), num(px, 1), num(py, 1), CREAM if deg % 60 == 0 else SKY_SOFT, "1.15" if deg % 60 == 0 else "0.7", "0.78" if deg % 60 == 0 else "0.38")
             )
     elems.append(
-        '<polygon points="%s" fill="#071021" fill-opacity="0.76" stroke="%s" stroke-width="1.1"/>'
+        '<polygon points="%s" fill="#061022" fill-opacity="0.86" stroke="%s" stroke-width="1.15"/>'
         % (" ".join("%s,%s" % (num(px, 1), num(py, 1)) for px, py in arm_pts), BORDER_WARM)
     )
 
-    # Concentric geodesic hex rings on base plane
-    for ring_f in (0.30, 0.56, 0.82):
+    for ring_f in (0.32, 0.56, 0.80, 1.00):
         h_pts = []
         for i in range(6):
             ang = -math.pi / 2.0 + i * math.pi / 3.0
-            sx, sy, _ = _project_5d(cx, cy, math.cos(ang) * radius_max * ring_f, math.sin(ang) * radius_max * ring_f, 0.0, 1.0)
+            sx, sy, _ = _project_so4_5d(cx, cy, math.cos(ang) * radius_max * ring_f, math.sin(ang) * radius_max * ring_f, 0.0, 1.0, 0.0)
             h_pts.append("%s,%s" % (num(sx, 1), num(sy, 1)))
-        elems.append(
-            '<polygon points="%s" fill="none" stroke="%s" stroke-width="0.8" stroke-dasharray="%s"/>'
-            % (" ".join(h_pts), BORDER_WARM if ring_f == 0.82 else BORDER_SUBTLE, "2 3" if ring_f == 0.30 else "none")
-        )
+        elems.append('<polygon points="%s" fill="none" stroke="%s" stroke-width="0.8"/>' % (" ".join(h_pts), BORDER_WARM if ring_f >= 0.8 else BORDER_SUBTLE))
 
-    # Tilted Celestial Meridian & Ecliptic Harmonic Phase Rings (Dimension 5)
-    for m_idx, (z_amp, col_m, dur_m) in enumerate(((32.0, SKY_SOFT, "17s"), (-26.0, CADMIUM, "23s"))):
-        m_pts = []
-        for deg in range(0, 361, 12):
-            rad = math.radians(deg)
-            mx_p, my_p, _ = _project_5d(
-                cx, cy,
-                math.cos(rad) * (radius_max * 0.96),
-                math.sin(rad) * (radius_max * 0.96),
-                28.0 + math.sin(rad + m_idx * 1.1) * z_amp,
-                1.0,
-            )
-            m_pts.append("%s,%s" % (num(mx_p, 1), num(my_p, 1)))
-        m_path = "M" + " L".join(m_pts)
-        elems.append('<path d="%s" fill="none" stroke="%s" stroke-width="0.85" stroke-opacity="0.28" stroke-dasharray="3 4"/>' % (m_path, col_m))
-        elems.append(
-            '<g><circle r="4.8" fill="url(#core-ff-gold)"/><circle r="1.4" fill="#ffffff"/>'
-            '<animateMotion path="%s" dur="%s" repeatCount="indefinite"/></g>' % (m_path, dur_m)
-        )
+    origin_x, origin_y, _ = _project_so4_5d(cx, cy, 0.0, 0.0, 0.0, 1.0, 0.0)
+    zenith_x, zenith_y, zenith_d = _project_so4_5d(cx, cy, 0.0, 0.0, apex_z, 1.0, 0.0)
+    inner_zen_x, inner_zen_y, inner_zen_d = _project_so4_5d(cx, cy, 0.0, 0.0, apex_z * 0.58, -0.75, 0.42)
 
-    origin_x, origin_y, _ = _project_5d(cx, cy, 0.0, 0.0, 0.0, 1.0)
-    zenith_x, zenith_y, zenith_d = _project_5d(cx, cy, 0.0, 0.0, apex_z, 1.0)
-    inner_zen_x, inner_zen_y, inner_zen_d = _project_5d(cx, cy, 0.0, 0.0, apex_z * 0.56, -0.45)
-
-    elems.append(
-        '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.95" stroke-dasharray="2 3" stroke-opacity="0.62"/>'
-        % (num(origin_x, 1), num(origin_y, 1), num(zenith_x, 1), num(zenith_y, 1), CREAM)
-    )
-
-    # Compute Outer 3D Polytope (w=+1) & Inner 4D W-Folded Tesseract Cell (w=-0.45)
     outer_verts = []
     inner_verts = []
     crown_anchors = []
@@ -552,181 +537,110 @@ def render_5d_stack_astrolabe(langs, lang_repos, lang_stars, total_repos):
 
     for i, axis in enumerate(axes):
         ang = -math.pi / 2.0 + i * math.pi / 3.0
-        share = lang_map.get(axis, 0) / float(total_bytes)
-        pct_val = share * 100.0
+        b_size = lang_map.get(axis, 0)
         r_count = lang_repos.get(axis, 0)
         s_weight = lang_stars.get(axis, 0)
 
-        # D2: Log byte volume reach
-        norm_vol = math.log1p(pct_val * 6.5) / math.log1p(480.0) if pct_val > 0 else 0.0
-        reach = 0.30 + 0.70 * norm_vol if share > 0 else 0.24
-        # D3: Repository breadth Z-elevation
-        norm_repos = (r_count / float(max_repos)) if r_count > 0 else 0.15
-        elev = 14.0 + crown_z * (0.45 * norm_vol + 0.55 * norm_repos)
-        # D4: Star-weighted 4D hyper-cell coordinate
-        norm_grav = 0.34 + 0.52 * (s_weight / float(max_stars))
+        log_byte_norm = math.log10(max(1.0, b_size)) / math.log10(max(10.0, total_bytes)) if b_size > 0 else 0.15
+        norm_repos = (r_count / float(max_repos)) if r_count > 0 else 0.16
+        composite = 0.62 * log_byte_norm + 0.38 * norm_repos
+        reach = 0.36 + 0.62 * min(1.0, composite)
+        elev = 16.0 + crown_z * (0.42 * log_byte_norm + 0.58 * norm_repos)
+        norm_grav = 0.38 + 0.56 * (s_weight / float(max_stars))
 
         wx = math.cos(ang) * radius_max * reach
         wy = math.sin(ang) * radius_max * reach
-        vx, vy, depth = _project_5d(cx, cy, wx, wy, elev, 1.0)
-        bx, by, bdepth = _project_5d(cx, cy, wx, wy, 0.0, 1.0)
-
-        ix, iy, idepth = _project_5d(
+        vx, vy, depth = _project_so4_5d(cx, cy, wx, wy, elev, 1.0, 0.0)
+        bx, by, bdepth = _project_so4_5d(cx, cy, wx, wy, 0.0, 1.0, 0.0)
+        ix, iy, idepth = _project_so4_5d(
             cx, cy,
-            math.cos(ang) * radius_max * (reach * 0.54 * (0.65 + 0.35 * norm_grav)),
-            math.sin(ang) * radius_max * (reach * 0.54 * (0.65 + 0.35 * norm_grav)),
-            elev * 0.54 + 8.0,
-            -0.55,
+            wx * (0.58 * (0.68 + 0.32 * norm_grav)),
+            wy * (0.58 * (0.68 + 0.32 * norm_grav)),
+            elev * 0.56 + 9.0,
+            -0.75,
+            0.42,
         )
 
-        ax_b = _project_5d(cx, cy, math.cos(ang) * radius_max, math.sin(ang) * radius_max, 0.0, 1.0)[:2]
-        ax_c = _project_5d(cx, cy, math.cos(ang) * radius_max, math.sin(ang) * radius_max, crown_z, 1.0)[:2]
+        ax_b = _project_so4_5d(cx, cy, math.cos(ang) * radius_max, math.sin(ang) * radius_max, 0.0, 1.0, 0.0)[:2]
+        ax_c = _project_so4_5d(cx, cy, math.cos(ang) * radius_max, math.sin(ang) * radius_max, crown_z, 1.0, 0.0)[:2]
         base_anchors.append(ax_b)
         crown_anchors.append(ax_c)
         elems.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.8"/>' % (num(origin_x, 1), num(origin_y, 1), num(ax_b[0], 1), num(ax_b[1], 1), BORDER_SUBTLE))
-        elems.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.75" stroke-dasharray="2 3" stroke-opacity="0.52"/>' % (num(ax_b[0], 1), num(ax_b[1], 1), num(ax_c[0], 1), num(ax_c[1], 1), BORDER_WARM))
 
-        outer_verts.append({"i": i, "axis": axis, "vx": vx, "vy": vy, "bx": bx, "by": by, "depth": depth, "bdepth": bdepth, "repos": r_count})
+        outer_verts.append({"i": i, "axis": axis, "vx": vx, "vy": vy, "bx": bx, "by": by, "depth": depth, "bdepth": bdepth})
         inner_verts.append({"i": i, "axis": axis, "ix": ix, "iy": iy, "depth": idepth})
 
-    # Base footprint shadow polygon
-    elems.append(
-        '<polygon points="%s" fill="%s" fill-opacity="0.10" stroke="%s" stroke-width="0.9" stroke-opacity="0.42"/>'
-        % (" ".join("%s,%s" % (num(v["bx"], 1), num(v["by"], 1)) for v in outer_verts), SKY_SOFT, SKY_SOFT)
-    )
-
-    # Render depth-sorted facets for BOTH Inner 4D Hyper-Cell AND Outer 3D Polytope
     facets = []
     outer_tones = ("#fb923c", "#38bdf8", "#fbbf24", "#2dd4bf", "#4ade80", "#818cf8")
     for i in range(6):
         j = (i + 1) % 6
         vi, vj = outer_verts[i], outer_verts[j]
         ii, ij = inner_verts[i], inner_verts[j]
-
-        # Inner 4D W-Tesseract cell facet
         in_depth = (inner_zen_d + ii["depth"] + ij["depth"]) / 3.0 - 4.0
-        facets.append((
-            in_depth,
-            "inner4d",
-            [(inner_zen_x, inner_zen_y), (ii["ix"], ii["iy"]), (ij["ix"], ij["iy"])],
-            CERULEAN if i % 2 == 0 else CADMIUM,
-            0.30,
-            MILKY_CORE,
-            0.78,
-        ))
-        # Outer elevation skirt
+        facets.append((in_depth, "inner4d", [(inner_zen_x, inner_zen_y), (ii["ix"], ii["iy"]), (ij["ix"], ij["iy"])], CERULEAN if i % 2 == 0 else CADMIUM, 0.34, MILKY_CORE, 0.84))
         sk_depth = (vi["bdepth"] + vj["bdepth"] + vi["depth"] + vj["depth"]) / 4.0 - 2.0
-        facets.append((
-            sk_depth,
-            "skirt",
-            [(vi["bx"], vi["by"]), (vj["bx"], vj["by"]), (vj["vx"], vj["vy"]), (vi["vx"], vi["vy"])],
-            "#0e294b",
-            0.32,
-            TEAL_MIST,
-            0.46,
-        ))
-        # Outer polytope crown facet
+        facets.append((sk_depth, "skirt", [(vi["bx"], vi["by"]), (vj["bx"], vj["by"]), (vj["vx"], vj["vy"]), (vi["vx"], vi["vy"])], "#0e294b", 0.38, TEAL_MIST, 0.50))
         rf_depth = (zenith_d + vi["depth"] + vj["depth"]) / 3.0
         is_front = (vi["vy"] + vj["vy"]) / 2.0 > cy - 8.0
-        facets.append((
-            rf_depth,
-            "roof",
-            [(zenith_x, zenith_y), (vi["vx"], vi["vy"]), (vj["vx"], vj["vy"])],
-            outer_tones[i],
-            0.24 if is_front else 0.14,
-            CREAM if is_front else SKY_SOFT,
-            0.84 if is_front else 0.52,
-        ))
+        facets.append((rf_depth, "roof", [(zenith_x, zenith_y), (vi["vx"], vi["vy"]), (vj["vx"], vj["vy"])], outer_tones[i], 0.28 if is_front else 0.16, CREAM if is_front else SKY_SOFT, 0.88 if is_front else 0.58))
 
     facets.sort(key=lambda item: item[0])
     for _, kind, pts, f_col, f_op, s_col, s_op in facets:
         pts_s = " ".join("%s,%s" % (num(px, 1), num(py, 1)) for px, py in pts)
-        sw = "1.15" if kind == "roof" else ("0.95" if kind == "inner4d" else "0.8")
-        elems.append(
-            '<polygon points="%s" fill="%s" fill-opacity="%s" stroke="%s" stroke-width="%s" stroke-opacity="%s" stroke-linejoin="round"/>'
-            % (pts_s, f_col, num(f_op, 2), s_col, sw, num(s_op, 2))
-        )
+        sw = "1.2" if kind == "roof" else ("1.0" if kind == "inner4d" else "0.85")
+        elems.append('<polygon points="%s" fill="%s" fill-opacity="%s" stroke="%s" stroke-width="%s" stroke-opacity="%s" stroke-linejoin="round"/>' % (pts_s, f_col, num(f_op, 2), s_col, sw, num(s_op, 2)))
 
-    # 4D Schlegel Tesseract Projection Struts connecting Inner 4D Cell -> Outer 3D Polytope
-    elems.append(
-        '<polygon points="%s" fill="none" stroke="%s" stroke-width="1.15" stroke-dasharray="2.5 2" stroke-opacity="0.88"/>'
-        % (" ".join("%s,%s" % (num(iv["ix"], 1), num(iv["iy"], 1)) for iv in inner_verts), SKY_SOFT)
-    )
-    elems.append(
-        '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.1" stroke-opacity="0.85"/>'
-        % (num(inner_zen_x, 1), num(inner_zen_y, 1), num(zenith_x, 1), num(zenith_y, 1), CADMIUM)
-    )
     for i in range(6):
-        ov = outer_verts[i]
-        iv = inner_verts[i]
-        elems.append(
-            '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.05" stroke-opacity="0.78"/>'
-            % (num(iv["ix"], 1), num(iv["iy"], 1), num(ov["vx"], 1), num(ov["vy"], 1), CADMIUM if i % 2 == 0 else TEAL_MIST)
-        )
-        elems.append('<circle cx="%s" cy="%s" r="2.0" fill="%s"/>' % (num(iv["ix"], 1), num(iv["iy"], 1), MILKY_CORE))
+        ov, iv = outer_verts[i], inner_verts[i]
+        elems.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="1.15" stroke-opacity="0.86"/>' % (num(iv["ix"], 1), num(iv["iy"], 1), num(ov["vx"], 1), num(ov["vy"], 1), CADMIUM if i % 2 == 0 else TEAL_MIST))
 
-    # Glowing outer 3D rim & vertex nodes
     rim_pts = " ".join("%s,%s" % (num(v["vx"], 1), num(v["vy"], 1)) for v in outer_verts)
-    elems.append('<polygon points="%s" fill="none" stroke="%s" stroke-width="1.55" stroke-linejoin="round" filter="url(#core-bloom)"/>' % (rim_pts, CREAM))
+    elems.append('<polygon points="%s" fill="none" stroke="%s" stroke-width="1.65" stroke-linejoin="round"/>' % (rim_pts, CREAM))
 
     for v in outer_verts:
-        elems.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.85" stroke-opacity="0.52"/>' % (
-            num(v["bx"], 1), num(v["by"], 1), num(v["vx"], 1), num(v["vy"], 1), CREAM
-        ))
-        _, col_hi = LANG_PALETTE.get(v["axis"], (CREAM, IVORY))
-        elems.append('<circle cx="%s" cy="%s" r="5.6" fill="url(#core-ff-gold)"/>' % (num(v["vx"], 1), num(v["vy"], 1)))
-        elems.append('<circle cx="%s" cy="%s" r="2.6" fill="%s" stroke="#ffffff" stroke-width="0.8"/>' % (num(v["vx"], 1), num(v["vy"], 1), col_hi))
+        col_main, col_hi = LANG_PALETTE.get(v["axis"], (CREAM, IVORY))
+        elems.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.75"/>' % (star_path(v["vx"], v["vy"], 5.6, 2.2, 4), col_hi))
 
-    elems.append('<circle cx="%s" cy="%s" r="8.2" fill="url(#core-ff-gold)"/>' % (num(zenith_x, 1), num(zenith_y, 1)))
-    elems.append('<circle cx="%s" cy="%s" r="2.9" fill="#ffffff"/>' % (num(zenith_x, 1), num(zenith_y, 1)))
+    elems.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.8"/>' % (star_path(zenith_x, zenith_y, 6.8, 2.4, 8), CADMIUM))
 
-    # 6 Precision English Axis Callouts (Language + Share % + Repo Count)
     for i, axis in enumerate(axes):
         ux, uy = crown_anchors[i]
         bx, by = base_anchors[i]
-        mx = ux * 0.55 + bx * 0.45
-        my = uy * 0.55 + by * 0.45
+        mx = ux * 0.56 + bx * 0.44
+        my = uy * 0.56 + by * 0.44
         col_main, _ = LANG_PALETTE.get(axis, (CREAM, IVORY))
         pct = pct_map.get(axis, 0)
         pct_str = "%d%%" % pct if pct > 0 else "<1%"
+        b_comp = compact(lang_map.get(axis, 0))
         r_cnt = lang_repos.get(axis, 0)
-        repo_tag = " · %dr" % r_cnt if r_cnt > 0 else ""
+        sub_tag = "%s · %dr" % (b_comp, r_cnt)
 
         if i == 0:
-            lx, ly, anchor = mx, uy - 14.0, "middle"
-            elems.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.9" stroke-opacity="0.62"/>' % (num(ux, 1), num(uy - 2, 1), num(lx, 1), num(ly + 4, 1), col_main))
+            lx, ly, anchor = mx, uy - 18.0, "middle"
         elif i in (1, 2):
-            lx = max(mx + 16.0, cx + 114.0)
-            ly = my + (-2.0 if i == 1 else 12.0)
+            lx = max(mx + 12.0, cx + 106.0)
+            ly = my + (-12.0 if i == 1 else 12.0)
             anchor = "start"
-            elems.append('<polyline points="%s,%s %s,%s %s,%s" fill="none" stroke="%s" stroke-width="0.9" stroke-opacity="0.62"/>' % (
-                num(mx + 3, 1), num(my, 1), num(lx - 10, 1), num(ly - 4, 1), num(lx - 3, 1), num(ly - 4, 1), col_main
-            ))
         elif i == 3:
-            lx, ly, anchor = bx, by + 23.0, "middle"
-            elems.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.9" stroke-opacity="0.62"/>' % (num(bx, 1), num(by + 3, 1), num(lx, 1), num(ly - 12, 1), col_main))
+            lx, ly, anchor = bx, by + 20.0, "middle"
         else:
-            lx = min(mx - 16.0, cx - 112.0)
-            ly = my + (12.0 if i == 4 else -2.0)
+            lx = min(mx - 12.0, cx - 106.0)
+            ly = my + (12.0 if i == 4 else -12.0)
             anchor = "end"
-            elems.append('<polyline points="%s,%s %s,%s %s,%s" fill="none" stroke="%s" stroke-width="0.9" stroke-opacity="0.62"/>' % (
-                num(mx - 3, 1), num(my, 1), num(lx + 10, 1), num(ly - 4, 1), num(lx + 3, 1), num(ly - 4, 1), col_main
-            ))
 
         elems.append(
             raw_text(
                 lx,
                 ly,
-                '<tspan fill="%s" font-weight="700">%s</tspan>'
-                '<tspan fill="%s" font-weight="600"> %s</tspan>'
-                '<tspan fill="%s" font-weight="500">%s</tspan>'
-                % (col_main, esc(axis), INK_PRIMARY if pct >= 5 else INK_SECOND, esc(pct_str), INK_MUTED, esc(repo_tag)),
+                '<tspan fill="%s" font-weight="700">%s</tspan><tspan fill="%s" font-weight="600">&#160;%s</tspan>'
+                % (col_main, esc(axis), INK_PRIMARY if pct >= 5 else INK_SECOND, esc(pct_str)),
                 INK_PRIMARY,
-                11.0,
+                10.8,
                 anchor,
                 "600",
             )
         )
+        elems.append(text(lx, ly + 12.0, sub_tag, INK_MUTED, 8.8, anchor, "500"))
 
     return elems
 
@@ -734,74 +648,50 @@ def render_5d_stack_astrolabe(langs, lang_repos, lang_stars, total_repos):
 def load_portrait_hd():
     path = os.path.join(ASSETS, "portrait_hd.json")
     if not os.path.exists(path):
-        return {"cols": 1, "rows": 1, "atmos_n": 1, "atmos": [], "contours": [], "grid": [[[CREAM, "@"]]]}
+        return {"cols": 1, "rows": 1, "hatch_n": 1, "under_strokes": [], "sky_strokes": [], "contours": [], "grid": [[[CREAM, "@"]]]}
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
-def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, total_repos, chars, commits, stars, total_contribs, events):
-    width, height = 1200, 568
+def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, stars, total_contribs, events):
+    width, height = 1200, 564
     clip_defs, frame_nodes = nocturne_card(width, height, "core", radius=16)
 
     parts = [
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 568" width="1200" height="568" role="img" aria-label="Ultra-HD Optical Character Portrait, 5D Schlegel Stack Astrolabe, Live Engineering Telemetry and Recent GitHub Activity Console">',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 564" width="1200" height="564" role="img" aria-label="BroAmStuck 4K Calligraphic Portrait, Stack Architecture and GitHub Activity">',
         REDUCED_MOTION_STYLE,
         "<defs>",
     ]
     parts.extend(nocturne_defs("core"))
     parts.extend(clip_defs)
-    parts.extend(
-        [
-            '<radialGradient id="core-aura-left" cx="21%%" cy="45%%" r="32%%">',
-            '<stop offset="0%%" stop-color="%s" stop-opacity="0.14"/>' % CREAM,
-            '<stop offset="55%%" stop-color="%s" stop-opacity="0.06"/>' % CERULEAN,
-            '<stop offset="100%%" stop-color="%s" stop-opacity="0"/>' % BG_NIGHT,
-            "</radialGradient>",
-            '<radialGradient id="core-aura-5d" cx="59%%" cy="35%%" r="30%%">',
-            '<stop offset="0%%" stop-color="%s" stop-opacity="0.14"/>' % SKY_SOFT,
-            '<stop offset="58%%" stop-color="%s" stop-opacity="0.06"/>' % FIREFLY_GOLD,
-            '<stop offset="100%%" stop-color="%s" stop-opacity="0"/>' % BG_NIGHT,
-            "</radialGradient>",
-            '<filter id="core-atmos-blur" x="-15%%" y="-15%%" width="130%%" height="130%%">',
-            '<feGaussianBlur stdDeviation="5.6"/>',
-            "</filter>",
-            '<clipPath id="core-avatar-clip"><circle cx="246" cy="252" r="198"/></clipPath>',
-            "</defs>",
-        ]
-    )
+    parts.append('<clipPath id="core-avatar-clip"><circle cx="246" cy="252" r="204"/></clipPath>')
+    parts.append("</defs>")
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#core-clip)">')
-    parts.append('<rect x="1" y="1" width="1198" height="566" fill="url(#core-aura-left)"/>')
-    parts.append('<rect x="1" y="1" width="1198" height="566" fill="url(#core-aura-5d)"/>')
 
-    acx, acy, ar = 246.0, 252.0, 198.0
+    acx, acy, ar = 246.0, 252.0, 204.0
     avoid = [
-        (acx - ar - 10, acy - ar - 10, (ar + 10) * 2, (ar + 10) * 2),
-        (500, 26, 444, 314),
-        (506, 350, 670, 192),
-        (952, 46, 224, 286),
+        (170, 474, 152, 58),
+        (492, 22, 688, 524),
     ]
     parts.extend(
         van_gogh_starry_backdrop(
             "core",
             width,
             height,
-            seed=2027,
             avoid_boxes=avoid,
-            moon_pos=(1154.0, 44.0, 9.2),
-            stroke_count=96,
-            star_aureoles=6,
-            opacity_scale=0.84,
+            opacity_scale=0.58,
+            glyph_stride=1,
+            stroke_limit=1350,
+            layer_key="sky",
         )
     )
 
-    # Engraved Celestial Astrolabe Bezel around Ultra-HD Character Portrait
-    parts.append('<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="1.0" stroke-opacity="0.65" stroke-dasharray="3 5"/>' % (num(acx), num(acy), num(ar + 13), BORDER_WARM))
-    parts.append('<circle cx="%s" cy="%s" r="%s" fill="#0b1324" stroke="%s" stroke-width="1.3"/>' % (num(acx), num(acy), num(ar + 6), BORDER_WARM))
-    for deg in range(0, 360, 10):
+    parts.append('<circle cx="%s" cy="%s" r="%s" fill="#060d1c" stroke="%s" stroke-width="1.35"/>' % (num(acx), num(acy), num(ar + 5), BORDER_WARM))
+    for deg in range(0, 360, 15):
         rad = math.radians(deg)
-        r0 = ar + 6.0
-        r1 = ar + (12.5 if deg % 30 == 0 else 9.5)
+        r0 = ar + 5.0
+        r1 = ar + (11.5 if deg % 45 == 0 else 8.5)
         parts.append(
             '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="%s" stroke-opacity="%s"/>'
             % (
@@ -810,32 +700,54 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, total_repos, char
                 num(acx + math.cos(rad) * r1, 1),
                 num(acy + math.sin(rad) * r1, 1),
                 CREAM if deg % 90 == 0 else SKY_SOFT,
-                "1.2" if deg % 30 == 0 else "0.75",
-                "0.75" if deg % 30 == 0 else "0.35",
+                "1.2" if deg % 45 == 0 else "0.75",
+                "0.75" if deg % 45 == 0 else "0.35",
             )
         )
-    parts.append('<circle cx="%s" cy="%s" r="%s" fill="#070d1a"/>' % (num(acx), num(acy), num(ar)))
 
-    # Ultra-HD Portrait Layer 1 (48x48 smooth atmospheric under-painting) + Layer 2 (156x86 directional glyphs) + Layer 3 (micro-contours)
     parts.append('<g clip-path="url(#core-avatar-clip)">')
-    atmos_n = max(int(portrait_hd.get("atmos_n") or 48), 1)
-    atmos_cells = portrait_hd.get("atmos") or []
-    if atmos_cells:
-        cell_step = (ar * 2.0) / float(atmos_n)
-        parts.append('<g filter="url(#core-atmos-blur)" opacity="0.58">')
-        for ax_i, ay_i, acol in atmos_cells:
-            px_a = (acx - ar) + (ax_i + 0.5) * cell_step
-            py_a = (acy - ar) + (ay_i + 0.5) * cell_step
-            parts.append('<circle cx="%s" cy="%s" r="%s" fill="%s"/>' % (num(px_a, 1), num(py_a, 1), num(cell_step * 0.92, 1), acol))
+    diam = ar * 2.0
+    x_left = acx - ar
+    y_top = acy - ar
+
+    hatch_n = max(int(portrait_hd.get("hatch_n") or 76), 1)
+    under_strokes = portrait_hd.get("under_strokes") or []
+    if under_strokes:
+        hstep = diam / float(hatch_n)
+        parts.append('<g stroke-linecap="round" opacity="0.90">')
+        for ax_i, ay_i, hcol, _, ang_deg in under_strokes:
+            px_a = x_left + (ax_i + 0.5) * hstep
+            py_a = y_top + (ay_i + 0.5) * hstep
+            rad = math.radians(ang_deg)
+            dx = math.cos(rad) * hstep * 0.74
+            dy = math.sin(rad) * hstep * 0.74
+            parts.append(
+                '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="%s"/>'
+                % (num(px_a - dx, 1), num(py_a - dy, 1), num(px_a + dx, 1), num(py_a + dy, 1), hcol, num(hstep * 0.92, 2))
+            )
         parts.append("</g>")
 
-    cols = max(int(portrait_hd.get("cols") or 156), 1)
-    rows = max(int(portrait_hd.get("rows") or 86), 1)
+    sky_strokes = portrait_hd.get("sky_strokes") or []
+    if sky_strokes:
+        parts.append('<g fill="none" stroke-linecap="round">')
+        for s0x, s0y, smx, smy, s1x, s1y, scol, sop in sky_strokes:
+            parts.append(
+                '<path d="M%s,%s Q%s,%s %s,%s" stroke="%s" stroke-width="1.3" stroke-opacity="%s"/>'
+                % (
+                    num(x_left + s0x * diam, 1), num(y_top + s0y * diam, 1),
+                    num(x_left + smx * diam, 1), num(y_top + smy * diam, 1),
+                    num(x_left + s1x * diam, 1), num(y_top + s1y * diam, 1),
+                    scol, num(sop, 2),
+                )
+            )
+        parts.append("</g>")
+
+    cols = max(int(portrait_hd.get("cols") or 216), 1)
+    rows = max(int(portrait_hd.get("rows") or 126), 1)
     grid = portrait_hd.get("grid") or []
-    diam = ar * 2.0
     row_step = diam / float(rows)
     font_sz = diam / (cols * 0.601)
-    start_y = acy - ar + row_step * 0.80
+    start_y = y_top + row_step * 0.80
 
     for r_idx, runs in enumerate(grid):
         tspan_parts = []
@@ -849,21 +761,22 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, total_repos, char
                 tspan_parts.append('<tspan fill="%s">%s</tspan>' % (col_hex, escaped))
         if has_ink:
             parts.append(
-                '<text x="%s" y="%s" font-family="%s" font-size="%s" font-weight="700" text-anchor="middle" xml:space="preserve">%s</text>'
-                % (num(acx), num(start_y + r_idx * row_step, 2), FONT_MONO, num(font_sz, 2), "".join(tspan_parts))
+                '<text x="%s" y="%s" textLength="%s" lengthAdjust="spacing" font-family="%s" font-size="%s" font-weight="700" xml:space="preserve">%s</text>'
+                % (num(x_left, 1), num(start_y + r_idx * row_step, 2), num(diam, 1), FONT_MONO, num(font_sz, 2), "".join(tspan_parts))
             )
 
     contours = portrait_hd.get("contours") or []
     if contours:
         parts.append('<g stroke-linecap="round">')
-        for x0, y0, x1, y1, scol, sop in contours:
+        for item in contours:
+            x0, y0, x1, y1, scol, sop = item[0], item[1], item[2], item[3], item[4], item[5]
             parts.append(
                 '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="0.72" stroke-opacity="%s"/>'
                 % (
-                    num((acx - ar) + x0 * diam, 1),
-                    num((acy - ar) + y0 * diam, 1),
-                    num((acx - ar) + x1 * diam, 1),
-                    num((acy - ar) + y1 * diam, 1),
+                    num(x_left + x0 * diam, 1),
+                    num(y_top + y0 * diam, 1),
+                    num(x_left + x1 * diam, 1),
+                    num(y_top + y1 * diam, 1),
                     scol,
                     num(sop, 2),
                 )
@@ -871,21 +784,21 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, total_repos, char
         parts.append("</g>")
 
     parts.append("</g>")
-    parts.append('<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="1.25" stroke-opacity="0.52"/>' % (num(acx), num(acy), num(ar), CREAM))
+    parts.append('<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="1.35" stroke-opacity="0.62"/>' % (num(acx), num(acy), num(ar), CREAM))
 
-    parts.append(text(acx, 496, DISPLAY, INK_PRIMARY, 21.5, "middle", "700", ' letter-spacing="0.2"', FONT_DISPLAY))
-    parts.append(text(acx, 519, "@%s · Optical Glyph Portrait" % USERNAME, INK_MUTED, 11.2, "middle", "500"))
+    parts.append(text(acx, 496, DISPLAY, INK_PRIMARY, 21.0, "middle", "700", ' letter-spacing="-0.2"', FONT_DISPLAY))
+    parts.append(text(acx, 518, "@%s" % USERNAME, INK_MUTED, 11.2, "middle", "500"))
 
-    parts.append('<line x1="484" y1="32" x2="484" y2="536" stroke="%s" stroke-width="1"/>' % BORDER_SUBTLE)
+    parts.append('<line x1="484" y1="32" x2="484" y2="532" stroke="%s" stroke-width="1"/>' % BORDER_SUBTLE)
 
-    parts.extend(render_5d_stack_astrolabe(langs, lang_repos, lang_stars, total_repos))
+    parts.extend(render_stack_crystal(langs, lang_repos, lang_stars))
 
-    parts.append('<line x1="952" y1="44" x2="952" y2="332" stroke="%s" stroke-width="1"/>' % BORDER_SUBTLE)
+    parts.append('<line x1="956" y1="44" x2="956" y2="332" stroke="%s" stroke-width="1"/>' % BORDER_SUBTLE)
     metrics = [
-        (974, 86, compact(chars), "Source Characters", CREAM, False),
-        (974, 158, str(commits), "Annual Commits", INK_PRIMARY, False),
-        (974, 230, str(stars), "Stars Earned", FIREFLY_GOLD, True),
-        (974, 302, str(total_contribs), "Total Contributions", EMERALD_SOFT, False),
+        (978, 86, compact(chars), "Source", CREAM, False),
+        (978, 158, "{:,}".format(commits), "Commits", INK_PRIMARY, False),
+        (978, 230, str(stars), "Stars", FIREFLY_GOLD, True),
+        (978, 302, "{:,}".format(total_contribs), "Total", EMERALD_SOFT, False),
     ]
     for mx, my, mval, mlbl, mcol, with_star in metrics:
         parts.append(text(mx, my, mval, mcol, 26, "start", "700", ' letter-spacing="-0.5"'))
@@ -894,19 +807,17 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, total_repos, char
             parts.append('<path d="%s" fill="%s"/>' % (star_path(sx, my - 9.0, 6.8, 2.9), FIREFLY_GOLD))
         parts.append(text(mx, my + 20, mlbl, INK_SECOND, 11.2, "start", "500", "", FONT_DISPLAY))
 
-    cx0, cy0, cw, ch = 510, 354, 662, 182
+    cx0, cy0, cw, ch = 510, 350, 662, 184
     parts.append('<rect x="%d" y="%d" width="%d" height="%d" rx="12" fill="%s" stroke="%s" stroke-width="1.05"/>' % (cx0, cy0, cw, ch, BG_CONSOLE, BORDER_WARM))
-    for di, dcol in enumerate(("#334155", "#475569", "#64748b")):
-        parts.append('<circle cx="%d" cy="%d" r="3.2" fill="%s"/>' % (cx0 + 18 + di * 12, cy0 + 19, dcol))
     parts.append(
         raw_text(
-            cx0 + 62,
+            cx0 + 20,
             cy0 + 23,
-            '<tspan fill="%s">$</tspan><tspan fill="%s"> gh activity --recent --format=telemetry</tspan>' % (EMERALD_SOFT, INK_MUTED),
+            '<tspan fill="%s">$</tspan><tspan fill="%s">&#160;gh&#160;activity</tspan>' % (EMERALD_SOFT, INK_MUTED),
             INK_MUTED,
             10.5,
             "start",
-            "500",
+            "600",
         )
     )
     parts.append('<line x1="%d" y1="%d" x2="%d" y2="%d" stroke="%s" stroke-width="1"/>' % (cx0 + 14, cy0 + 35, cx0 + cw - 14, cy0 + 35, BORDER_SUBTLE))
@@ -920,15 +831,38 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, total_repos, char
         parts.append(text(cx0 + 70, ry, ev["sha"], CREAM, 10.6, "start", "600"))
         parts.append(text(cx0 + 138, ry, repo_s, SKY_SOFT, 10.6, "start", "600"))
         parts.append(text(cx0 + 278, ry, msg_s, INK_PRIMARY if i == 0 else INK_SECOND, 10.6, "start", "500" if i == 0 else "400"))
-        if i == 0:
-            cur_x = cx0 + 278 + len(msg_s) * 6.5 + 6.0
-            if cur_x < cx0 + cw - 18:
-                parts.append(
-                    '<rect x="%s" y="%s" width="6" height="12" rx="1.2" fill="%s">'
-                    '<animate attributeName="opacity" values="0.95;0.95;0.1;0.1" keyTimes="0;0.48;0.52;1" dur="1.25s" repeatCount="indefinite"/></rect>'
-                    % (num(cur_x), num(ry - 10), CREAM)
-                )
 
+    parts.append("</g>")
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def vangogh_nocturne_svg():
+    width, height = 1200, 388
+    clip_defs, frame_nodes = nocturne_card(width, height, "vg3", radius=16)
+    parts = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 388" width="1200" height="388" role="img" aria-label="4K Calligraphic Synthesis of Van Gogh Starry Night, Sunflowers Garden and Country Road in Provence Cypresses">',
+        REDUCED_MOTION_STYLE,
+        "<defs>",
+    ]
+    parts.extend(nocturne_defs("vg3"))
+    parts.extend(clip_defs)
+    parts.append("</defs>")
+    parts.extend(frame_nodes)
+    parts.append('<g clip-path="url(#vg3-clip)">')
+    parts.append('<rect x="1" y="1" width="1198" height="386" fill="#061024"/>')
+    parts.extend(
+        van_gogh_starry_backdrop(
+            "vg3",
+            width,
+            height,
+            avoid_boxes=[],
+            opacity_scale=0.98,
+            glyph_stride=1,
+            stroke_limit=3300,
+            layer_key="garden",
+        )
+    )
     parts.append("</g>")
     parts.append("</svg>")
     return "\n".join(parts)
@@ -951,6 +885,9 @@ def build_telemetry_payload(data, streaks):
         r_cnt = int(data["lang_repos"].get(axis, 0))
         s_w = int(data["lang_stars"].get(axis, 0))
         col_main, col_hi = LANG_PALETTE.get(axis, (CREAM, IVORY))
+        log_byte_norm = math.log10(max(1.0, b_val)) / math.log10(max(10.0, total_bytes)) if b_val > 0 else 0.15
+        norm_repos = (r_cnt / float(max_repos)) if r_cnt > 0 else 0.16
+        composite = 0.62 * log_byte_norm + 0.38 * norm_repos
         langs_5d.append(
             {
                 "name": axis,
@@ -959,10 +896,10 @@ def build_telemetry_payload(data, streaks):
                 "percent": pct_map.get(axis, 0),
                 "percentExact": round(pct_val, 2),
                 "repos": r_cnt,
-                "d2Volume": round(math.log1p(pct_val * 6.5) / math.log1p(480.0), 3) if pct_val > 0 else 0.12,
-                "d3Breadth": round(r_cnt / float(max_repos), 3) if r_cnt > 0 else 0.14,
-                "d4Gravity": round(0.32 + 0.68 * (s_w / float(max_stars)), 3),
-                "d5Velocity": round(0.45 + 0.55 * min(1.0, (r_cnt + pct_val * 0.05) / 8.0), 3),
+                "d2Volume": round(min(1.0, composite), 3),
+                "d3Breadth": round(norm_repos, 3),
+                "d4Gravity": round(0.38 + 0.62 * (s_w / float(max_stars)), 3),
+                "d5Velocity": round(0.48 + 0.52 * min(1.0, (r_cnt + pct_val * 0.05) / 7.5), 3),
                 "color": col_main,
                 "highlight": col_hi,
             }
@@ -973,9 +910,8 @@ def build_telemetry_payload(data, streaks):
             "id": "v3",
             "repo": "f_forumv3",
             "title": "F-Forum v3",
-            "badge": "CITADEL 3D",
-            "subtitle": "Spatial UI/3D Workbench & 7,750-Specimen Vault",
-            "summary": "Third-generation spatial studio combining 7,750 directly viewable UI and 3D specimens with a sandboxed live workbench, community feed, and real-time messenger.",
+            "subtitle": "7,750 UI/3D specimens, live studio & chat",
+            "summary": "7,750 UI/3D specimens, live studio & chat.",
             "repoUrl": "https://github.com/%s/f_forumv3" % USERNAME,
             "liveUrl": "https://fforum3.vercel.app",
             "domain": "fforum3.vercel.app",
@@ -987,9 +923,8 @@ def build_telemetry_payload(data, streaks):
             "id": "v2",
             "repo": "F-Forum_v2",
             "title": "F-Forum v2",
-            "badge": "VIADUCT 3D",
-            "subtitle": "Generational Catenary Bridge Architecture",
-            "summary": "Architectural transition bridge linking the original student learning forum to the modular third-generation spatial workbench and public specimen archive.",
+            "subtitle": "Twin-pylon catenary suspension viaduct",
+            "summary": "Twin-pylon catenary suspension viaduct.",
             "repoUrl": "https://github.com/%s/F-Forum_v2" % USERNAME,
             "liveUrl": "https://github.com/%s/F-Forum_v2" % USERNAME,
             "domain": "v2-bridge",
@@ -1001,9 +936,8 @@ def build_telemetry_payload(data, streaks):
             "id": "v1",
             "repo": "f-forum",
             "title": "F-Forum v1",
-            "badge": "ROTUNDA 3D",
-            "subtitle": "Campus Q&A Forum, Student Clubs & Exam Vault",
-            "summary": "First-generation student forum uniting subject Q&A with math typesetting, PDF exam archives, flashcards, student clubs, and real-time chat.",
+            "subtitle": "Campus Q&A, math codex, clubs & live chat",
+            "summary": "Campus Q&A, math codex, clubs & live chat.",
             "repoUrl": "https://github.com/%s/f-forum" % USERNAME,
             "liveUrl": "https://f-forum.vercel.app",
             "domain": "f-forum.vercel.app",
@@ -1045,7 +979,7 @@ def sync_docs_assets():
         return
     os.makedirs(DOCS_ASSETS, exist_ok=True)
     for fname in os.listdir(ASSETS):
-        if fname.endswith((".svg", ".json")):
+        if fname.endswith(".json"):
             shutil.copy2(os.path.join(ASSETS, fname), os.path.join(DOCS_ASSETS, fname))
 
 
@@ -1056,11 +990,6 @@ def main():
         raise SystemExit("error: GitHub API returned no profile data, assets left untouched")
     streaks = compute_streaks(data["days"], data["weeks"])
 
-    # Teardown legacy asset name if present
-    legacy_matrix = os.path.join(ASSETS, "01-firefly-matrix.svg")
-    if os.path.exists(legacy_matrix):
-        os.remove(legacy_matrix)
-
     write("01-starry-matrix.svg", starry_matrix_svg(data["days"], data["total"], streaks))
     write(
         "02-core-stage.svg",
@@ -1069,7 +998,6 @@ def main():
             data["langs"],
             data["lang_repos"],
             data["lang_stars"],
-            data["repos"],
             data["bytes"],
             data["commits"],
             data["stars"],
@@ -1077,6 +1005,7 @@ def main():
             data["events"],
         ),
     )
+    write("03-vangogh-nocturne.svg", vangogh_nocturne_svg())
     for card_name, card_svg in render_flagship_cards(data["repo_map"]).items():
         write(card_name, card_svg)
 

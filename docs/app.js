@@ -1,30 +1,49 @@
 // SPDX-License-Identifier: MIT
-// WHY: Coordinates the hydrodynamic sky, 52-week celestial matrix, 5D astrolabe, HD glyph portrait, 4-state console, and 360-degree 3D F-Forum stages.
+// WHY: Coordinates the calligraphic Van Gogh sky/garden engine, sculpted contribution constellation, 4K portrait, stack crystal, 4-state console, and Blender 3D stages.
 
 import { LiquidStarrySky } from "./sky-engine.js";
 import { PortraitStage, Radar5DStage, Forum3DStage } from "./models-3d.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+function drawStarPolygon(ctx, cx, cy, outerR, innerR, points = 6, rot = -Math.PI * 0.5) {
+  ctx.beginPath();
+  const total = points * 2;
+  for (let i = 0; i < total; i++) {
+    const a = rot + (i * Math.PI) / points;
+    const r = i % 2 === 0 ? outerR : innerR;
+    const px = cx + Math.cos(a) * r;
+    const py = cy + Math.sin(a) * r;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
+
 class CelestialMatrixStage {
-  constructor(canvas, telemetry, onDayHover) {
+  constructor(canvas, telemetry, vgSky, onDayHover) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
+    this.ctx = canvas.getContext("2d", { alpha: false });
     this.daysMap = telemetry.days || {};
     this.weeks52 = (telemetry.streaks && telemetry.streaks.weeks52) || [];
+    this.vgSky = vgSky;
     this.onDayHover = onDayHover;
-    this.filter = "all";
     this.pointerX = 560;
     this.selectedIdx = -1;
     this.cells = [];
     this.time = 0;
-    this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.mqReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    this.reducedMotion = this.mqReduced.matches;
+    this._looping = false;
 
     this.w = 1120;
-    this.h = 214;
-    this.canvas.width = this.w;
-    this.canvas.height = this.h;
+    this.h = 206;
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.canvas.width = Math.round(this.w * this.dpr);
+    this.canvas.height = Math.round(this.h * this.dpr);
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
+    this._bakeUnderlay();
     this._buildCells();
     this._bindEvents();
     this.render();
@@ -33,21 +52,91 @@ class CelestialMatrixStage {
     }
   }
 
-  setFilter(mode) {
-    this.filter = mode;
-    this.render();
-  }
+  // WHY: Renders full 3-layer calligraphic Starry Night impasto (oil bg + structure-tensor strokes + glyph weave) beneath a nocturnal glaze so zero hollow scribble loops appear while preserving star contrast.
+  _bakeUnderlay() {
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(this.w * this.dpr));
+    c.height = Math.max(1, Math.round(this.h * this.dpr));
+    const lc = c.getContext("2d", { alpha: false });
+    lc.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    lc.fillStyle = "#040916";
+    lc.fillRect(0, 0, this.w, this.h);
 
-  _matchesFilter(count) {
-    if (this.filter === "supernova") return count >= 20;
-    if (this.filter === "radiant") return count >= 5 && count < 20;
-    if (this.filter === "spark") return count >= 1 && count < 5;
-    return true;
+    if (this.vgSky) {
+      const cols = Math.max(1, this.vgSky.cols || 160);
+      const rows = Math.max(1, this.vgSky.rows || 56);
+      const rowStep = this.h / rows;
+      const colStep = this.w / cols;
+
+      const bgRows = this.vgSky.bg || [];
+      lc.globalAlpha = 0.72;
+      for (let r = 0; r < bgRows.length; r++) {
+        let xCur = 0;
+        const runs = bgRows[r];
+        const ry = r * rowStep;
+        const rh = rowStep + 0.8;
+        for (let k = 0; k < runs.length; k++) {
+          const [bCol, bLen] = runs[k];
+          lc.fillStyle = bCol;
+          lc.fillRect(xCur * colStep, ry, bLen * colStep + 0.8, rh);
+          xCur += bLen;
+        }
+      }
+
+      const strokes = this.vgSky.strokes || [];
+      lc.lineCap = "round";
+      lc.globalAlpha = 0.76;
+      for (let i = 0; i < strokes.length; i++) {
+        const [x0, y0, xm, ym, x1, y1, col, sw] = strokes[i];
+        lc.strokeStyle = col;
+        lc.lineWidth = sw * 1.45;
+        lc.beginPath();
+        lc.moveTo(x0 * this.w, y0 * this.h);
+        lc.quadraticCurveTo(xm * this.w, ym * this.h, x1 * this.w, y1 * this.h);
+        lc.stroke();
+      }
+
+      const grid = this.vgSky.grid || [];
+      const fontSz = Math.max(4.0, this.w / (cols * 0.60));
+      lc.font = `700 ${fontSz.toFixed(2)}px 'JetBrains Mono', ui-monospace, monospace`;
+      lc.textBaseline = "alphabetic";
+      lc.globalAlpha = 0.78;
+      for (let r = 0; r < grid.length; r++) {
+        let cur = 0;
+        const runs = grid[r];
+        const py = (r + 0.82) * rowStep;
+        for (let k = 0; k < runs.length; k++) {
+          const [colHex, chunk] = runs[k];
+          if (colHex) {
+            lc.fillStyle = colHex;
+            lc.fillText(chunk, cur * colStep, py);
+          }
+          cur += chunk.length;
+        }
+      }
+
+      lc.globalAlpha = 1;
+      lc.fillStyle = "rgba(4, 9, 22, 0.56)";
+      lc.fillRect(0, 0, this.w, this.h);
+
+      const topScrim = lc.createLinearGradient(0, 0, 0, 28);
+      topScrim.addColorStop(0, "rgba(4, 9, 22, 0.62)");
+      topScrim.addColorStop(1, "rgba(4, 9, 22, 0)");
+      lc.fillStyle = topScrim;
+      lc.fillRect(0, 0, this.w, 28);
+
+      const leftScrim = lc.createLinearGradient(0, 0, 56, 0);
+      leftScrim.addColorStop(0, "rgba(4, 9, 22, 0.64)");
+      leftScrim.addColorStop(1, "rgba(4, 9, 22, 0)");
+      lc.fillStyle = leftScrim;
+      lc.fillRect(0, 0, 56, this.h);
+    }
+    this.underlay = c;
   }
 
   _buildCells() {
     const dates = Object.keys(this.daysMap).sort();
-    const lastIso = dates.length ? dates[dates.length - 1] : "2026-11-24";
+    const lastIso = dates.length ? dates[dates.length - 1] : "2026-11-25";
     const endDay = new Date(lastIso + "T00:00:00Z");
     const dow = endDay.getUTCDay();
     const endSunday = new Date(endDay.getTime() - dow * 86400000);
@@ -56,7 +145,7 @@ class CelestialMatrixStage {
     const gx = 54;
     const gy = 34;
     const px = 20.1;
-    const py = 19.2;
+    const py = 18.8;
 
     this.monthLabels = [];
     let lastMonth = -1;
@@ -87,12 +176,18 @@ class CelestialMatrixStage {
           x: gx + w * px,
           y: gy + r * py,
           iso,
-          count,
-          weekSum: this.weeks52[w] || 0
+          count
         });
       }
     }
-    this.selectedIdx = this.cells.length - 1;
+    let activeIdx = this.cells.length - 1;
+    for (let i = this.cells.length - 1; i >= 0; i--) {
+      if (this.cells[i].count > 0) {
+        activeIdx = i;
+        break;
+      }
+    }
+    this.selectedIdx = activeIdx;
   }
 
   _bindEvents() {
@@ -119,6 +214,11 @@ class CelestialMatrixStage {
       if (this.reducedMotion) this.render();
     };
 
+    this.mqReduced.addEventListener("change", (e) => {
+      this.reducedMotion = e.matches;
+      if (!this.reducedMotion) this._loop();
+      else this.render();
+    });
     this.canvas.addEventListener("pointermove", pick);
     this.canvas.addEventListener("pointerdown", pick);
     this.canvas.addEventListener("keydown", (ev) => {
@@ -144,9 +244,18 @@ class CelestialMatrixStage {
   }
 
   _loop() {
+    if (this._looping) return;
+    this._looping = true;
     const step = () => {
-      this.time += 0.02;
-      this.render();
+      if (this.reducedMotion) {
+        this._looping = false;
+        return;
+      }
+      const r = this.canvas.getBoundingClientRect();
+      if (r.width > 0 && r.bottom >= -80 && r.top <= (window.innerHeight || 900) + 80) {
+        this.time += 0.02;
+        this.render();
+      }
       requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -154,27 +263,21 @@ class CelestialMatrixStage {
 
   render() {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.w, this.h);
-
-    const sky = ctx.createLinearGradient(0, 0, this.w, this.h);
-    sky.addColorStop(0, "#050b19");
-    sky.addColorStop(0.55, "#091731");
-    sky.addColorStop(1, "#040915");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, this.w, this.h);
+    ctx.drawImage(this.underlay, 0, 0, this.w, this.h);
 
     ctx.font = "600 10.5px 'Inter', system-ui, sans-serif";
-    ctx.fillStyle = "#8ea4c2";
+    ctx.fillStyle = "#c5d4ea";
     ctx.textAlign = "center";
     for (let i = 0; i < this.monthLabels.length; i++) {
       ctx.fillText(this.monthLabels[i].text, this.monthLabels[i].x, 16);
     }
 
     ctx.font = "500 10px 'JetBrains Mono', ui-monospace, monospace";
+    ctx.fillStyle = "#8fa5c4";
     ctx.textAlign = "right";
     const rowDays = [[1, "Mon"], [3, "Wed"], [5, "Fri"]];
     for (let i = 0; i < rowDays.length; i++) {
-      ctx.fillText(rowDays[i][1], 38, 38 + rowDays[i][0] * 19.2);
+      ctx.fillText(rowDays[i][1], 38, 38 + rowDays[i][0] * 18.8);
     }
 
     const coordKey = new Map();
@@ -185,20 +288,20 @@ class CelestialMatrixStage {
 
     for (let i = 0; i < this.cells.length; i++) {
       const c = this.cells[i];
-      if (c.count < 2 || !this._matchesFilter(c.count)) continue;
+      if (c.count < 2) continue;
       const down = coordKey.get(`${c.w}:${c.r + 1}`);
-      if (down && down.count >= 2 && this._matchesFilter(down.count)) {
-        ctx.strokeStyle = (c.count + down.count) >= 22 ? "rgba(253, 224, 71, 0.42)" : "rgba(125, 211, 252, 0.30)";
-        ctx.lineWidth = 1.05;
+      if (down && down.count >= 2) {
+        ctx.strokeStyle = (c.count + down.count) >= 22 ? "rgba(253, 224, 71, 0.50)" : "rgba(125, 211, 252, 0.36)";
+        ctx.lineWidth = 1.1;
         ctx.beginPath();
         ctx.moveTo(c.x, c.y);
         ctx.lineTo(down.x, down.y);
         ctx.stroke();
       }
       const right = coordKey.get(`${c.w + 1}:${c.r}`);
-      if (right && right.count >= 4 && c.count >= 4 && this._matchesFilter(right.count)) {
-        ctx.strokeStyle = "rgba(94, 234, 212, 0.30)";
-        ctx.lineWidth = 0.95;
+      if (right && right.count >= 4 && c.count >= 4) {
+        ctx.strokeStyle = "rgba(94, 234, 212, 0.36)";
+        ctx.lineWidth = 1.0;
         ctx.beginPath();
         ctx.moveTo(c.x, c.y);
         ctx.lineTo(right.x, right.y);
@@ -208,81 +311,72 @@ class CelestialMatrixStage {
 
     for (let i = 0; i < this.cells.length; i++) {
       const c = this.cells[i];
-      const vis = this._matchesFilter(c.count);
-      ctx.globalAlpha = vis ? 1 : 0.16;
-
       if (c.count === 0) {
-        ctx.fillStyle = "#1a2d4d";
+        ctx.strokeStyle = "#243b63";
+        ctx.lineWidth = 0.85;
         ctx.beginPath();
-        ctx.arc(c.x, c.y, 2.1, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(c.x - 1.7, c.y);
+        ctx.lineTo(c.x + 1.7, c.y);
+        ctx.moveTo(c.x, c.y - 1.7);
+        ctx.lineTo(c.x, c.y + 1.7);
+        ctx.stroke();
       } else if (c.count <= 4) {
-        ctx.fillStyle = "#60a5fa";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, 3.1, 0, Math.PI * 2);
+        drawStarPolygon(ctx, c.x, c.y, 4.2, 1.5, 4);
+        ctx.fillStyle = "#7dd3fc";
         ctx.fill();
       } else if (c.count <= 19) {
-        ctx.fillStyle = "rgba(52, 211, 153, 0.22)";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, 6.4, 0, Math.PI * 2);
-        ctx.fill();
+        drawStarPolygon(ctx, c.x, c.y, 5.4, 2.0, 6, this.time * 0.25 + i);
         ctx.fillStyle = "#34d399";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, 3.8, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        const g = ctx.createRadialGradient(c.x, c.y, 1, c.x, c.y, 11.5);
-        g.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-        g.addColorStop(0.35, "rgba(253, 224, 71, 0.72)");
-        g.addColorStop(1, "rgba(251, 191, 36, 0)");
-        ctx.fillStyle = g;
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(this.time * 0.35 + i);
+        ctx.strokeStyle = "rgba(253, 224, 71, 0.82)";
+        ctx.lineWidth = 1.05;
+        ctx.setLineDash([3, 2.2]);
         ctx.beginPath();
-        ctx.arc(c.x, c.y, 11.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(0, 0, 7.6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        drawStarPolygon(ctx, c.x, c.y, 6.6, 2.4, 8, -this.time * 0.25);
         ctx.fillStyle = "#fde047";
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, 4.6, 0, Math.PI * 2);
         ctx.fill();
       }
     }
-    ctx.globalAlpha = 1;
 
     if (this.selectedIdx >= 0 && this.cells[this.selectedIdx]) {
       const sel = this.cells[this.selectedIdx];
       ctx.strokeStyle = "#fde047";
-      ctx.lineWidth = 1.6;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(sel.x, sel.y, 8.2, 0, Math.PI * 2);
+      ctx.arc(sel.x, sel.y, 8.8, 0, Math.PI * 2);
       ctx.stroke();
     }
 
-    const waterY = 174;
-    ctx.strokeStyle = "rgba(125, 211, 252, 0.36)";
+    const waterY = 169;
+    ctx.strokeStyle = "rgba(125, 211, 252, 0.34)";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(36, waterY);
     ctx.lineTo(this.w - 24, waterY);
     ctx.stroke();
 
+    ctx.font = "700 9.5px 'JetBrains Mono', ui-monospace, monospace";
+    ctx.textAlign = "center";
     const maxW = Math.max(1, ...this.weeks52);
     for (let w = 0; w < 52; w++) {
       const val = this.weeks52[w] || 0;
       if (val <= 0) continue;
       const norm = Math.pow(val / maxW, 0.62);
       const wx = 54 + w * 20.1;
-      const cursorBoost = Math.exp(-Math.pow((wx - this.pointerX) / 95, 2)) * 4.5;
-      for (let r = 1; r <= 3; r++) {
-        const half = (3.8 + norm * 11 + cursorBoost) * (1 - r * 0.18);
-        const shift = Math.sin(this.time * 1.8 + w * 0.5 + r) * 2.2;
-        const ry = waterY + r * 8.4;
-        ctx.strokeStyle = norm > 0.45 ? `rgba(253, 224, 71, ${(0.46 - r * 0.1).toFixed(2)})` : `rgba(125, 211, 252, ${(0.42 - r * 0.09).toFixed(2)})`;
-        ctx.lineWidth = 1.25;
-        ctx.beginPath();
-        ctx.moveTo(wx - half + shift, ry);
-        ctx.lineTo(wx + half + shift, ry);
-        ctx.stroke();
-      }
+      const cursorBoost = Math.exp(-Math.pow((wx - this.pointerX) / 90, 2)) * 0.35;
+      const shift = Math.sin(this.time * 1.6 + w * 0.5) * 2.2;
+      ctx.globalAlpha = Math.min(0.95, 0.36 + norm * 0.48 + cursorBoost);
+      ctx.fillStyle = norm > 0.45 ? "#fde047" : "#7dd3fc";
+      ctx.fillText(norm > 0.55 ? "≈~≈" : "~~", wx + shift, waterY + 17 + (w % 2) * 6);
     }
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -292,158 +386,84 @@ async function fetchJson(url) {
   return res.json();
 }
 
-function tierLabel(count) {
-  if (count >= 20) return "Supernova Tier";
-  if (count >= 5) return "Radiant Corona";
-  if (count >= 1) return "Starlight Spark";
-  return "Quiet Night";
-}
-
 async function initObservatory() {
-  const skyReadout = document.getElementById("sky-readout");
-  const sky = new LiquidStarrySky(
-    document.getElementById("sky-canvas"),
-    document.getElementById("panorama-canvas"),
-    (bodyText) => {
-      skyReadout.textContent = bodyText;
-    }
-  );
-
-  const turbBtns = document.querySelectorAll("[data-turbulence]");
-  turbBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const lv = Number(btn.dataset.turbulence);
-      sky.setTurbulence(lv);
-      turbBtns.forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-    });
-  });
-
-  let speedCycle = 0;
-  const orbitBtn = document.getElementById("orbit-speed-btn");
-  orbitBtn.addEventListener("click", () => {
-    const modes = [
-      { mult: 1, label: "Orbits: 1x" },
-      { mult: 5, label: "Orbits: 5x" },
-      { mult: 0, label: "Orbits: Pause" }
-    ];
-    speedCycle = (speedCycle + 1) % modes.length;
-    sky.setOrbitSpeed(modes[speedCycle].mult);
-    orbitBtn.textContent = modes[speedCycle].label;
-  });
-
-  document.getElementById("stir-sky-btn").addEventListener("click", () => {
-    sky.triggerWave(0.35 + Math.random() * 0.3, 0.5);
-    skyReadout.textContent = "Impasto wavefront injected across Milky Way & Solar Orrery";
-  });
-
   let telemetry;
   let portraitData;
+  let vgScene;
+  let modelsBundle;
+
   try {
-    [telemetry, portraitData] = await Promise.all([
+    [telemetry, portraitData, vgScene, modelsBundle] = await Promise.all([
       fetchJson("assets/telemetry.json"),
-      fetchJson("assets/portrait_hd.json")
+      fetchJson("assets/portrait_hd.json"),
+      fetchJson("assets/vangogh_scene.json"),
+      fetchJson("assets/models_3d.json")
     ]);
   } catch (err) {
     const list = document.getElementById("console-list");
     list.innerHTML = "";
     const panel = document.createElement("div");
     panel.className = "state-panel";
-    panel.innerHTML = `<strong>Telemetry bundle unavailable (${err.message}).</strong><span>Verify local assets/telemetry.json or retry loading.</span>`;
+    panel.innerHTML = `<strong>Observatory data bundle unavailable (${err.message}).</strong><span>Verify assets/*.json or retry loading.</span>`;
     const retry = document.createElement("button");
     retry.type = "button";
-    retry.className = "chip-btn";
-    retry.textContent = "Retry Load";
+    retry.className = "chip-btn is-active";
+    retry.textContent = "Retry";
     retry.addEventListener("click", () => window.location.reload());
     panel.appendChild(retry);
     list.appendChild(panel);
     return;
   }
 
-  document.getElementById("mat-total").textContent = String(telemetry.metrics.contributions);
-  document.getElementById("mat-streak").textContent = `${telemetry.streaks.longest}-day`;
+  const skyReadout = document.getElementById("sky-readout");
+  const sky = new LiquidStarrySky(
+    document.getElementById("sky-canvas"),
+    document.getElementById("panorama-canvas"),
+    document.getElementById("garden-canvas"),
+    vgScene,
+    (bodyText) => {
+      skyReadout.textContent = bodyText;
+    }
+  );
+
+  document.getElementById("mat-total").textContent = Number(telemetry.metrics.contributions).toLocaleString("en-US");
+  document.getElementById("mat-streak").textContent = `${telemetry.streaks.longest}d`;
   document.getElementById("val-chars").textContent = telemetry.metrics.bytesCompact;
-  document.getElementById("val-commits").textContent = String(telemetry.metrics.commits);
+  document.getElementById("val-commits").textContent = Number(telemetry.metrics.commits).toLocaleString("en-US");
   document.getElementById("val-stars").textContent = String(telemetry.metrics.stars);
-  document.getElementById("val-contribs").textContent = String(telemetry.metrics.contributions);
+  document.getElementById("val-contribs").textContent = Number(telemetry.metrics.contributions).toLocaleString("en-US");
 
   const matInspector = document.getElementById("matrix-inspector");
-  const matrixStage = new CelestialMatrixStage(document.getElementById("matrix-canvas"), telemetry, (cell) => {
-    matInspector.textContent = `${cell.iso} · ${cell.count} contribution${cell.count === 1 ? "" : "s"} · ${tierLabel(cell.count)} · Weekly pulse: ${cell.weekSum}`;
-  });
+  const matrixStage = new CelestialMatrixStage(
+    document.getElementById("matrix-canvas"),
+    telemetry,
+    vgScene.sky || vgScene.panorama,
+    (cell) => {
+      matInspector.textContent = `${cell.iso} · ${cell.count}`;
+    }
+  );
   matrixStage._emitSelected();
   const matScroll = document.querySelector(".matrix-scroll");
   if (matScroll) {
     matScroll.scrollLeft = matScroll.scrollWidth;
   }
 
-  const matFilterBtns = document.querySelectorAll("[data-mat-filter]");
-  matFilterBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      matrixStage.setFilter(btn.dataset.matFilter);
-      matFilterBtns.forEach((b) => b.classList.toggle("is-active", b === btn));
-    });
-  });
-
-  const portraitStage = new PortraitStage(document.getElementById("portrait-canvas"), portraitData);
-  const portraitBtns = document.querySelectorAll("[data-portrait-mode]");
-  portraitBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      portraitStage.setMode(btn.dataset.portraitMode);
-      portraitBtns.forEach((b) => b.classList.toggle("is-active", b === btn));
-    });
-  });
+  new PortraitStage(document.getElementById("portrait-canvas"), portraitData);
 
   const radarReadout = document.getElementById("radar-readout");
-  const langPillsWrap = document.getElementById("lang-pills");
-
   const updateRadarReadout = (selectedName) => {
     if (!selectedName) {
-      radarReadout.innerHTML = `<span><strong>All 6 Domains</strong> · Drag 360° or select a language</span><span>${telemetry.metrics.repos} public repos · ${telemetry.metrics.bytesCompact} source bytes</span>`;
+      radarReadout.innerHTML = `${telemetry.metrics.repos} repos &middot; ${telemetry.metrics.bytesCompact}`;
       return;
     }
     const found = telemetry.langs5d.find((l) => l.name === selectedName);
     if (found) {
-      radarReadout.innerHTML = `<span><strong>${found.name}</strong> · ${found.bytesCompact} (${found.percentExact}%) · ${found.repos} repo${found.repos === 1 ? "" : "s"}</span><span>D4 Gravity ${found.d4Gravity.toFixed(2)} · D5 Phase ${found.d5Velocity.toFixed(2)}</span>`;
+      radarReadout.innerHTML = `<strong>${found.name}</strong> &middot; ${found.bytesCompact} (${found.percentExact}%) &middot; ${found.repos} repos`;
     }
   };
 
-  const radarStage = new Radar5DStage(document.getElementById("radar-canvas"), telemetry.langs5d, (sel) => {
-    updateRadarReadout(sel);
-    langPillsWrap.querySelectorAll("button").forEach((b) => {
-      b.classList.toggle("is-active", (b.dataset.lang || null) === sel || (!sel && b.dataset.lang === ""));
-    });
-  });
+  const radarStage = new Radar5DStage(document.getElementById("radar-canvas"), telemetry.langs5d, updateRadarReadout);
   updateRadarReadout(null);
-
-  const allBtn = document.createElement("button");
-  allBtn.type = "button";
-  allBtn.className = "chip-btn is-active";
-  allBtn.dataset.lang = "";
-  allBtn.textContent = "All 6";
-  allBtn.addEventListener("click", () => radarStage.setSelected(null));
-  langPillsWrap.appendChild(allBtn);
-
-  telemetry.langs5d.forEach((l) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip-btn";
-    b.dataset.lang = l.name;
-    b.textContent = l.name;
-    b.addEventListener("click", () => radarStage.setSelected(l.name));
-    langPillsWrap.appendChild(b);
-  });
-
-  const wSlider = document.getElementById("w-fold-range");
-  wSlider.addEventListener("input", () => {
-    radarStage.setWFold(Number(wSlider.value));
-  });
-
-  const orbitToggle = document.getElementById("radar-orbit-btn");
-  orbitToggle.addEventListener("click", () => {
-    const on = radarStage.toggleOrbit();
-    orbitToggle.setAttribute("aria-pressed", String(on));
-    orbitToggle.textContent = on ? "5D Orbit: On" : "5D Orbit: Hold";
-  });
 
   const metricCards = document.querySelectorAll(".metric-card");
   metricCards.forEach((card) => {
@@ -451,17 +471,21 @@ async function initObservatory() {
       metricCards.forEach((c) => c.classList.toggle("is-active", c === card));
       const key = card.dataset.metric;
       if (key === "chars") radarStage.setSelected("HTML");
-      else if (key === "commits") matrixStage.setFilter("radiant");
-      else if (key === "stars") sky.triggerWave(0.68, 0.52);
-      else matrixStage.setFilter("all");
+      else if (key === "stars") sky.focusBody("sun");
+      else radarStage.setSelected(null);
     });
   });
 
-  let eventsPool = telemetry.events || [];
-  let activeRepoFilter = "all";
-  let consoleState = "populated";
+  const snapshotEvents = Array.isArray(telemetry.events) ? [...telemetry.events] : [];
+  let eventsPool = [...snapshotEvents];
+  let consoleState = eventsPool.length ? "populated" : "empty";
   const consoleList = document.getElementById("console-list");
-  const repoFiltersWrap = document.getElementById("console-filters");
+
+  const restoreSnapshot = () => {
+    eventsPool = [...snapshotEvents];
+    consoleState = eventsPool.length ? "populated" : "empty";
+    renderConsole();
+  };
 
   const renderConsole = () => {
     consoleList.innerHTML = "";
@@ -472,8 +496,8 @@ async function initObservatory() {
         consoleList.appendChild(sk);
       }
       const note = document.createElement("span");
-      note.className = "radar-subtitle";
-      note.textContent = "Querying public GitHub push events for broamstuck-cybr…";
+      note.className = "radar-readout";
+      note.textContent = "Syncing public GitHub events…";
       consoleList.appendChild(note);
       return;
     }
@@ -481,45 +505,32 @@ async function initObservatory() {
     if (consoleState === "error") {
       const errPanel = document.createElement("div");
       errPanel.className = "state-panel";
-      errPanel.innerHTML = "<strong>Live GitHub API rate-limited or unreachable.</strong><span>Cached snapshot remains intact; retry live fetch or restore snapshot.</span>";
+      errPanel.innerHTML = "<strong>GitHub API rate-limited or offline.</strong><span>Restore verified local snapshot.</span>";
       const restoreBtn = document.createElement("button");
       restoreBtn.type = "button";
       restoreBtn.className = "chip-btn is-active";
-      restoreBtn.textContent = "Restore Verified Snapshot";
-      restoreBtn.addEventListener("click", () => {
-        consoleState = "populated";
-        renderConsole();
-      });
+      restoreBtn.textContent = "Restore Snapshot";
+      restoreBtn.addEventListener("click", restoreSnapshot);
       errPanel.appendChild(restoreBtn);
       consoleList.appendChild(errPanel);
       return;
     }
 
-    const filtered = activeRepoFilter === "all"
-      ? eventsPool
-      : eventsPool.filter((ev) => ev.repo.toLowerCase() === activeRepoFilter.toLowerCase());
-
-    if (!filtered.length) {
+    if (consoleState === "empty" || !eventsPool.length) {
       const emptyPanel = document.createElement("div");
       emptyPanel.className = "state-panel";
-      emptyPanel.innerHTML = `<strong>No recent commits match repository filter "${activeRepoFilter}".</strong><span>Reset the filter to view all verified public push events.</span>`;
+      emptyPanel.innerHTML = "<strong>No recent public push events.</strong><span>Restore verified local snapshot or sync again.</span>";
       const resetBtn = document.createElement("button");
       resetBtn.type = "button";
       resetBtn.className = "chip-btn is-active";
-      resetBtn.textContent = "Show All Commits";
-      resetBtn.addEventListener("click", () => {
-        activeRepoFilter = "all";
-        repoFiltersWrap.querySelectorAll("button[data-repo]").forEach((b) => {
-          b.classList.toggle("is-active", b.dataset.repo === "all");
-        });
-        renderConsole();
-      });
+      resetBtn.textContent = "Restore Snapshot";
+      resetBtn.addEventListener("click", restoreSnapshot);
       emptyPanel.appendChild(resetBtn);
       consoleList.appendChild(emptyPanel);
       return;
     }
 
-    filtered.slice(0, 5).forEach((ev) => {
+    eventsPool.slice(0, 5).forEach((ev) => {
       const row = document.createElement("a");
       row.className = "console-row";
       row.href = ev.url || `https://github.com/${telemetry.username}/${ev.repo}`;
@@ -547,24 +558,6 @@ async function initObservatory() {
     });
   };
 
-  const repoNames = ["all", "broamstuck-cybr", "f_forumv3", "resourcepack", "Socratic"];
-  repoNames.forEach((rName) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = `chip-btn${rName === "all" ? " is-active" : ""}`;
-    b.dataset.repo = rName;
-    b.textContent = rName === "all" ? "All Repos" : rName;
-    b.addEventListener("click", () => {
-      activeRepoFilter = rName;
-      consoleState = "populated";
-      repoFiltersWrap.querySelectorAll("button[data-repo]").forEach((btn) => {
-        btn.classList.toggle("is-active", btn === b);
-      });
-      renderConsole();
-    });
-    repoFiltersWrap.appendChild(b);
-  });
-
   document.getElementById("console-sync-btn").addEventListener("click", async () => {
     consoleState = "loading";
     renderConsole();
@@ -575,12 +568,15 @@ async function initObservatory() {
       const fresh = [];
       const seen = new Set();
       for (const ev of rawEvents) {
-        if (ev.type !== "PushEvent" || !ev.payload || !ev.payload.commits) continue;
-        for (const c of [...ev.payload.commits].reverse()) {
+        if (ev.type !== "PushEvent" || !ev.payload) continue;
+        const repoShort = ((ev.repo && ev.repo.name) || "").split("/").pop();
+        const commitsArr = Array.isArray(ev.payload.commits) && ev.payload.commits.length
+          ? [...ev.payload.commits].reverse()
+          : (ev.payload.head ? [{ sha: ev.payload.head, message: `push to ${(ev.payload.ref || "main").replace("refs/heads/", "")}` }] : []);
+        for (const c of commitsArr) {
           const sha = (c.sha || "").slice(0, 7);
           if (!sha || seen.has(sha)) continue;
           seen.add(sha);
-          const repoShort = ((ev.repo && ev.repo.name) || "").split("/").pop();
           fresh.push({
             sha,
             repo: repoShort,
@@ -590,8 +586,8 @@ async function initObservatory() {
           });
         }
       }
-      if (fresh.length) eventsPool = fresh;
-      consoleState = "populated";
+      eventsPool = fresh;
+      consoleState = fresh.length ? "populated" : "empty";
       renderConsole();
     } catch {
       consoleState = "error";
@@ -601,57 +597,70 @@ async function initObservatory() {
 
   renderConsole();
 
-  const cardStages = {
-    v3: new Forum3DStage(document.getElementById("stage-v3"), "v3"),
-    v2: new Forum3DStage(document.getElementById("stage-v2"), "v2"),
-    v1: new Forum3DStage(document.getElementById("stage-v1"), "v1")
-  };
-
-  document.querySelectorAll("[data-wire-toggle]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.wireToggle;
-      const isWire = cardStages[id].toggleWireframe();
-      btn.textContent = isWire ? "Solid" : "Wire";
-    });
-  });
+  const cardSky = vgScene.sky || vgScene.panorama;
+  new Forum3DStage(document.getElementById("stage-v3"), "v3", modelsBundle, cardSky, { yaw: 0.50 });
+  new Forum3DStage(document.getElementById("stage-v2"), "v2", modelsBundle, cardSky, { yaw: 0.43 });
+  new Forum3DStage(document.getElementById("stage-v1"), "v1", modelsBundle, cardSky, { yaw: 0.40, pitch: 0.38 });
 
   const modal = document.getElementById("stage-modal");
   const modalTitle = document.getElementById("modal-title");
   const modalDesc = document.getElementById("modal-desc");
   const modalLiveLink = document.getElementById("modal-live-link");
-  const modalStage = new Forum3DStage(document.getElementById("modal-3d-canvas"), "v3", { width: 880, height: 495, zoom: 1.12 });
+  const modalExplodeRange = document.getElementById("modal-explode-range");
+  const modalVariantBtns = document.querySelectorAll("[data-modal-variant]");
+  const modalStage = new Forum3DStage(
+    document.getElementById("modal-3d-canvas"),
+    "v3",
+    modelsBundle,
+    cardSky,
+    { width: 880, height: 495, zoom: 1.12 }
+  );
+
+  const openModalVariant = (id) => {
+    const meta = (telemetry.forums || []).find((f) => f.id === id) || telemetry.forums[0];
+    modalTitle.textContent = `${meta.title} — 360° Stage`;
+    modalDesc.textContent = meta.summary;
+    modalLiveLink.href = meta.liveUrl;
+    modalLiveLink.textContent = meta.id === "v2" ? "Open Repository" : `Open ${meta.domain}`;
+    modalExplodeRange.value = "0";
+    modalStage.setExplode(0);
+    modalStage.setVariant(id);
+    modalVariantBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.modalVariant === id));
+  };
 
   document.querySelectorAll("[data-expand-3d]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-expand-3d");
-      const meta = (telemetry.forums || []).find((f) => f.id === id) || telemetry.forums[0];
-      modalTitle.textContent = `${meta.title} — 360° Architectural Model`;
-      modalDesc.textContent = meta.summary;
-      modalLiveLink.href = meta.liveUrl;
-      modalLiveLink.textContent = meta.id === "v2" ? "Open Bridge Repository" : `Open ${meta.domain}`;
-      modalStage.setVariant(id);
-      if (typeof modal.showModal === "function") {
-        modal.showModal();
-      } else {
-        modal.setAttribute("open", "");
-      }
+      if (typeof modal.showModal === "function") modal.showModal();
+      else modal.setAttribute("open", "");
+      openModalVariant(id);
     });
   });
 
-  document.querySelectorAll("[data-cam-preset]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      modalStage.setCameraPreset(btn.dataset.camPreset);
-    });
+  modalVariantBtns.forEach((btn) => {
+    btn.addEventListener("click", () => openModalVariant(btn.dataset.modalVariant));
+  });
+
+  modalExplodeRange.addEventListener("input", () => {
+    modalStage.setExplode(Number(modalExplodeRange.value));
   });
 
   document.getElementById("modal-wire-btn").addEventListener("click", (ev) => {
     const w = modalStage.toggleWireframe();
-    ev.currentTarget.textContent = w ? "Sculpted Mode" : "Blueprint Wire";
+    ev.currentTarget.classList.toggle("is-active", w);
+    ev.currentTarget.textContent = w ? "Solid" : "Wire";
   });
 
   document.getElementById("modal-close-btn").addEventListener("click", () => {
     if (typeof modal.close === "function") modal.close();
     else modal.removeAttribute("open");
+  });
+
+  modal.addEventListener("click", (ev) => {
+    if (ev.target === modal) {
+      if (typeof modal.close === "function") modal.close();
+      else modal.removeAttribute("open");
+    }
   });
 }
 
