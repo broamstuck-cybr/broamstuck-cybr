@@ -86,6 +86,49 @@ body {
   pointer-events: none;
 }
 
+.pixel-dog-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pixel-dog-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.pixel-dog-hitbox {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.pixel-dog-hitbox[hidden] {
+  display: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -183,8 +226,9 @@ main.observatory-shell {
   font-size: 0.74rem;
   font-weight: 600;
   line-height: 1.1;
-  min-height: 34px;
-  padding: 6px 11px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 13px;
   border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
@@ -197,9 +241,10 @@ main.observatory-shell {
 
 .mini-btn {
   font-family: var(--font-mono);
-  font-size: 0.70rem;
-  min-height: 32px;
-  padding: 4px 9px;
+  font-size: 0.72rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 10px;
   background: var(--surface-modal);
 }
 
@@ -225,6 +270,7 @@ main.observatory-shell {
 .console-row:focus-visible,
 .stage-canvas:focus-visible,
 .range-input:focus-visible,
+.pixel-dog-hitbox:focus-visible,
 #matrix-canvas:focus-visible,
 #radar-canvas:focus-visible {
   outline: 2px solid var(--focus);
@@ -550,7 +596,7 @@ main.observatory-shell {
   font-size: 0.75rem;
   color: var(--fg-second);
   border: 1px solid transparent;
-  min-height: 34px;
+  min-height: 44px;
   transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 
@@ -734,12 +780,15 @@ main.observatory-shell {
 
 .range-input {
   width: 104px;
+  min-width: 104px;
   accent-color: var(--accent);
   cursor: pointer;
-  min-height: 32px;
+  min-height: 44px;
 }
 
 dialog.stage-modal {
+  position: relative;
+  z-index: 30;
   width: min(94vw, 940px);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-shell);

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T07:58:59Z",
+  "updatedAt": "2026-11-25T08:34:51Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
@@ -452,7 +452,7 @@
       "d4Gravity": 0.65,
       "d5Velocity": 1.0,
       "color": "#fb923c",
-      "highlight": "#fed7aa"
+      "highlight": "#ffedd5"
     },
     {
       "name": "TypeScript",
@@ -466,7 +466,7 @@
       "d4Gravity": 0.596,
       "d5Velocity": 0.728,
       "color": "#38bdf8",
-      "highlight": "#bae6fd"
+      "highlight": "#e0f2fe"
     },
     {
       "name": "JavaScript",
@@ -480,7 +480,7 @@
       "d4Gravity": 1.0,
       "d5Velocity": 0.926,
       "color": "#fbbf24",
-      "highlight": "#fef08a"
+      "highlight": "#fef9c3"
     },
     {
       "name": "CSS",
@@ -494,7 +494,7 @@
       "d4Gravity": 0.65,
       "d5Velocity": 0.769,
       "color": "#2dd4bf",
-      "highlight": "#99f6e4"
+      "highlight": "#ccfbf1"
     },
     {
       "name": "Python",
@@ -508,7 +508,7 @@
       "d4Gravity": 0.65,
       "d5Velocity": 0.759,
       "color": "#4ade80",
-      "highlight": "#bbf7d0"
+      "highlight": "#dcfce7"
     },
     {
       "name": "Shell",

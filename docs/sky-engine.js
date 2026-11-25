@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: MIT
-// WHY: Synthesizes Van Gogh Starry Night, Sunflowers, and Provence Cypresses with live Navier-Stokes fluid-advected calligraphic streamlines (dua theo chuot) and occlusion-free 4-plane gaze parallax (nhin theo chuot).
+// WHY: Synthesizes Van Gogh Starry Night, Sunflowers, and Provence Cypresses with tapered dual-tone impasto brushwork, lifted celestial radiance, Navier-Stokes cursor flow, and 4-plane parallax.
 
 const PLANETS = [
-  { key: "mercury", name: "Mercury", period: "88d", rf: 0.17, r: 2.6, color: "#cbd5e1", speed: 1.62, phase: 0.4 },
-  { key: "venus", name: "Venus", period: "225d", rf: 0.26, r: 3.5, color: "#fde68a", speed: 1.18, phase: 1.9 },
+  { key: "mercury", name: "Mercury", period: "88d", rf: 0.17, r: 2.6, color: "#e2e8f0", speed: 1.62, phase: 0.4 },
+  { key: "venus", name: "Venus", period: "225d", rf: 0.26, r: 3.5, color: "#fef08a", speed: 1.18, phase: 1.9 },
   { key: "earth", name: "Earth", period: "365d", rf: 0.36, r: 3.9, color: "#38bdf8", speed: 0.88, phase: 3.5 },
   { key: "mars", name: "Mars", period: "687d", rf: 0.47, r: 3.1, color: "#fb7185", speed: 0.68, phase: 5.1 },
   { key: "jupiter", name: "Jupiter", period: "11.9y", rf: 0.61, r: 5.4, color: "#fbbf24", speed: 0.45, phase: 0.9 },
-  { key: "saturn", name: "Saturn", period: "29.5y", rf: 0.76, r: 4.6, color: "#fcd34d", speed: 0.32, phase: 2.8, ring: true },
+  { key: "saturn", name: "Saturn", period: "29.5y", rf: 0.76, r: 4.6, color: "#fde047", speed: 0.32, phase: 2.8, ring: true },
   { key: "uranus", name: "Uranus", period: "84y", rf: 0.88, r: 3.6, color: "#67e8f9", speed: 0.23, phase: 4.4, tiltRing: true },
   { key: "neptune", name: "Neptune", period: "165y", rf: 0.99, r: 3.5, color: "#60a5fa", speed: 0.17, phase: 5.8 }
 ];
 
 const WAKE_GLYPHS = ["*", "~", "+", "@", "/", "\\", "(", ")", "%", "#"];
-const WAKE_COLORS = ["#fde047", "#fbbf24", "#7dd3fc", "#60a5fa", "#fef08a", "#34d399"];
-const FLOW_PALETTE = ["#60a5fa", "#93c5fd", "#dbeafe", "#3b82f6", "#fde68a", "#fde047"];
+const WAKE_COLORS = ["#fde047", "#fbbf24", "#7dd3fc", "#93c5fd", "#fef08a", "#34d399"];
+const FLOW_PALETTE = ["#60a5fa", "#93c5fd", "#e0f2fe", "#38bdf8", "#fde68a", "#fde047"];
 
 const PAN_STARS = [
-  [0.09, 0.09, 12, true],
-  [0.23, 0.25, 14, true],
-  [0.34, 0.56, 20, true],
-  [0.56, 0.17, 13, false],
-  [0.71, 0.30, 14, true],
-  [0.895, 0.255, 28, true]
+  [0.09, 0.09, 13, true],
+  [0.23, 0.25, 15, true],
+  [0.34, 0.56, 22, true],
+  [0.56, 0.17, 14, false],
+  [0.71, 0.30, 15, true],
+  [0.895, 0.255, 30, true]
 ];
 
 const PAN_SUNFLOWERS = [
@@ -44,6 +44,107 @@ const GAR_SUNFLOWERS = [
   [0.824, 0.79, 23],
   [0.758, 0.88, 19]
 ];
+
+const COLOR_CACHE = new Map();
+
+function getColorMeta(hex) {
+  if (!hex || hex[0] !== "#" || hex.length < 7) {
+    return { r: 125, g: 211, b: 252, luma: 0.72, lifted: hex || "#7dd3fc", filament: "#f8fafc" };
+  }
+  const cached = COLOR_CACHE.get(hex);
+  if (cached) return cached;
+  const r = parseInt(hex.slice(1, 3), 16) || 0;
+  const g = parseInt(hex.slice(3, 5), 16) || 0;
+  const b = parseInt(hex.slice(5, 7), 16) || 0;
+  const luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const warm = r >= b;
+  const liftAmt = luma < 0.18 ? 0.08 : 0.14;
+  const lr = Math.min(255, Math.round(r + (255 - r) * liftAmt + (warm ? 4 : 1)));
+  const lg = Math.min(255, Math.round(g + (255 - g) * liftAmt + 3));
+  const lb = Math.min(255, Math.round(b + (255 - b) * (warm ? liftAmt * 0.78 : liftAmt * 1.08)));
+  const fr = Math.min(255, Math.round(lr + (255 - lr) * (warm ? 0.44 : 0.36)));
+  const fg = Math.min(255, Math.round(lg + (255 - lg) * 0.42));
+  const fb = Math.min(255, Math.round(lb + (255 - lb) * (warm ? 0.28 : 0.46)));
+  const meta = {
+    r,
+    g,
+    b,
+    luma,
+    lifted: `rgb(${lr}, ${lg}, ${lb})`,
+    filament: `rgb(${fr}, ${fg}, ${fb})`
+  };
+  COLOR_CACHE.set(hex, meta);
+  return meta;
+}
+
+// WHY: Renders each brushstroke as a feathered, belly-tapered quadratic ribbon with an upper sunlit impasto ridge filament instead of a flat uniform cylinder.
+export function drawTaperedImpastoStroke(ctx, x0, y0, xm, ym, x1, y1, hexCol, widthPx, baseAlpha = 0.90) {
+  const meta = getColorMeta(hexCol);
+  const hw = Math.max(0.45, widthPx * 0.54);
+
+  let tx0 = xm - x0;
+  let ty0 = ym - y0;
+  let l0 = Math.hypot(tx0, ty0);
+  if (l0 < 0.001) {
+    tx0 = x1 - x0;
+    ty0 = y1 - y0;
+    l0 = Math.hypot(tx0, ty0) || 1;
+  }
+  const nx0 = -ty0 / l0;
+  const ny0 = tx0 / l0;
+
+  const txm = x1 - x0;
+  const tym = y1 - y0;
+  const lm = Math.hypot(txm, tym) || 1;
+  const nxm = -tym / lm;
+  const nym = txm / lm;
+
+  let tx1 = x1 - xm;
+  let ty1 = y1 - ym;
+  let l1 = Math.hypot(tx1, ty1);
+  if (l1 < 0.001) {
+    tx1 = txm;
+    ty1 = tym;
+    l1 = lm;
+  }
+  const nx1 = -ty1 / l1;
+  const ny1 = tx1 / l1;
+
+  const wStart = hw * 0.18;
+  const wMid = hw * 1.12;
+  const wEnd = hw * 0.12;
+
+  ctx.fillStyle = meta.lifted;
+  ctx.globalAlpha = baseAlpha;
+  ctx.beginPath();
+  ctx.moveTo(x0 - (tx0 / l0) * hw * 0.28 + nx0 * wStart, y0 - (ty0 / l0) * hw * 0.28 + ny0 * wStart);
+  ctx.quadraticCurveTo(xm + nxm * wMid, ym + nym * wMid, x1 + (tx1 / l1) * hw * 0.32 + nx1 * wEnd, y1 + (ty1 / l1) * hw * 0.32 + ny1 * wEnd);
+  ctx.quadraticCurveTo(xm - nxm * wMid * 0.92, ym - nym * wMid * 0.92, x0 - (tx0 / l0) * hw * 0.28 - nx0 * wStart, y0 - (ty0 / l0) * hw * 0.28 - ny0 * wStart);
+  ctx.closePath();
+  ctx.fill();
+
+  if (meta.luma > 0.30 && widthPx >= 1.05) {
+    const evalX = (t) => (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * xm + t * t * x1;
+    const evalY = (t) => (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * ym + t * t * y1;
+    const off = hw * 0.22;
+    const sx = evalX(0.18) + nx0 * off;
+    const sy = evalY(0.18) + ny0 * off;
+    const mx = evalX(0.50) + nxm * off * 1.35;
+    const my = evalY(0.50) + nym * off * 1.35;
+    const ex = evalX(0.82) + nx1 * off * 0.6;
+    const ey = evalY(0.82) + ny1 * off * 0.6;
+    const cx = 2 * mx - 0.5 * (sx + ex);
+    const cy = 2 * my - 0.5 * (sy + ey);
+
+    ctx.strokeStyle = meta.filament;
+    ctx.lineWidth = Math.max(0.55, widthPx * 0.24);
+    ctx.globalAlpha = baseAlpha * (meta.luma > 0.58 ? 0.68 : 0.46);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(cx, cy, ex, ey);
+    ctx.stroke();
+  }
+}
 
 function isVisible(canvas) {
   if (!canvas) return false;
@@ -101,8 +202,8 @@ export class LiquidStarrySky {
     this._bgDirty = true;
     this._looping = false;
 
-    this.panFlow = this._initFlowParticles(132, 0.72);
-    this.garFlow = this._initFlowParticles(108, 0.54);
+    this.panFlow = this._initFlowParticles(136, 0.72);
+    this.garFlow = this._initFlowParticles(112, 0.54);
 
     this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     this.bgW = 1440;
@@ -144,14 +245,14 @@ export class LiquidStarrySky {
         glyph: glyphs[i % glyphs.length],
         life: rand(),
         speed: 0.65 + rand() * 0.75,
-        width: 1.15 + rand() * 1.1
+        width: 1.25 + rand() * 1.15
       });
     }
     return arr;
   }
 
-  // WHY: Paints continuous background oil pigments on plane 0 beneath multi-plane strokes/glyphs so 2.5D parallax never tears dark gaps behind cypresses or sunflowers.
-  _bakeCalligraphicPlanes(layerData, w, h) {
+  // WHY: Paints continuous lifted oil pigments + atmospheric horizon glow on plane 0 beneath tapered multi-plane impasto strokes so 2.5D parallax never tears dark gaps.
+  _bakeCalligraphicPlanes(layerData, w, h, kind = "sky") {
     if (!layerData || !w || !h) return null;
     const dpr = this.dpr;
     const planes = [0, 1, 2, 3].map(() => {
@@ -164,7 +265,7 @@ export class LiquidStarrySky {
     });
 
     const p0 = planes[0].ctx;
-    p0.fillStyle = "#061024";
+    p0.fillStyle = "#07142c";
     p0.fillRect(0, 0, w, h);
 
     const cols = Math.max(1, layerData.cols || 204);
@@ -180,9 +281,48 @@ export class LiquidStarrySky {
       const rh = rowStep + 0.9;
       for (let k = 0; k < runs.length; k++) {
         const [bCol, bLen] = runs[k];
-        p0.fillStyle = bCol;
+        p0.fillStyle = getColorMeta(bCol).lifted;
         p0.fillRect(xCur * colStep, ry, bLen * colStep + 0.8, rh);
         xCur += bLen;
+      }
+    }
+
+    const atmoGrad = p0.createLinearGradient(0, h * 0.08, 0, h * 0.96);
+    if (kind === "garden") {
+      atmoGrad.addColorStop(0, "rgba(56, 189, 248, 0.12)");
+      atmoGrad.addColorStop(0.46, "rgba(125, 211, 252, 0.16)");
+      atmoGrad.addColorStop(0.76, "rgba(251, 191, 36, 0.14)");
+      atmoGrad.addColorStop(1, "rgba(180, 83, 9, 0.08)");
+    } else {
+      atmoGrad.addColorStop(0, "rgba(30, 64, 175, 0.10)");
+      atmoGrad.addColorStop(0.52, "rgba(56, 189, 248, 0.15)");
+      atmoGrad.addColorStop(0.84, "rgba(253, 224, 71, 0.12)");
+      atmoGrad.addColorStop(1, "rgba(14, 116, 144, 0.10)");
+    }
+    p0.fillStyle = atmoGrad;
+    p0.fillRect(0, 0, w, h);
+
+    if (kind === "panorama") {
+      const p1 = planes[1].ctx;
+      for (let s = 0; s < PAN_STARS.length; s++) {
+        const [sxN, syN, sr, warm] = PAN_STARS[s];
+        const sx = sxN * w;
+        const sy = syN * h;
+        const haloR = sr * (s === PAN_STARS.length - 1 ? 2.45 : 1.95);
+        const rg = p1.createRadialGradient(sx, sy, 1, sx, sy, haloR);
+        if (warm) {
+          rg.addColorStop(0, "rgba(254, 249, 195, 0.36)");
+          rg.addColorStop(0.42, "rgba(253, 224, 71, 0.18)");
+          rg.addColorStop(1, "rgba(251, 191, 36, 0)");
+        } else {
+          rg.addColorStop(0, "rgba(224, 242, 254, 0.32)");
+          rg.addColorStop(0.45, "rgba(125, 211, 252, 0.16)");
+          rg.addColorStop(1, "rgba(56, 189, 248, 0)");
+        }
+        p1.fillStyle = rg;
+        p1.beginPath();
+        p1.arc(sx, sy, haloR, 0, Math.PI * 2);
+        p1.fill();
       }
     }
 
@@ -195,17 +335,23 @@ export class LiquidStarrySky {
 
     const strokes = layerData.strokes || [];
     planes.forEach((p) => { p.ctx.lineCap = "round"; });
+    const strokeScale = w / 640;
     for (let i = 0; i < strokes.length; i++) {
       const [x0, y0, xm, ym, x1, y1, scol, sw, motif] = strokes[i];
       const pl = motifToPlane(Number(motif || 0));
       const lc = planes[pl].ctx;
-      lc.strokeStyle = scol;
-      lc.globalAlpha = 0.88;
-      lc.lineWidth = sw * (w / 620);
-      lc.beginPath();
-      lc.moveTo(x0 * w, y0 * h);
-      lc.quadraticCurveTo(xm * w, ym * h, x1 * w, y1 * h);
-      lc.stroke();
+      drawTaperedImpastoStroke(
+        lc,
+        x0 * w,
+        y0 * h,
+        xm * w,
+        ym * h,
+        x1 * w,
+        y1 * h,
+        scol,
+        sw * strokeScale,
+        0.90
+      );
     }
 
     const grid = layerData.grid || [];
@@ -216,7 +362,7 @@ export class LiquidStarrySky {
     const fontSz = Math.max(1.8, colStep / unitAdv);
 
     planes.forEach((p) => {
-      p.ctx.globalAlpha = 0.96;
+      p.ctx.globalAlpha = 0.95;
       p.ctx.font = `700 ${fontSz.toFixed(3)}px ${monoFamily}`;
       p.ctx.textBaseline = "alphabetic";
     });
@@ -229,6 +375,7 @@ export class LiquidStarrySky {
       for (let k = 0; k < runs.length; k++) {
         const [colHex, chunk] = runs[k];
         if (colHex) {
+          const liftedHex = getColorMeta(colHex).lifted;
           let segStart = 0;
           let segPl = -1;
           let segText = "";
@@ -240,7 +387,7 @@ export class LiquidStarrySky {
             } else {
               if (segPl >= 0 && segText) {
                 const lc = planes[segPl].ctx;
-                lc.fillStyle = colHex;
+                lc.fillStyle = liftedHex;
                 lc.fillText(segText, (colCur + segStart) * colStep, py);
               }
               segPl = pl;
@@ -256,7 +403,7 @@ export class LiquidStarrySky {
     return planes.map((p) => p.canvas);
   }
 
-  // WHY: Composes one continuous full-page Van Gogh Starry Night sky (vgScene.sky) flowing seamlessly down to a grounded Sunflowers & Provence bottom garden without duplicate margin moons, stretched ultrawide glyphs, or procedural stripe artifacts.
+  // WHY: Composes one seamless full-page Starry Night sky flowing down to the grounded Sunflowers & Provence bottom garden without tile seams or duplicate margin moons.
   _bakeFullPageBackdrop() {
     const w = this.bgW;
     const h = this.bgH;
@@ -267,7 +414,7 @@ export class LiquidStarrySky {
     const ctx = c.getContext("2d", { alpha: false });
     ctx.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
 
-    ctx.fillStyle = "#040814";
+    ctx.fillStyle = "#050b1a";
     ctx.fillRect(0, 0, w, h);
 
     const gar = this.vgScene.garden;
@@ -282,8 +429,8 @@ export class LiquidStarrySky {
     const skyTileH = Math.max(340, Math.round(skyTileW * 0.36));
     const garTileW = Math.min(w, 1440);
     const garBandH = Math.max(340, Math.round(garTileW * 0.34));
-    const skyPlanes = this._bakeCalligraphicPlanes(skyOnly, skyTileW, skyTileH);
-    const garPlanes = this._bakeCalligraphicPlanes(gar, garTileW, garBandH);
+    const skyPlanes = this._bakeCalligraphicPlanes(skyOnly, skyTileW, skyTileH, "sky");
+    const garPlanes = this._bakeCalligraphicPlanes(gar, garTileW, garBandH, "garden");
 
     if (skyPlanes) {
       const skyTile = document.createElement("canvas");
@@ -323,7 +470,7 @@ export class LiquidStarrySky {
       }
 
       const zenithGrad = ctx.createLinearGradient(0, 0, 0, 36);
-      zenithGrad.addColorStop(0, "rgba(4, 9, 22, 0.68)");
+      zenithGrad.addColorStop(0, "rgba(4, 9, 22, 0.58)");
       zenithGrad.addColorStop(1, "rgba(4, 9, 22, 0)");
       ctx.fillStyle = zenithGrad;
       ctx.fillRect(0, 0, w, 36);
@@ -388,7 +535,7 @@ export class LiquidStarrySky {
       this.panCanvas.width = Math.round(this.panW * this.dpr);
       this.panCanvas.height = Math.round(this.panH * this.dpr);
       this.panCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-      this.panPlanes = this._bakeCalligraphicPlanes(this.vgScene.panorama, this.panW, this.panH);
+      this.panPlanes = this._bakeCalligraphicPlanes(this.vgScene.panorama, this.panW, this.panH, "panorama");
     }
 
     if (this.garCanvas && this.garCtx) {
@@ -398,7 +545,7 @@ export class LiquidStarrySky {
       this.garCanvas.width = Math.round(this.garW * this.dpr);
       this.garCanvas.height = Math.round(this.garH * this.dpr);
       this.garCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-      this.garPlanes = this._bakeCalligraphicPlanes(this.vgScene.garden, this.garW, this.garH);
+      this.garPlanes = this._bakeCalligraphicPlanes(this.vgScene.garden, this.garW, this.garH, "garden");
     }
 
     this._bakeFullPageBackdrop();
@@ -650,21 +797,26 @@ export class LiquidStarrySky {
       const x = p.nx * w;
       const y = p.ny * h;
       const ang = Math.atan2(vy * h, vx * w);
-      const len = 7.5 + Math.min(10, Math.hypot(vx * w, vy * h) * 0.12);
+      const len = 8.2 + Math.min(11, Math.hypot(vx * w, vy * h) * 0.13);
       const tx = Math.cos(ang) * len;
       const ty = Math.sin(ang) * len;
 
-      ctx.globalAlpha = env * 0.56;
-      ctx.strokeStyle = p.color;
-      ctx.lineWidth = p.width;
-      ctx.beginPath();
-      ctx.moveTo(x - tx, y - ty);
-      ctx.quadraticCurveTo(x - ty * 0.22, y + tx * 0.22, x + tx, y + ty);
-      ctx.stroke();
+      drawTaperedImpastoStroke(
+        ctx,
+        x - tx,
+        y - ty,
+        x - ty * 0.24,
+        y + tx * 0.24,
+        x + tx,
+        y + ty,
+        p.color,
+        p.width * 1.15,
+        env * 0.64
+      );
 
       if (i % 2 === 0) {
-        ctx.globalAlpha = env * 0.72;
-        ctx.fillStyle = p.color;
+        ctx.globalAlpha = env * 0.76;
+        ctx.fillStyle = getColorMeta(p.color).filament;
         ctx.fillText(p.glyph, x, y);
       }
     }
@@ -781,15 +933,10 @@ export class LiquidStarrySky {
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.ang);
-      ctx.globalAlpha = p.life * 0.90;
-      ctx.strokeStyle = p.color;
-      ctx.lineWidth = 1.35;
-      ctx.beginPath();
-      ctx.moveTo(-7, 0);
-      ctx.quadraticCurveTo(0, -3.2, 7, 0);
-      ctx.stroke();
+      drawTaperedImpastoStroke(ctx, -8, 0, 0, -3.4, 8, 0, p.color, 1.8, p.life * 0.92);
+      ctx.globalAlpha = p.life * 0.92;
       ctx.font = `700 ${p.size.toFixed(1)}px 'JetBrains Mono', ui-monospace, monospace`;
-      ctx.fillStyle = p.color;
+      ctx.fillStyle = getColorMeta(p.color).filament;
       ctx.fillText(p.glyph, 0, 0);
       ctx.restore();
     }
@@ -813,21 +960,50 @@ export class LiquidStarrySky {
 
       ctx.save();
       ctx.translate(cx + leanX, cy + leanY);
+
+      const bloomGlow = ctx.createRadialGradient(0, 0, rad * 0.12, 0, 0, rad * 1.15);
+      bloomGlow.addColorStop(0, "rgba(253, 224, 71, 0.24)");
+      bloomGlow.addColorStop(0.65, "rgba(245, 158, 11, 0.10)");
+      bloomGlow.addColorStop(1, "rgba(245, 158, 11, 0)");
+      ctx.fillStyle = bloomGlow;
+      ctx.beginPath();
+      ctx.arc(0, 0, rad * 1.15, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.rotate(gazeAng * 0.16 + Math.sin(this.time * 1.1 + i) * 0.04);
-      const petals = 10;
+      const petals = 12;
       for (let p = 0; p < petals; p++) {
         const a = (p * Math.PI * 2) / petals;
-        const px = Math.cos(a) * rad * 0.78;
-        const py = Math.sin(a) * rad * 0.78;
-        ctx.strokeStyle = p % 2 === 0 ? "rgba(253, 224, 71, 0.76)" : "rgba(245, 158, 11, 0.72)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(a) * rad * 0.36, Math.sin(a) * rad * 0.36);
-        ctx.quadraticCurveTo(Math.cos(a + 0.16) * rad * 0.64, Math.sin(a + 0.16) * rad * 0.64, px, py);
-        ctx.stroke();
-        ctx.fillStyle = p % 2 === 0 ? "#fef08a" : "#fbbf24";
+        const r0 = rad * 0.30;
+        const rm = rad * 0.62;
+        const r1 = rad * 0.86;
+        const px = Math.cos(a) * r1;
+        const py = Math.sin(a) * r1;
+        drawTaperedImpastoStroke(
+          ctx,
+          Math.cos(a) * r0,
+          Math.sin(a) * r0,
+          Math.cos(a + 0.15) * rm,
+          Math.sin(a + 0.15) * rm,
+          px,
+          py,
+          p % 2 === 0 ? "#fde047" : "#f59e0b",
+          2.2,
+          0.88
+        );
+        ctx.globalAlpha = 0.88;
+        ctx.fillStyle = p % 2 === 0 ? "#fef9c3" : "#fcd34d";
         ctx.fillText(p % 2 === 0 ? "*" : "~", px, py);
       }
+
+      ctx.globalAlpha = 0.94;
+      ctx.fillStyle = "#78350f";
+      ctx.beginPath();
+      ctx.arc(0, 0, rad * 0.27, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 1.15;
+      ctx.stroke();
       ctx.fillStyle = "#fde047";
       ctx.fillText("@", 0, 0);
       ctx.restore();
@@ -846,12 +1022,52 @@ export class LiquidStarrySky {
       const sy = ny * h + (this.gaze.y - 0.35) * 4;
       const lookAng = Math.atan2(targetY - sy, targetX - sx);
       const spin = this.time * (i % 2 === 0 ? 0.28 : -0.22) + lookAng * 0.28;
+      const pulse = 0.86 + 0.14 * Math.sin(this.time * 2.1 + i * 1.4);
+
+      const glowR = r * 1.55 * pulse;
+      const grad = ctx.createRadialGradient(sx, sy, 1, sx, sy, glowR);
+      if (warm) {
+        grad.addColorStop(0, "rgba(254, 249, 195, 0.34)");
+        grad.addColorStop(0.55, "rgba(253, 224, 71, 0.14)");
+        grad.addColorStop(1, "rgba(253, 224, 71, 0)");
+      } else {
+        grad.addColorStop(0, "rgba(224, 242, 254, 0.30)");
+        grad.addColorStop(0.55, "rgba(125, 211, 252, 0.13)");
+        grad.addColorStop(1, "rgba(125, 211, 252, 0)");
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(sx, sy, glowR, 0, Math.PI * 2);
+      ctx.fill();
+
+      const arcs = 6;
+      for (let k = 0; k < arcs; k++) {
+        const a0 = spin + (k * Math.PI * 2) / arcs;
+        const am = a0 + 0.26;
+        const a1 = a0 + 0.52;
+        const cr = r * 0.88;
+        drawTaperedImpastoStroke(
+          ctx,
+          sx + Math.cos(a0) * cr,
+          sy + Math.sin(a0) * cr,
+          sx + Math.cos(am) * (cr * 1.06),
+          sy + Math.sin(am) * (cr * 1.06),
+          sx + Math.cos(a1) * cr,
+          sy + Math.sin(a1) * cr,
+          warm ? "#fde047" : "#7dd3fc",
+          1.55,
+          0.72
+        );
+      }
+
       const glyphs = 8;
+      ctx.globalAlpha = 0.90;
       for (let g = 0; g < glyphs; g++) {
         const a = spin + (g * Math.PI * 2) / glyphs;
         const gx = sx + Math.cos(a) * r;
         const gy = sy + Math.sin(a) * r;
-        ctx.fillStyle = warm ? "rgba(253, 224, 71, 0.82)" : "rgba(125, 211, 252, 0.78)";
+        ctx.fillStyle = warm ? "#fef08a" : "#bae6fd";
         ctx.fillText(g % 2 === 0 ? "~" : "*", gx, gy);
       }
     }
@@ -860,12 +1076,12 @@ export class LiquidStarrySky {
 
   _drawCompositePlanes(ctx, planes, w, h, gxShift, gyShift) {
     if (!planes) {
-      ctx.fillStyle = "#061024";
+      ctx.fillStyle = "#07142c";
       ctx.fillRect(0, 0, w, h);
       return;
     }
     const mults = [-4.5, 2.5, 6.8, 12.0];
-    ctx.fillStyle = "#061024";
+    ctx.fillStyle = "#07142c";
     ctx.fillRect(0, 0, w, h);
     for (let p = 0; p < planes.length; p++) {
       const ox = gxShift * mults[p];
@@ -883,13 +1099,22 @@ export class LiquidStarrySky {
     const tilt = -0.14 + gxShift * 0.04;
 
     ctx.save();
-    ctx.strokeStyle = "rgba(253, 224, 71, 0.75)";
-    ctx.lineWidth = 1.1;
-    drawStarPolygon(ctx, sunX, sunY, 10.5, 3.8, 8, this.time * 0.35);
+    const sunHalo = ctx.createRadialGradient(sunX, sunY, 2, sunX, sunY, 28);
+    sunHalo.addColorStop(0, "rgba(254, 249, 195, 0.56)");
+    sunHalo.addColorStop(0.45, "rgba(251, 191, 36, 0.22)");
+    sunHalo.addColorStop(1, "rgba(251, 191, 36, 0)");
+    ctx.fillStyle = sunHalo;
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, 28, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(254, 240, 138, 0.88)";
+    ctx.lineWidth = 1.2;
+    drawStarPolygon(ctx, sunX, sunY, 11.2, 4.1, 8, this.time * 0.35);
     ctx.fillStyle = "#fbbf24";
     ctx.fill();
     ctx.stroke();
-    drawStarPolygon(ctx, sunX, sunY, 4.8, 1.8, 4, -this.time * 0.5);
+    drawStarPolygon(ctx, sunX, sunY, 5.2, 2.0, 4, -this.time * 0.5);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.restore();
@@ -913,13 +1138,20 @@ export class LiquidStarrySky {
     const away = Math.atan2(comY - sunY, comX - sunX);
 
     ctx.save();
-    ctx.strokeStyle = "rgba(125, 211, 252, 0.78)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(comX, comY);
-    ctx.lineTo(comX + Math.cos(away) * 22, comY + Math.sin(away) * 22);
-    ctx.stroke();
-    drawStarPolygon(ctx, comX, comY, 4.0, 1.4, 4, away);
+    drawTaperedImpastoStroke(
+      ctx,
+      comX,
+      comY,
+      comX + Math.cos(away + 0.08) * 12,
+      comY + Math.sin(away + 0.08) * 12,
+      comX + Math.cos(away) * 25,
+      comY + Math.sin(away) * 25,
+      "#7dd3fc",
+      2.2,
+      0.86
+    );
+    ctx.globalAlpha = 1;
+    drawStarPolygon(ctx, comX, comY, 4.3, 1.5, 4, away);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.restore();
@@ -943,8 +1175,8 @@ export class LiquidStarrySky {
       ctx.save();
       ctx.translate(sunX, sunY);
       ctx.rotate(tilt);
-      ctx.strokeStyle = isHov ? "rgba(253, 224, 71, 0.82)" : "rgba(147, 197, 253, 0.26)";
-      ctx.lineWidth = isHov ? 1.35 : 0.8;
+      ctx.strokeStyle = isHov ? "rgba(253, 224, 71, 0.88)" : "rgba(147, 197, 253, 0.32)";
+      ctx.lineWidth = isHov ? 1.4 : 0.85;
       ctx.beginPath();
       ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
       ctx.stroke();
@@ -961,15 +1193,19 @@ export class LiquidStarrySky {
         ctx.translate(px, py);
         ctx.rotate(pl.tiltRing ? 1.18 : -0.32);
         ctx.strokeStyle = pl.tiltRing ? "#67e8f9" : "#fde68a";
-        ctx.lineWidth = 1.35;
+        ctx.lineWidth = 1.45;
         ctx.beginPath();
-        ctx.ellipse(0, 0, pl.r * 2.2, pl.r * 0.82, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, pl.r * 2.25, pl.r * 0.84, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
 
-      drawStarPolygon(ctx, px, py, pl.r * 1.35, pl.r * 0.65, 6, this.time * 0.4 + i);
+      drawStarPolygon(ctx, px, py, pl.r * 1.40, pl.r * 0.68, 6, this.time * 0.4 + i);
       ctx.fillStyle = pl.color;
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(px - pl.r * 0.18, py - pl.r * 0.18, Math.max(0.9, pl.r * 0.24), 0, Math.PI * 2);
       ctx.fill();
 
       this.bodyScreenPositions.push({
@@ -985,7 +1221,7 @@ export class LiquidStarrySky {
       key: "moon",
       x: w * 0.895,
       y: h * 0.255,
-      r: 28,
+      r: 30,
       label: "Crescent Moon"
     });
   }

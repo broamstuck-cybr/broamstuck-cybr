@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // WHY: Coordinates the calligraphic Van Gogh sky/garden engine, sculpted contribution constellation, 4K portrait, stack crystal, 4-state console, and Blender 3D stages.
 
-import { LiquidStarrySky } from "./sky-engine.js";
+import { LiquidStarrySky, drawTaperedImpastoStroke } from "./sky-engine.js";
 import { PortraitStage, Radar5DStage, Forum3DStage } from "./models-3d.js";
+import { StarlightPixelDog } from "./pixel-dog.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -84,16 +85,20 @@ class CelestialMatrixStage {
       }
 
       const strokes = this.vgSky.strokes || [];
-      lc.lineCap = "round";
-      lc.globalAlpha = 0.76;
       for (let i = 0; i < strokes.length; i++) {
         const [x0, y0, xm, ym, x1, y1, col, sw] = strokes[i];
-        lc.strokeStyle = col;
-        lc.lineWidth = sw * 1.45;
-        lc.beginPath();
-        lc.moveTo(x0 * this.w, y0 * this.h);
-        lc.quadraticCurveTo(xm * this.w, ym * this.h, x1 * this.w, y1 * this.h);
-        lc.stroke();
+        drawTaperedImpastoStroke(
+          lc,
+          x0 * this.w,
+          y0 * this.h,
+          xm * this.w,
+          ym * this.h,
+          x1 * this.w,
+          y1 * this.h,
+          col,
+          sw * 1.50,
+          0.80
+        );
       }
 
       const grid = this.vgSky.grid || [];
@@ -103,7 +108,7 @@ class CelestialMatrixStage {
       const fontSz = Math.max(1.8, colStep / unitAdv);
       lc.font = `700 ${fontSz.toFixed(3)}px ${monoFamily}`;
       lc.textBaseline = "alphabetic";
-      lc.globalAlpha = 0.78;
+      lc.globalAlpha = 0.80;
       for (let r = 0; r < grid.length; r++) {
         let cur = 0;
         const runs = grid[r];
@@ -119,7 +124,7 @@ class CelestialMatrixStage {
       }
 
       lc.globalAlpha = 1;
-      lc.fillStyle = "rgba(4, 9, 22, 0.56)";
+      lc.fillStyle = "rgba(4, 9, 22, 0.48)";
       lc.fillRect(0, 0, this.w, this.h);
 
       const topScrim = lc.createLinearGradient(0, 0, 0, 28);
@@ -633,11 +638,22 @@ async function initObservatory() {
     modalVariantBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.modalVariant === id));
   };
 
+  let pup = null;
+  const dogLayer = document.getElementById("pixel-dog-layer");
+  const dogCanvas = document.getElementById("pixel-dog-canvas");
+  const dogHitbox = document.getElementById("pixel-dog-hitbox");
+  if (dogLayer && dogCanvas && dogHitbox) {
+    pup = new StarlightPixelDog(dogLayer, dogCanvas, dogHitbox, (nx, ny) => {
+      sky.injectImpulse(nx, ny, 7, -6);
+    });
+  }
+
   document.querySelectorAll("[data-expand-3d]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-expand-3d");
       if (typeof modal.showModal === "function") modal.showModal();
       else modal.setAttribute("open", "");
+      if (pup) pup._syncHitbox();
       openModalVariant(id);
     });
   });
@@ -659,13 +675,19 @@ async function initObservatory() {
   document.getElementById("modal-close-btn").addEventListener("click", () => {
     if (typeof modal.close === "function") modal.close();
     else modal.removeAttribute("open");
+    if (pup) pup._syncHitbox();
   });
 
   modal.addEventListener("click", (ev) => {
     if (ev.target === modal) {
       if (typeof modal.close === "function") modal.close();
       else modal.removeAttribute("open");
+      if (pup) pup._syncHitbox();
     }
+  });
+
+  modal.addEventListener("close", () => {
+    if (pup) pup._syncHitbox();
   });
 }
 
