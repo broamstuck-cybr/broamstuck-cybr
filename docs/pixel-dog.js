@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// WHY: 60 FPS living 2.5D pixel ecosystem: 11 shaded species x 25 animations, >=34 interactive micro-habitat props, bioluminescent fireflies, and 60s day-night habits.
+// WHY: 60 FPS living 2D pixel ecosystem: 11 shaded species x 25 animations, >=40 interactive micro-habitat props, bioluminescent fireflies, 60s day-night cycle, and full-viewport free roaming.
 
 import {
   SPECIES_IDS,
@@ -53,6 +53,9 @@ const BF_H = 11;
 const TWIG_W = 9;
 const TWIG_H = 5;
 const PIXEL_SCALE = 2;
+// WHY: 1.30x animal scale renders all 11 species +30% larger across desktop/tablet/mobile while keeping crisp nearest-neighbor texels.
+const ANIMAL_SCALE = PIXEL_SCALE * 1.3;
+const BF_SCALE = PIXEL_SCALE * 1.25;
 
 const PAN_SUNFLOWERS = [
   [0.036, 0.81],
@@ -1544,6 +1547,8 @@ export class StarlightPixelDog {
     this.petEmoteGuard = 0;
 
     this.waypoints = [];
+    this.exclusionZones = [];
+    this.portraitCircle = null;
     this.props = [];
     this.floraClusters = [];
     this.sunflowerPerches = [];
@@ -1553,10 +1558,14 @@ export class StarlightPixelDog {
 
     this.currentWpIdx = -1;
     this.startPt = { x: 320, y: 280 };
+    this.ctrlPt = { x: 420, y: 260 };
     this.targetPt = { x: 520, y: 280, tag: "sky" };
     this.travelT = 0;
     this.travelDur = 2.0;
     this.travelArc = 0;
+    this.tilt = 0;
+    this.squashX = 1;
+    this.squashY = 1;
 
     this.activeFlora = null;
     this.activeProp = null;
@@ -1676,44 +1685,170 @@ export class StarlightPixelDog {
   }
 
   _resize() {
-    this.dpr = 1;
+    this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const w = Math.max(320, this.layer.clientWidth || document.documentElement.clientWidth || 1440);
     const h = Math.max(480, this.layer.clientHeight || document.body.offsetHeight || 1400);
     this.docW = w;
     this.docH = h;
-    this.canvas.width = Math.round(w);
-    this.canvas.height = Math.round(h);
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.canvas.width = Math.max(1, Math.round(w * this.dpr));
+    this.canvas.height = Math.max(1, Math.round(h * this.dpr));
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
   }
 
+  _buildExclusionZones(ox, oy) {
+    const zones = [];
+    this.portraitCircle = null;
+    const portEl = document.getElementById("portrait-canvas");
+    if (portEl) {
+      const pr = portEl.getBoundingClientRect();
+      if (pr.width > 0 && pr.height > 0) {
+        const cx = pr.left - ox + pr.width * 0.5;
+        const cy = pr.top - oy + pr.height * 0.5;
+        const rad = Math.max(pr.width, pr.height) * 0.5;
+        this.portraitCircle = { cx, cy, r: rad };
+        zones.push({ kind: "circle", cx, cy, r: rad + 26 });
+      }
+    }
+    const textEls = document.querySelectorAll(
+      ".portrait-identity, .board-head, .radar-top, .metrics-stack, .console-bar, .forum-content"
+    );
+    textEls.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        zones.push({
+          kind: "rect",
+          x0: r.left - ox - 12,
+          y0: r.top - oy - 10,
+          x1: r.right - ox + 12,
+          y1: r.bottom - oy + 48
+        });
+      }
+    });
+    this.exclusionZones = zones;
+  }
+
+  _pushOutOfExclusions(x, y, pad = 12) {
+    let px = x;
+    let py = y;
+    for (let i = 0; i < this.exclusionZones.length; i++) {
+      const z = this.exclusionZones[i];
+      if (z.kind === "circle") {
+        const dx = px - z.cx;
+        const dy = py - z.cy;
+        const dist = Math.hypot(dx, dy);
+        const minR = z.r + pad;
+        if (dist < minR) {
+          const ang = dist > 0.5 ? Math.atan2(dy, dx) : 0.65;
+          px = z.cx + Math.cos(ang) * minR;
+          py = z.cy + Math.sin(ang) * minR;
+        }
+      } else if (px >= z.x0 - pad * 0.5 && px <= z.x1 + pad * 0.5 && py >= z.y0 - pad * 0.5 && py <= z.y1 + pad * 0.5) {
+        const dTop = Math.abs(py - z.y0);
+        const dBot = Math.abs(z.y1 - py);
+        const dLeft = Math.abs(px - z.x0);
+        const dRight = Math.abs(z.x1 - px);
+        const m = Math.min(dTop, dBot, dLeft, dRight);
+        if (m === dBot) py = z.y1 + pad * 0.6;
+        else if (m === dTop) py = z.y0 - pad * 0.6;
+        else if (m === dLeft) px = z.x0 - pad * 0.6;
+        else px = z.x1 + pad * 0.6;
+      }
+    }
+
+    px = Math.max(32, Math.min(this.docW - 32, px));
+
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < this.exclusionZones.length; i++) {
+        const z = this.exclusionZones[i];
+        if (z.kind === "rect" && px >= z.x0 && px <= z.x1 && py >= z.y0 && py <= z.y1) {
+          py = py < (z.y0 + z.y1) * 0.5 ? z.y0 - 10 : z.y1 + 10;
+        }
+      }
+      if (this.portraitCircle) {
+        const pc = this.portraitCircle;
+        const minR = pc.r + 44;
+        if (Math.hypot(px - pc.cx, py - pc.cy) < minR) {
+          py = py < pc.cy ? pc.cy - minR : pc.cy + minR + 56;
+        }
+      }
+    }
+
+    return {
+      x: px,
+      y: Math.max(46, Math.min(this.docH - 18, py))
+    };
+  }
+
+  _makeCurvedControlPt(sx, sy, tx, ty, seed = 0) {
+    const mx = (sx + tx) * 0.5;
+    const my = (sy + ty) * 0.5;
+    const dx = tx - sx;
+    const dy = ty - sy;
+    const dist = Math.hypot(dx, dy) || 1;
+    const nx = -dy / dist;
+    const ny = dx / dist;
+    const sign = seed % 2 === 0 ? 1 : -1;
+    const bend = Math.min(68, dist * 0.20) * sign;
+    let cx = mx + nx * bend;
+    let cy = my + ny * bend;
+
+    if (this.portraitCircle) {
+      const pc = this.portraitCircle;
+      const pdx = cx - pc.cx;
+      const pdy = cy - pc.cy;
+      const pDist = Math.hypot(pdx, pdy);
+      const safeR = pc.r + 36;
+      if (pDist < safeR) {
+        const ang = pDist > 1 ? Math.atan2(pdy, pdx) : (my >= pc.cy ? 1.45 : -1.45);
+        cx = pc.cx + Math.cos(ang) * safeR;
+        cy = pc.cy + Math.sin(ang) * safeR;
+      }
+    }
+
+    return {
+      x: Math.max(26, Math.min(this.docW - 26, cx)),
+      y: Math.max(38, Math.min(this.docH - 16, cy))
+    };
+  }
+
+  // WHY: Scatters 2D free-roam waypoints and >=40 open-pocket props across sky, Dec-Aug matrix, Stack/Console pockets, 3D cards, and Provence garden.
   _collectWaypointsAndFlora() {
     const layerRect = this.layer.getBoundingClientRect();
     const ox = layerRect.left;
     const oy = layerRect.top;
+    this._buildExclusionZones(ox, oy);
+
     const pts = [];
     const rawFlora = [];
     const perches = [];
 
-    const clampX = (val, minPad = 36) => Math.max(minPad, Math.min(this.docW - minPad, val));
+    const clampX = (val, minPad = 34) => Math.max(minPad, Math.min(this.docW - minPad, val));
     const clampY = (val) => Math.max(46, Math.min(this.docH - 18, val));
+    const pushWp = (x, y, tag, zone) => {
+      const safe = this._pushOutOfExclusions(clampX(x), clampY(y), 16);
+      pts.push({ x: safe.x, y: safe.y, tag, zone });
+    };
 
     const skyDome = document.querySelector(".sky-dome");
     if (skyDome) {
       const r = skyDome.getBoundingClientRect();
       const left = r.left - ox;
       const top = r.top - oy;
-      const yRim = clampY(top + r.height - 10);
-      pts.push({ x: clampX(left + r.width * 0.14), y: yRim, tag: "sunflower", zone: "sky" });
-      pts.push({ x: clampX(left + r.width * 0.36), y: yRim, tag: "sky", zone: "sky" });
-      pts.push({ x: clampX(left + r.width * 0.64), y: yRim, tag: "sky", zone: "sky" });
-      pts.push({ x: clampX(left + r.width * 0.86), y: yRim, tag: "sunflower", zone: "sky" });
+      const skySpots = [
+        [0.12, 0.34, "sky"], [0.34, 0.28, "sky"], [0.64, 0.32, "sky"], [0.86, 0.38, "sky"],
+        [0.14, 0.88, "sunflower"], [0.38, 0.78, "sky"], [0.66, 0.82, "sky"], [0.88, 0.90, "sunflower"]
+      ];
+      for (let i = 0; i < skySpots.length; i++) {
+        const [fx, fy, tg] = skySpots[i];
+        pushWp(left + r.width * fx, top + r.height * fy, tg, "sky");
+      }
 
-      const skyFloraFracs = [0.08, 0.21, 0.37, 0.56, 0.74, 0.88];
+      const skyFloraFracs = [0.08, 0.22, 0.38, 0.56, 0.74, 0.90];
       for (let i = 0; i < skyFloraFracs.length; i++) {
         rawFlora.push({
           x: clampX(left + r.width * skyFloraFracs[i], 28),
-          y: clampY(top + r.height - 2),
+          y: clampY(top + r.height - 3),
           zone: "sky",
           lush: i === 0 || i === 5 ? 2 : 1
         });
@@ -1730,33 +1865,68 @@ export class StarlightPixelDog {
       }
     }
 
-    const boards = document.querySelectorAll("section.board");
-    if (boards[0]) {
-      const r = boards[0].getBoundingClientRect();
-      const left = r.left - ox;
-      const yBot = clampY(r.bottom - oy - 2);
-      pts.push({ x: clampX(left + r.width * 0.20), y: yBot, tag: "ledge", zone: "board" });
-      pts.push({ x: clampX(left + r.width * 0.52), y: yBot, tag: "ledge", zone: "board" });
-      pts.push({ x: clampX(left + r.width * 0.82), y: yBot, tag: "ledge", zone: "board" });
-
-      rawFlora.push({ x: clampX(left + r.width * 0.14, 28), y: clampY(r.bottom - oy), zone: "board", lush: 1 });
-      rawFlora.push({ x: clampX(left + r.width * 0.50, 28), y: clampY(r.bottom - oy), zone: "board", lush: 1 });
-      rawFlora.push({ x: clampX(left + r.width * 0.86, 28), y: clampY(r.bottom - oy), zone: "board", lush: 1 });
+    const matrixCanvas = document.getElementById("matrix-canvas");
+    if (matrixCanvas) {
+      const mr = matrixCanvas.getBoundingClientRect();
+      const mLeft = mr.left - ox;
+      const mTop = mr.top - oy;
+      const matOpen = [
+        [0.10, 0.38], [0.22, 0.72], [0.34, 0.44], [0.46, 0.78],
+        [0.58, 0.42], [0.68, 0.76], [0.80, 0.86], [0.92, 0.88]
+      ];
+      for (let i = 0; i < matOpen.length; i++) {
+        pushWp(mLeft + mr.width * matOpen[i][0], mTop + mr.height * matOpen[i][1], "matrix", "board");
+      }
+      const matFloraFracs = [0.16, 0.40, 0.64, 0.88];
+      for (let i = 0; i < matFloraFracs.length; i++) {
+        rawFlora.push({
+          x: clampX(mLeft + mr.width * matFloraFracs[i], 28),
+          y: clampY(mTop + mr.height - 2),
+          zone: "board",
+          lush: 1
+        });
+      }
     }
 
-    if (boards[1] && this.docW >= 1024) {
-      const r = boards[1].getBoundingClientRect();
-      const left = r.left - ox;
-      const yBot = clampY(r.bottom - oy - 2);
-      pts.push({ x: clampX(left + Math.min(168, r.width * 0.15)), y: yBot, tag: "ledge", zone: "board" });
+    const radarCanvas = document.getElementById("radar-canvas");
+    if (radarCanvas) {
+      const rr = radarCanvas.getBoundingClientRect();
+      const rLeft = rr.left - ox;
+      const rTop = rr.top - oy;
+      const radarFlanks = [
+        [0.10, 0.36], [0.14, 0.82], [0.50, 0.90], [0.86, 0.38], [0.90, 0.84]
+      ];
+      for (let i = 0; i < radarFlanks.length; i++) {
+        pushWp(rLeft + rr.width * radarFlanks[i][0], rTop + rr.height * radarFlanks[i][1], "stack", "board");
+      }
+    }
+
+    const consoleBox = document.querySelector(".console-box");
+    if (consoleBox) {
+      const cr = consoleBox.getBoundingClientRect();
+      const cLeft = cr.left - ox;
+      const cTop = cr.top - oy;
+      pushWp(cLeft + cr.width * 0.74, cTop + cr.height * 0.56, "console", "board");
+      pushWp(cLeft + cr.width * 0.90, cTop + cr.height * 0.78, "console", "board");
+      pushWp(cLeft + cr.width * 0.42, cTop + cr.height * 0.92, "console", "board");
+    }
+
+    if (this.portraitCircle) {
+      const pc = this.portraitCircle;
+      pushWp(pc.cx - pc.r * 0.86, pc.cy + pc.r + 28, "core", "board");
+      pushWp(pc.cx + pc.r * 0.86, pc.cy + pc.r + 28, "core", "board");
     }
 
     const viewports = document.querySelectorAll(".forum-viewport");
-    viewports.forEach((vp) => {
+    viewports.forEach((vp, idx) => {
       const r = vp.getBoundingClientRect();
       const left = r.left - ox;
-      const yLedge = clampY(r.bottom - oy - 4);
-      pts.push({ x: clampX(left + Math.min(96, r.width * 0.32)), y: yLedge, tag: "card", zone: "card" });
+      const top = r.top - oy;
+      pushWp(left + r.width * 0.22, top + r.height * 0.48, "card", "card");
+      pushWp(left + r.width * 0.74, top + r.height * 0.82, "card", "card");
+      if (idx < viewports.length - 1 && this.docW >= 900) {
+        pushWp(left + r.width + 6, top + r.height * 0.65, "corridor", "card");
+      }
     });
 
     const garden = document.querySelector(".garden-observatory");
@@ -1764,20 +1934,23 @@ export class StarlightPixelDog {
       const r = garden.getBoundingClientRect();
       const left = r.left - ox;
       const top = r.top - oy;
-      pts.push({ x: clampX(left + r.width * 0.14), y: clampY(top + r.height * 0.84), tag: "sunflower", zone: "garden" });
-      pts.push({ x: clampX(left + r.width * 0.30), y: clampY(top + r.height * 0.87), tag: "garden", zone: "garden" });
-      pts.push({ x: clampX(left + r.width * 0.50), y: clampY(top + r.height * 0.90), tag: "garden", zone: "garden" });
-      pts.push({ x: clampX(left + r.width * 0.70), y: clampY(top + r.height * 0.87), tag: "garden", zone: "garden" });
-      pts.push({ x: clampX(left + r.width * 0.86), y: clampY(top + r.height * 0.84), tag: "sunflower", zone: "garden" });
+      const garPts = [
+        [0.12, 0.44, "sunflower"], [0.34, 0.38, "garden"], [0.56, 0.48, "garden"], [0.84, 0.42, "sunflower"],
+        [0.16, 0.74, "sunflower"], [0.42, 0.68, "garden"], [0.68, 0.72, "garden"], [0.88, 0.78, "sunflower"],
+        [0.24, 0.91, "garden"], [0.52, 0.92, "garden"], [0.78, 0.90, "garden"]
+      ];
+      for (let i = 0; i < garPts.length; i++) {
+        pushWp(left + r.width * garPts[i][0], top + r.height * garPts[i][1], garPts[i][2], "garden");
+      }
 
       const garFlora = [
-        [0.08, 0.89, 2],
-        [0.19, 0.91, 2],
-        [0.32, 0.92, 2],
-        [0.46, 0.94, 1],
-        [0.60, 0.93, 2],
-        [0.74, 0.91, 2],
-        [0.88, 0.89, 2]
+        [0.08, 0.88, 2],
+        [0.20, 0.91, 2],
+        [0.34, 0.66, 1],
+        [0.48, 0.93, 2],
+        [0.62, 0.70, 1],
+        [0.76, 0.91, 2],
+        [0.90, 0.88, 2]
       ];
       for (let i = 0; i < garFlora.length; i++) {
         const [fx, fy, lush] = garFlora[i];
@@ -1800,19 +1973,33 @@ export class StarlightPixelDog {
       }
     }
 
-    if (!pts.length) {
-      pts.push({ x: 160, y: 260, tag: "sky", zone: "sky" }, { x: 340, y: 260, tag: "garden", zone: "garden" });
-      rawFlora.push({ x: 200, y: 262, zone: "sky", lush: 2 }, { x: 310, y: 262, zone: "garden", lush: 2 });
+    const shell = document.querySelector("main.observatory-shell");
+    if (shell && this.docW >= 1240) {
+      const sr = shell.getBoundingClientRect();
+      const sLeft = sr.left - ox;
+      const sRight = sr.right - ox;
+      const marginYFracs = [0.16, 0.38, 0.62, 0.84];
+      for (let i = 0; i < marginYFracs.length; i++) {
+        const my = this.docH * marginYFracs[i];
+        if (sLeft > 52) pushWp(sLeft * 0.5, my, "margin", "sky");
+        if (this.docW - sRight > 52) pushWp(sRight + (this.docW - sRight) * 0.5, my, "margin", "garden");
+      }
     }
 
-    const minPropDist = this.docW < 520 ? 20 : 28;
+    if (!pts.length) {
+      pts.push({ x: 160, y: 260, tag: "sky", zone: "sky" }, { x: 340, y: 520, tag: "garden", zone: "garden" });
+      rawFlora.push({ x: 200, y: 262, zone: "sky", lush: 2 }, { x: 310, y: 522, zone: "garden", lush: 2 });
+    }
+
+    const minPropDist = this.docW < 520 ? 18 : 26;
     const rawProps = this._buildRawPropPlacements(ox, oy, clampX, clampY);
     const placedProps = [];
     for (let i = 0; i < rawProps.length; i++) {
       const cand = rawProps[i];
+      const safe = this._pushOutOfExclusions(cand.x, cand.y, 14);
       let collide = false;
       for (let j = 0; j < placedProps.length; j++) {
-        if (Math.hypot(placedProps[j].x - cand.x, placedProps[j].y - cand.y) < minPropDist) {
+        if (Math.hypot(placedProps[j].x - safe.x, placedProps[j].y - safe.y) < minPropDist) {
           collide = true;
           break;
         }
@@ -1827,8 +2014,8 @@ export class StarlightPixelDog {
           height: def.height,
           glowColor: def.glowColor || null,
           glowRadius: def.glowRadius || 0,
-          x: cand.x,
-          y: cand.y,
+          x: safe.x,
+          y: safe.y,
           zone: cand.zone,
           bend: 0,
           bendVel: 0,
@@ -1844,6 +2031,9 @@ export class StarlightPixelDog {
     const filteredFlora = [];
     for (let i = 0; i < rawFlora.length; i++) {
       const cand = rawFlora[i];
+      const safeF = this._pushOutOfExclusions(cand.x, cand.y, 12);
+      cand.x = safeF.x;
+      cand.y = safeF.y;
       let tooClose = false;
       for (let j = 0; j < filteredFlora.length; j++) {
         const ex = filteredFlora[j];
@@ -1854,7 +2044,7 @@ export class StarlightPixelDog {
       }
       if (!tooClose) {
         for (let p = 0; p < this.props.length; p++) {
-          if (Math.hypot(this.props[p].x - cand.x, this.props[p].y - cand.y) < 24) {
+          if (Math.hypot(this.props[p].x - cand.x, this.props[p].y - cand.y) < 22) {
             tooClose = true;
             break;
           }
@@ -1882,11 +2072,10 @@ export class StarlightPixelDog {
     this.sunflowerPerches = perches;
   }
 
-  // WHY: Distributes >=36 non-overlapping interactive pixel habitat props across sky-dome, board rims, 3D card ledges, and 3 garden depth tiers at all breakpoints.
   _buildRawPropPlacements(ox, oy, clampX, clampY) {
     const slots = [];
     const add = (id, x, y, zone) => {
-      slots.push({ id, x: clampX(x, 20), y: clampY(y), zone });
+      slots.push({ id, x: clampX(x, 22), y: clampY(y), zone });
     };
 
     const skyDome = document.querySelector(".sky-dome");
@@ -1894,45 +2083,75 @@ export class StarlightPixelDog {
       const r = skyDome.getBoundingClientRect();
       const left = r.left - ox;
       const top = r.top - oy;
-      add("starlightWindchime", left + r.width * 0.72, top + 28, "sky");
-      add("weathervane", left + r.width * 0.90, top + 30, "sky");
+      add("starlightWindchime", left + r.width * 0.76, top + 34, "sky");
+      add("weathervane", left + r.width * 0.92, top + 36, "sky");
 
-      const skyRimIds = [
-        "ironLantern",
-        "sunflowerCluster",
-        "dandelionPuff",
-        "dewPuddle",
-        "lavenderTuft",
-        "glowMushroomBlue",
-        "woodBirdhouse"
+      const skyPockets = [
+        ["ironLantern", 0.06, 0.96],
+        ["sunflowerCluster", 0.17, 0.88],
+        ["dandelionPuff", 0.30, 0.95],
+        ["dewPuddle", 0.45, 0.92],
+        ["lavenderTuft", 0.60, 0.96],
+        ["glowMushroomBlue", 0.74, 0.90],
+        ["woodBirdhouse", 0.87, 0.95],
+        ["chamomilePatch", 0.95, 0.86]
       ];
-      const skyFracs = [0.06, 0.20, 0.35, 0.50, 0.65, 0.80, 0.94];
-      for (let i = 0; i < skyRimIds.length; i++) {
-        add(skyRimIds[i], left + r.width * skyFracs[i], top + r.height - 2, "sky");
+      for (let i = 0; i < skyPockets.length; i++) {
+        const [id, fx, fy] = skyPockets[i];
+        add(id, left + r.width * fx, top + r.height * fy, "sky");
       }
+    }
+
+    const matrixCanvas = document.getElementById("matrix-canvas");
+    if (matrixCanvas) {
+      const mr = matrixCanvas.getBoundingClientRect();
+      const mLeft = mr.left - ox;
+      const mTop = mr.top - oy;
+      const matProps = [
+        ["mossyStone", 0.08, 0.82],
+        ["fireflyJar", 0.19, 0.46],
+        ["cloverBed", 0.31, 0.84],
+        ["crystalGeode", 0.43, 0.42],
+        ["glowMushroomBlue", 0.55, 0.80],
+        ["dandelionPuff", 0.67, 0.48],
+        ["lavenderTuft", 0.79, 0.92],
+        ["acornStash", 0.92, 0.94]
+      ];
+      for (let i = 0; i < matProps.length; i++) {
+        const [id, fx, fy] = matProps[i];
+        add(id, mLeft + mr.width * fx, mTop + mr.height * fy, "board");
+      }
+    }
+
+    const radarCanvas = document.getElementById("radar-canvas");
+    if (radarCanvas) {
+      const rr = radarCanvas.getBoundingClientRect();
+      const rLeft = rr.left - ox;
+      const rTop = rr.top - oy;
+      add("provenceStoneWall", rLeft + rr.width * 0.09, rTop + rr.height * 0.88, "board");
+      add("hollowOakLog", rLeft + rr.width * 0.91, rTop + rr.height * 0.90, "board");
+      if (this.docW >= 900) {
+        add("ironLantern", rLeft + rr.width * 0.12, rTop + rr.height * 0.36, "board");
+        add("berryBush", rLeft + rr.width * 0.88, rTop + rr.height * 0.24, "board");
+      }
+    }
+
+    const consoleBox = document.querySelector(".console-box");
+    if (consoleBox && this.docW >= 900) {
+      const cr = consoleBox.getBoundingClientRect();
+      const cLeft = cr.left - ox;
+      const cBot = cr.bottom - oy - 3;
+      add("fireflyJar", cLeft + cr.width * 0.84, cBot, "board");
+      add("mossyStone", cLeft + cr.width * 0.94, cBot, "board");
     }
 
     const boards = document.querySelectorAll("section.board");
-    if (boards[0]) {
-      const r = boards[0].getBoundingClientRect();
-      const left = r.left - ox;
-      const yBot = r.bottom - oy - 1;
-      const b0Ids = ["mossyStone", "chamomilePatch", "fireflyJar", "cloverBed", "crystalGeode"];
-      const b0Fracs = [0.09, 0.29, 0.50, 0.71, 0.91];
-      for (let i = 0; i < b0Ids.length; i++) {
-        add(b0Ids[i], left + r.width * b0Fracs[i], yBot, "board");
-      }
-    }
-
     if (boards[1]) {
-      const r = boards[1].getBoundingClientRect();
-      const left = r.left - ox;
-      const yBot = r.bottom - oy - 1;
-      const b1Ids = ["provenceStoneWall", "acornStash", "ironLantern", "berryBush", "hollowOakLog"];
-      const b1Fracs = [0.08, 0.28, 0.50, 0.72, 0.92];
-      for (let i = 0; i < b1Ids.length; i++) {
-        add(b1Ids[i], left + r.width * b1Fracs[i], yBot, "board");
-      }
+      const br = boards[1].getBoundingClientRect();
+      const bLeft = br.left - ox;
+      const bBot = br.bottom - oy - 3;
+      add("chamomilePatch", bLeft + 34, bBot, "board");
+      add("cloverBed", bLeft + Math.min(310, br.width * 0.28), bBot, "board");
     }
 
     const viewports = document.querySelectorAll(".forum-viewport");
@@ -1944,11 +2163,10 @@ export class StarlightPixelDog {
     viewports.forEach((vp, idx) => {
       const r = vp.getBoundingClientRect();
       const left = r.left - ox;
-      const usableW = Math.max(88, r.width - 72);
-      const yLedge = r.bottom - oy - 2;
+      const top = r.top - oy;
       const pair = cardPairs[idx % cardPairs.length];
-      add(pair[0], left + usableW * 0.20, yLedge, "card");
-      add(pair[1], left + usableW * 0.68, yLedge, "card");
+      add(pair[0], left + r.width * 0.16, top + r.height * 0.86, "card");
+      add(pair[1], left + r.width * 0.74, top + r.height * 0.82, "card");
     });
 
     const garden = document.querySelector(".garden-observatory");
@@ -1956,31 +2174,35 @@ export class StarlightPixelDog {
       const r = garden.getBoundingClientRect();
       const left = r.left - ox;
       const top = r.top - oy;
-      const t1Ids = ["cypressAlcove", "wheatSheaf", "gardenBench", "wildRoseBush", "sunflowerCluster"];
-      const t1Fracs = [0.09, 0.29, 0.50, 0.71, 0.91];
-      for (let i = 0; i < t1Ids.length; i++) {
-        add(t1Ids[i], left + r.width * t1Fracs[i], top + r.height * 0.57, "garden");
-      }
-
-      const t2Ids = ["cattailReeds", "streamBrook", "miniFootbridge", "lilypadLotus", "splashFountain"];
-      const t2Fracs = [0.15, 0.33, 0.51, 0.69, 0.87];
-      for (let i = 0; i < t2Ids.length; i++) {
-        add(t2Ids[i], left + r.width * t2Fracs[i], top + r.height * 0.76, "garden");
-      }
-
-      const t3Ids = ["fernFrond", "glowMushroomBlue", "dandelionPuff", "ironLantern", "lavenderTuft"];
-      const t3Fracs = [0.08, 0.27, 0.47, 0.67, 0.88];
-      for (let i = 0; i < t3Ids.length; i++) {
-        add(t3Ids[i], left + r.width * t3Fracs[i], top + r.height * 0.95, "garden");
+      const garProps = [
+        ["cypressAlcove", 0.08, 0.48],
+        ["wheatSheaf", 0.26, 0.44],
+        ["gardenBench", 0.48, 0.52],
+        ["wildRoseBush", 0.72, 0.46],
+        ["sunflowerCluster", 0.91, 0.50],
+        ["cattailReeds", 0.14, 0.73],
+        ["streamBrook", 0.32, 0.76],
+        ["miniFootbridge", 0.51, 0.74],
+        ["lilypadLotus", 0.69, 0.77],
+        ["splashFountain", 0.87, 0.74],
+        ["fernFrond", 0.09, 0.94],
+        ["glowMushroomBlue", 0.30, 0.93],
+        ["dandelionPuff", 0.50, 0.95],
+        ["ironLantern", 0.70, 0.93],
+        ["lavenderTuft", 0.89, 0.94]
+      ];
+      for (let i = 0; i < garProps.length; i++) {
+        const [id, fx, fy] = garProps[i];
+        add(id, left + r.width * fx, top + r.height * fy, "garden");
       }
     }
 
-    if (slots.length < 34) {
-      for (let i = slots.length; i < 34; i++) {
+    if (slots.length < 42) {
+      for (let i = slots.length; i < 42; i++) {
         const p = PROP_CATALOG[i % PROP_CATALOG.length];
-        const col = i % 5;
-        const row = Math.floor(i / 5);
-        add(p.id, 36 + col * ((this.docW - 72) / 4), 120 + row * 92, "garden");
+        const col = i % 6;
+        const row = Math.floor((i - 20) / 6);
+        add(p.id, 72 + col * ((this.docW - 144) / 5), Math.min(this.docH - 28, 360 + Math.max(0, row) * 140), "board");
       }
     }
 
@@ -2019,12 +2241,46 @@ export class StarlightPixelDog {
       });
     }
 
+    const sw = 24;
+    const sh = 18;
+    const sc = document.createElement("canvas");
+    sc.width = sw;
+    sc.height = sh;
+    const sctx = sc.getContext("2d");
+    const cx = 12;
+    const cy = 16;
+    for (let b = 0; b < blades.length; b++) {
+      const bl = blades[b];
+      const shades = BLADE_SHADES[bl.shade];
+      for (let s = 0; s < bl.height; s++) {
+        const frac = s / Math.max(1, bl.height - 1);
+        const curve = Math.round(frac * frac * bl.lean);
+        sctx.fillStyle = frac < 0.35 ? shades[0] : (frac < 0.78 ? shades[1] : shades[2]);
+        sctx.fillRect(cx + bl.dx + curve, cy - s, 1, 1);
+      }
+    }
+    for (let f = 0; f < flowers.length; f++) {
+      const fl = flowers[f];
+      let topX = cx + fl.dx;
+      let topY = cy;
+      for (let s = 0; s < fl.stemH; s++) {
+        topY = cy - s;
+        sctx.fillStyle = s < 2 ? "#064e3b" : "#15803d";
+        sctx.fillRect(topX, topY, 1, 1);
+      }
+      const bloom = this.flowerSprites[fl.kind] || this.flowerSprites.gold;
+      sctx.drawImage(bloom, topX - 2, topY - 4, 5, 5);
+    }
+
     return {
       x: spot.x,
       y: spot.y,
       zone: spot.zone,
       blades,
       flowers,
+      sprite: sc,
+      spW: sw,
+      spH: sh,
       bend: 0,
       bendVel: 0,
       rustleCooldown: 0
@@ -2175,30 +2431,29 @@ export class StarlightPixelDog {
   _initCompanions() {
     const order = [
       { sp: "bluebird", zone: "sky", initAnim: "perchSway" },
-      { sp: "rabbit", zone: "sky", initAnim: "hop" },
-      { sp: "squirrel", zone: "board", initAnim: "graze" },
+      { sp: "rabbit", zone: "board", initAnim: "hop" },
+      { sp: "squirrel", zone: "board", initAnim: "trot" },
       { sp: "hedgehog", zone: "board", initAnim: "sniff" },
-      { sp: "calicoCat", zone: "board", initAnim: "groom" },
+      { sp: "calicoCat", zone: "board", initAnim: "walk" },
       { sp: "tawnyOwl", zone: "card", initAnim: "earPerk" },
-      { sp: "redFox", zone: "card", initAnim: "walk" },
+      { sp: "redFox", zone: "card", initAnim: "gallop" },
       { sp: "mallardDuck", zone: "garden", initAnim: "drink" },
-      { sp: "treeFrog", zone: "garden", initAnim: "boopFirefly" },
-      { sp: "spottedDeer", zone: "garden", initAnim: "tailWag" }
+      { sp: "treeFrog", zone: "garden", initAnim: "hop" },
+      { sp: "spottedDeer", zone: "garden", initAnim: "walk" }
     ];
 
     const usedPropUids = new Set();
     this.companions = order.map((item, idx) => {
       const def = COMPANION_SPECIES_DEFS[item.sp];
-      const zoneProps = this.props.filter((p) => p.zone === item.zone);
-      const prefProps = zoneProps.filter((p) => def.preferredProps.includes(p.id) && !usedPropUids.has(p.uid));
-      const fallbackProps = (zoneProps.length ? zoneProps : this.props).filter((p) => !usedPropUids.has(p.uid));
-      const homeProp = prefProps[0] || fallbackProps[idx % Math.max(1, fallbackProps.length)] || this.props[idx % Math.max(1, this.props.length)] || { x: 140 + idx * 76, y: 260, zone: item.zone, uid: -1 };
+      const zoneProps = this.props.filter((p) => p.zone === item.zone && !usedPropUids.has(p.uid));
+      const prefProps = zoneProps.filter((p) => def.preferredProps.includes(p.id));
+      const allUnused = this.props.filter((p) => !usedPropUids.has(p.uid));
+      const homeProp = prefProps[0] || zoneProps[idx % Math.max(1, zoneProps.length)] || allUnused[idx % Math.max(1, allUnused.length)] || this.props[idx % Math.max(1, this.props.length)] || { x: 140 + idx * 76, y: 260, zone: item.zone, uid: -1 };
       if (homeProp.uid >= 0) usedPropUids.add(homeProp.uid);
 
-      const offsetSide = idx % 2 === 0 ? -12 : 12;
-      const startX = Math.max(28, Math.min(this.docW - 28, homeProp.x + offsetSide));
+      const offsetSide = idx % 2 === 0 ? -14 : 14;
       const perchLift = (homeProp.category === "perch" && (item.sp === "bluebird" || item.sp === "tawnyOwl" || item.sp === "calicoCat" || item.sp === "squirrel")) ? -8 : 0;
-      const startY = Math.max(40, Math.min(this.docH - 14, homeProp.y + perchLift));
+      const safeStart = this._pushOutOfExclusions(homeProp.x + offsetSide, homeProp.y + perchLift, 16);
 
       const comp = {
         id: idx,
@@ -2209,19 +2464,24 @@ export class StarlightPixelDog {
         speed: def.speed,
         preferredProps: def.preferredProps,
         homeZone: item.zone,
-        x: startX,
-        y: startY,
+        x: safeStart.x,
+        y: safeStart.y,
         facing: idx % 2 === 0 ? 1 : -1,
         hopY: 0,
         shakeX: 0,
+        tilt: 0,
+        squashX: 1,
+        squashY: 1,
         anim: this.reducedMotion ? (def.rhythm === "nocturnal" ? "perchSway" : "tailWag") : item.initAnim,
         timer: 0,
         duration: 1.4 + (idx % 4) * 0.35,
-        startPt: { x: startX, y: startY },
-        targetPt: { x: startX, y: startY },
+        startPt: { x: safeStart.x, y: safeStart.y },
+        ctrlPt: { x: safeStart.x, y: safeStart.y },
+        targetPt: { x: safeStart.x, y: safeStart.y },
         travelArc: 0,
         targetProp: homeProp,
         stepAccum: 0,
+        tripCount: idx,
         bag: []
       };
       this._recordAnim25(comp.anim);
@@ -2233,24 +2493,68 @@ export class StarlightPixelDog {
   }
 
   _assignCompanionTravel(comp, animName) {
-    const zoneProps = this.props.filter((p) => p.zone === comp.homeZone);
-    const pool = zoneProps.length >= 2 ? zoneProps : this.props;
-    const candidates = pool.filter((p) => Math.hypot(p.x - comp.x, p.y - comp.y) > 26);
-    const pickPool = candidates.length ? candidates : pool;
-    const destProp = pickPool[Math.floor(Math.random() * Math.max(1, pickPool.length))] || { x: comp.x + 48, y: comp.y, category: "flora" };
+    comp.tripCount = (comp.tripCount || 0) + 1;
+    let tx = comp.x;
+    let ty = comp.y;
+    let destProp = null;
 
-    const side = destProp.x >= comp.x ? -10 : 10;
-    const perchLift = (destProp.category === "perch" && (comp.species === "bluebird" || comp.species === "tawnyOwl" || comp.species === "calicoCat" || comp.species === "squirrel")) ? -8 : 0;
-    const tx = Math.max(28, Math.min(this.docW - 28, destProp.x + (perchLift ? 0 : side)));
-    const ty = Math.max(40, Math.min(this.docH - 14, destProp.y + perchLift));
+    const roll = Math.random();
+    if (animName === "chaseButterfly" && this.butterflies.length) {
+      const bf = this.butterflies[(comp.id + comp.tripCount) % this.butterflies.length];
+      tx = bf.destX || bf.x;
+      ty = (bf.destY || bf.y) + 12;
+    } else if (roll < 0.22 && this.fireflies.length) {
+      const ff = this.fireflies[(comp.id * 3 + comp.tripCount) % this.fireflies.length];
+      tx = ff.homeX || ff.x;
+      ty = (ff.homeY || ff.y) + 6;
+    } else if (roll < 0.62 && this.waypoints.length) {
+      const farWps = this.waypoints.filter((wp) => {
+        const d = Math.hypot(wp.x - comp.x, wp.y - comp.y);
+        return d > 64 && d < 680;
+      });
+      const wpPool = farWps.length ? farWps : this.waypoints;
+      const wp = wpPool[Math.floor(Math.random() * wpPool.length)];
+      tx = wp.x + (Math.random() - 0.5) * 34;
+      ty = wp.y + (Math.random() - 0.5) * 26;
+    } else if (this.props.length) {
+      const candidates = this.props.filter((p) => {
+        const d = Math.hypot(p.x - comp.x, p.y - comp.y);
+        return d > 48 && d < 640;
+      });
+      const pickPool = candidates.length ? candidates : this.props;
+      const prefMatches = pickPool.filter((p) => comp.preferredProps.includes(p.id));
+      const finalPool = (prefMatches.length && Math.random() < 0.45) ? prefMatches : pickPool;
+      destProp = finalPool[Math.floor(Math.random() * finalPool.length)];
+      const side = destProp.x >= comp.x ? -12 : 12;
+      const perchLift = (destProp.category === "perch" && (comp.species === "bluebird" || comp.species === "tawnyOwl" || comp.species === "calicoCat" || comp.species === "squirrel")) ? -8 : 0;
+      tx = destProp.x + (perchLift ? 0 : side);
+      ty = destProp.y + perchLift;
+    }
+
+    const safeDest = this._pushOutOfExclusions(tx, ty, 18);
+    tx = safeDest.x;
+    ty = safeDest.y;
+    if (!destProp && this.props.length) {
+      let nearest = this.props[0];
+      let bestD = Infinity;
+      for (let i = 0; i < this.props.length; i++) {
+        const d = Math.hypot(this.props[i].x - tx, this.props[i].y - ty);
+        if (d < bestD) {
+          bestD = d;
+          nearest = this.props[i];
+        }
+      }
+      if (bestD < 72) destProp = nearest;
+    }
 
     comp.startPt = { x: comp.x, y: comp.y };
     comp.targetPt = { x: tx, y: ty };
+    comp.ctrlPt = this._makeCurvedControlPt(comp.x, comp.y, tx, ty, comp.id + comp.tripCount);
     comp.targetProp = destProp;
     const dist = Math.hypot(tx - comp.x, ty - comp.y);
-    const mult = animName === "gallop" || animName === "chaseButterfly" ? 1.38 : (animName === "walk" || animName === "crouchStalk" ? 0.78 : 1.05);
-    comp.duration = Math.max(0.85, Math.min(2.9, dist / Math.max(38, comp.speed * mult)));
-    comp.travelArc = animName === "hop" ? 12 : (Math.abs(ty - comp.y) > 24 ? 10 : 0);
+    const mult = animName === "gallop" || animName === "chaseButterfly" ? 1.42 : (animName === "walk" || animName === "crouchStalk" ? 0.82 : 1.12);
+    comp.duration = Math.max(0.85, Math.min(3.4, dist / Math.max(44, comp.speed * mult)));
+    comp.travelArc = animName === "hop" ? 11 : 0;
     comp.timer = 0;
     comp.anim = animName;
     if (Math.abs(tx - comp.x) > 2) comp.facing = tx >= comp.x ? 1 : -1;
@@ -2274,11 +2578,11 @@ export class StarlightPixelDog {
       return;
     }
 
-    if (Math.random() < 0.42) {
+    if (Math.random() < 0.58) {
       const movePool = sleepyPhase
         ? ["walk", "trot"]
         : (comp.species === "rabbit" || comp.species === "treeFrog"
-            ? ["hop", "binky", "trot"]
+            ? ["hop", "hop", "binky", "trot"]
             : ["walk", "trot", "gallop", "chaseButterfly", "crouchStalk"]);
       const mv = movePool[Math.floor(Math.random() * movePool.length)];
       if (mv === "binky") {
@@ -2434,7 +2738,6 @@ export class StarlightPixelDog {
     this._syncHitbox();
   }
 
-  // WHY: Parks all 11 animals, >=34 props, 28 fireflies, and 3 butterflies in a serene zero-motion snapshot (0px delta) under prefers-reduced-motion: reduce.
   _parkCalmEcosystem() {
     const gardenFlora = this.floraClusters.filter((c) => c.zone === "garden");
     const anchorCluster = gardenFlora[1] || gardenFlora[0] || this.floraClusters[0];
@@ -2582,19 +2885,18 @@ export class StarlightPixelDog {
     const viewBot = window.scrollY + (window.innerHeight || 900) + 120;
     const inOpening = this.openingQueue.length > 0;
 
-    if (preferFlora && this.floraClusters.length) {
-      const maxFloraDist = inOpening ? 190 : 380;
+    if (preferFlora && Math.random() < 0.42 && this.floraClusters.length) {
+      const maxFloraDist = inOpening ? 240 : 540;
       const nearFlora = this.floraClusters.filter((c) => {
         const d = Math.hypot(c.x - this.x, c.y - this.y);
         const vis = !inOpening || (c.y >= viewTop && c.y <= viewBot);
-        return vis && d > 28 && d < maxFloraDist;
+        return vis && d > 36 && d < maxFloraDist;
       });
       const pool = nearFlora.length ? nearFlora : this.floraClusters;
       const cl = pool[Math.floor(Math.random() * pool.length)];
       const side = cl.x > this.docW * 0.5 ? -1 : 1;
-      const tx = Math.max(38, Math.min(this.docW - 38, cl.x - side * 18));
-      const ty = Math.max(46, Math.min(this.docH - 18, cl.y - 1));
-      this._beginTravelTo({ x: tx, y: ty, tag: "sunflower", zone: cl.zone, floraRef: cl });
+      const safe = this._pushOutOfExclusions(cl.x - side * 22, cl.y - 1, 18);
+      this._beginTravelTo({ x: safe.x, y: safe.y, tag: "sunflower", zone: cl.zone, floraRef: cl });
       return;
     }
 
@@ -2603,10 +2905,11 @@ export class StarlightPixelDog {
       if (i === this.currentWpIdx && this.waypoints.length > 1) continue;
       const wp = this.waypoints[i];
       const dist = Math.hypot(wp.x - this.x, wp.y - this.y);
-      if (dist < 34 && this.waypoints.length > 2) continue;
+      if (dist < 42 && this.waypoints.length > 2) continue;
       const inView = wp.y >= viewTop && wp.y <= viewBot;
-      const nearJump = inOpening ? (dist < 190 ? 4.5 : 0.15) : (dist < 520 ? 2.2 : 0.75);
-      const weight = (inView ? 3.2 : 0.55) * nearJump;
+      const crossY = Math.abs(wp.y - this.y) > 48 ? 1.45 : 0.9;
+      const nearJump = inOpening ? (dist < 280 ? 3.2 : 0.4) : (dist < 680 ? 2.0 : 0.9);
+      const weight = (inView ? 2.4 : 0.85) * nearJump * crossY;
       candidates.push({ idx: i, wp, weight });
     }
 
@@ -2629,15 +2932,17 @@ export class StarlightPixelDog {
 
   _beginTravelTo(destWp) {
     this._releaseInteractiveButterfly();
+    const safe = this._pushOutOfExclusions(destWp.x, destWp.y, 18);
     this.startPt = { x: this.x, y: this.y };
-    this.targetPt = destWp;
+    this.targetPt = { ...destWp, x: safe.x, y: safe.y };
+    this.ctrlPt = this._makeCurvedControlPt(this.x, this.y, safe.x, safe.y, Math.max(0, this.currentWpIdx));
     const dist = Math.hypot(this.targetPt.x - this.startPt.x, this.targetPt.y - this.startPt.y);
-    const wantsRun = dist > 210 && Math.random() < 0.42;
+    const wantsRun = dist > 220 && Math.random() < 0.46;
     this.gait = wantsRun ? "run" : "trot";
-    const speed = wantsRun ? (148 + Math.random() * 26) : (94 + Math.random() * 18);
+    const speed = wantsRun ? (158 + Math.random() * 28) : (102 + Math.random() * 20);
     this.travelDur = Math.max(0.75, Math.min(3.8, dist / speed));
     this.travelT = 0;
-    this.travelArc = Math.abs(this.targetPt.y - this.startPt.y) > 42 ? Math.min(18, dist * 0.055) : 0;
+    this.travelArc = 0;
     if (Math.abs(this.targetPt.x - this.startPt.x) > 3) {
       this.facing = this.targetPt.x >= this.startPt.x ? 1 : -1;
     }
@@ -2851,26 +3156,26 @@ export class StarlightPixelDog {
   }
 
   _getSnoutAnchor() {
-    const drawW = SPRITE_W * PIXEL_SCALE;
-    const drawH = SPRITE_H * PIXEL_SCALE;
-    const snapX = Math.round((this.x - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-    const snapY = Math.round((this.y - drawH + 6 + this.hopY) / PIXEL_SCALE) * PIXEL_SCALE;
+    const drawW = SPRITE_W * ANIMAL_SCALE;
+    const drawH = SPRITE_H * ANIMAL_SCALE;
+    const leftX = this.x - drawW * 0.5;
+    const topY = this.y - drawH + 6 + this.hopY;
     const noseCol = this.facing >= 0 ? 25 : (SPRITE_W - 1 - 25);
     return {
-      x: snapX + noseCol * PIXEL_SCALE,
-      y: snapY + 8 * PIXEL_SCALE - 2
+      x: leftX + noseCol * ANIMAL_SCALE,
+      y: topY + 8 * ANIMAL_SCALE - 2
     };
   }
 
   _getMouthTwigAnchor() {
-    const drawW = SPRITE_W * PIXEL_SCALE;
-    const drawH = SPRITE_H * PIXEL_SCALE;
-    const snapX = Math.round((this.x - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-    const snapY = Math.round((this.y - drawH + 6 + this.hopY) / PIXEL_SCALE) * PIXEL_SCALE;
+    const drawW = SPRITE_W * ANIMAL_SCALE;
+    const drawH = SPRITE_H * ANIMAL_SCALE;
+    const leftX = this.x - drawW * 0.5;
+    const topY = this.y - drawH + 6 + this.hopY;
     const mouthCol = this.facing >= 0 ? 28 : (SPRITE_W - 1 - 28);
     return {
-      x: snapX + mouthCol * PIXEL_SCALE,
-      y: snapY + 12 * PIXEL_SCALE
+      x: leftX + mouthCol * ANIMAL_SCALE,
+      y: topY + 12 * ANIMAL_SCALE
     };
   }
 
@@ -2881,7 +3186,7 @@ export class StarlightPixelDog {
     this.napStars.length = 0;
     if (this.twig && this.twig.phase === "carried") {
       this.twig.phase = "delivered";
-      this.twig.x = this.x + this.facing * 18;
+      this.twig.x = this.x + this.facing * 22;
       this.twig.y = this.y - 2;
       this.twig.holdTimer = 1.8;
     }
@@ -2901,8 +3206,8 @@ export class StarlightPixelDog {
       for (let i = 0; i < 8; i++) {
         const a = (i * Math.PI * 2) / 8;
         this.sparks.push({
-          x: this.x + Math.cos(a) * 20,
-          y: this.y - 24 + Math.sin(a) * 14,
+          x: this.x + Math.cos(a) * 24,
+          y: this.y - 28 + Math.sin(a) * 16,
           vx: 0,
           vy: 0,
           life: 0.9,
@@ -2910,7 +3215,7 @@ export class StarlightPixelDog {
           big: i % 2 === 0
         });
       }
-      this._syncHitbox();
+      this._syncHitbox(true);
       this.render();
       clearTimeout(this._rmResetTimer);
       this._rmResetTimer = setTimeout(() => {
@@ -2918,7 +3223,7 @@ export class StarlightPixelDog {
         this.sparks.length = 0;
         this.emote = null;
         this.state = "sit";
-        this._syncHitbox();
+        this._syncHitbox(true);
         this.render();
       }, 750);
       return;
@@ -2926,6 +3231,7 @@ export class StarlightPixelDog {
 
     const dur = variant === 1 ? 1.55 : 1.3;
     this._enterState(chosenState, dur);
+    this._syncHitbox(true);
     this._burstGoldenSparks(12);
     if (this.onJoyPulse) {
       this.onJoyPulse(this.x / Math.max(1, this.docW), this.y / Math.max(1, this.docH), 7, -6);
@@ -2939,19 +3245,15 @@ export class StarlightPixelDog {
     const layerRect = this.layer.getBoundingClientRect();
     const rawX = clientX - layerRect.left;
     const rawY = clientY - layerRect.top;
-    const zr = zoneEl.getBoundingClientRect();
+    const zr = zoneEl ? zoneEl.getBoundingClientRect() : layerRect;
     const zLeft = zr.left - layerRect.left;
     const zTop = zr.top - layerRect.top;
 
-    const landX = Math.max(38, Math.min(this.docW - 38, Math.max(zLeft + 34, Math.min(zLeft + zr.width - 34, rawX))));
-    let landY;
-    if (zoneEl.classList.contains("sky-dome")) {
-      landY = Math.max(48, Math.min(this.docH - 18, zTop + zr.height - 10));
-    } else {
-      const minGY = zTop + zr.height * 0.76;
-      const maxGY = zTop + zr.height * 0.91;
-      landY = Math.max(48, Math.min(this.docH - 18, Math.max(minGY, Math.min(maxGY, rawY))));
-    }
+    const clampedX = Math.max(38, Math.min(this.docW - 38, Math.max(zLeft + 28, Math.min(zLeft + zr.width - 28, rawX))));
+    const clampedY = Math.max(48, Math.min(this.docH - 20, Math.max(zTop + 28, Math.min(zTop + zr.height - 14, rawY))));
+    const safeLand = this._pushOutOfExclusions(clampedX, clampedY, 18);
+    const landX = safeLand.x;
+    const landY = safeLand.y;
 
     this.fetchCount += 1;
     this._releaseInteractiveButterfly();
@@ -2961,7 +3263,7 @@ export class StarlightPixelDog {
         phase: "delivered",
         startX: landX,
         startY: landY,
-        x: Math.min(this.docW - 32, this.x + this.facing * 22),
+        x: Math.min(this.docW - 32, this.x + this.facing * 26),
         y: this.y - 2,
         landX,
         landY,
@@ -2970,14 +3272,14 @@ export class StarlightPixelDog {
         holdTimer: 1.0
       };
       this._maybeShowEmote("sparkle", true);
-      this._syncHitbox();
+      this._syncHitbox(true);
       this.render();
       clearTimeout(this._rmTwigTimer);
       this._rmTwigTimer = setTimeout(() => {
         if (!this.reducedMotion) return;
         this.twig = null;
         this.emote = null;
-        this._syncHitbox();
+        this._syncHitbox(true);
         this.render();
       }, 850);
       return;
@@ -2998,14 +3300,14 @@ export class StarlightPixelDog {
 
     this._summonButterflyTo(landX, landY - 24);
 
-    const sameLedge = Math.abs(this.y - landY) < 90 && Math.abs(this.x - landX) >= 56 && Math.abs(this.x - landX) <= 280;
+    const nearby = Math.hypot(this.x - landX, this.y - landY) <= 320 && Math.hypot(this.x - landX, this.y - landY) >= 56;
     const retDir = landX > this.docW * 0.5 ? -1 : 1;
-    this.fetchReturnPt = sameLedge
-      ? { x: this.x, y: this.y }
-      : {
-          x: Math.max(42, Math.min(this.docW - 42, landX + retDir * Math.min(104, zr.width * 0.24))),
-          y: landY
-        };
+    const fallbackRet = this._pushOutOfExclusions(
+      landX + retDir * Math.min(112, zr.width * 0.24),
+      landY + (landY > this.docH * 0.5 ? -24 : 24),
+      18
+    );
+    this.fetchReturnPt = nearby ? { x: this.x, y: this.y } : fallbackRet;
 
     this.fetchGoalPt = { x: landX, y: landY };
     this.fetchStartPt = { x: this.x, y: this.y };
@@ -3013,7 +3315,7 @@ export class StarlightPixelDog {
     this.fetchPhase = "perk";
     this.fetchTimer = 0;
     const dist = Math.hypot(landX - this.x, landY - this.y);
-    this.fetchMoveDur = Math.max(0.55, Math.min(1.85, dist / 168));
+    this.fetchMoveDur = Math.max(0.55, Math.min(1.95, dist / 172));
     this.state = "fetchTwig";
     this._recordState("fetchTwig");
     this.hopY = 0;
@@ -3022,7 +3324,7 @@ export class StarlightPixelDog {
     if (this.onJoyPulse) {
       this.onJoyPulse(landX / Math.max(1, this.docW), landY / Math.max(1, this.docH), 6, -5);
     }
-    this._syncHitbox();
+    this._syncHitbox(true);
   }
 
   _burstGoldenSparks(count) {
@@ -3114,10 +3416,10 @@ export class StarlightPixelDog {
       ev.stopPropagation();
     });
 
-    const tossZones = document.querySelectorAll(".sky-dome, .garden-observatory");
+    const tossZones = document.querySelectorAll(".sky-dome, .garden-observatory, section.board");
     tossZones.forEach((zoneEl) => {
       zoneEl.addEventListener("dblclick", (ev) => {
-        if (ev.target && ev.target.closest && ev.target.closest("button, a")) return;
+        if (ev.target && ev.target.closest && ev.target.closest("button, a, #portrait-canvas, #radar-canvas")) return;
         this.triggerTwigToss(ev.clientX, ev.clientY, zoneEl);
       });
     });
@@ -3135,8 +3437,8 @@ export class StarlightPixelDog {
       const r = this.layer.getBoundingClientRect();
       const px = ev.clientX - r.left;
       const py = ev.clientY - r.top;
-      const dist = Math.hypot(px - this.x, py - (this.y - 20));
-      if (dist < 108) {
+      const dist = Math.hypot(px - this.x, py - (this.y - 24));
+      if (dist < 116) {
         this.cursorNear = true;
         this.earPerkTimer = 0.9;
         const idleGlance = this.state === "sit" || this.state === "rest";
@@ -3159,17 +3461,17 @@ export class StarlightPixelDog {
     if (this.hitbox.hidden !== modalOpen) {
       this.hitbox.hidden = modalOpen;
     }
-    const hx = Math.round(Math.max(0, Math.min(this.docW - 56, this.x - 28)));
-    const hy = Math.round(Math.max(0, Math.min(this.docH - 56, this.y - 48 + this.hopY)));
-    const stateChanged = this._lastSyncState !== this.state;
-    if (this.reducedMotion || stateChanged || Math.hypot(hx - this._lastHx, hy - this._lastHy) >= 12) {
+    const hx = Math.round(Math.max(0, Math.min(this.docW - 72, this.x - 36)));
+    const hy = Math.round(Math.max(0, Math.min(this.docH - 72, this.y - 62 + this.hopY)));
+    const tickReady = this._datasetAccum >= 0.25;
+    if (forceTelemetry || this.reducedMotion || tickReady || Math.hypot(hx - this._lastHx, hy - this._lastHy) >= 18) {
       this._lastHx = hx;
       this._lastHy = hy;
       this._lastSyncState = this.state;
       this.hitbox.style.transform = `translate3d(${hx}px, ${hy}px, 0)`;
     }
 
-    if (forceTelemetry || stateChanged || this.reducedMotion || this._datasetAccum >= 0.25) {
+    if (forceTelemetry || this.reducedMotion || tickReady) {
       this._datasetAccum = 0;
       const env = this._currentEnv();
       const activeSet = new Set([this._mapDogStateToAnim25(this.state)]);
@@ -3177,30 +3479,36 @@ export class StarlightPixelDog {
         activeSet.add(this.companions[i].anim);
       }
 
-      this.hitbox.dataset.state = this.state;
-      this.hitbox.dataset.pets = String(this.petCount);
-      this.hitbox.dataset.petReaction = this.lastPetReaction;
-      this.hitbox.dataset.butterflies = String(this.butterflies.length);
-      this.hitbox.dataset.flora = String(this.floraClusters.length);
-      this.hitbox.dataset.fetches = String(this.fetchCount);
-      this.hitbox.dataset.twig = this.twig ? this.twig.phase : "none";
-      this.hitbox.dataset.emote = this.emote ? this.emote.kind : "";
-      this.hitbox.dataset.history = Array.from(this.visitedStates).join(",");
-      this.hitbox.dataset.speciesCount = String(SPECIES_IDS.length);
-      this.hitbox.dataset.animCount = String(ANIMATION_25.length);
-      this.hitbox.dataset.propsCount = String(this.props.length);
-      this.hitbox.dataset.fireflies = String(this.fireflies.length);
-      this.hitbox.dataset.dayPhase = env.phase;
-      this.hitbox.dataset.daylight = env.daylight.toFixed(2);
-      this.hitbox.dataset.meteors = String(env.meteorsLaunched || 0);
-      this.hitbox.dataset.activeAnims = Array.from(activeSet).join(",");
-      this.hitbox.dataset.visitedAnims = String(this.visitedAnims25.size);
+      const setD = (k, v) => {
+        if (this.hitbox.dataset[k] !== v) this.hitbox.dataset[k] = v;
+      };
+      setD("state", this.state);
+      setD("pets", String(this.petCount));
+      setD("petReaction", this.lastPetReaction);
+      setD("butterflies", String(this.butterflies.length));
+      setD("flora", String(this.floraClusters.length));
+      setD("fetches", String(this.fetchCount));
+      setD("twig", this.twig ? this.twig.phase : "none");
+      setD("emote", this.emote ? this.emote.kind : "");
+      setD("history", Array.from(this.visitedStates).join(","));
+      setD("speciesCount", String(SPECIES_IDS.length));
+      setD("animCount", String(ANIMATION_25.length));
+      setD("propsCount", String(this.props.length));
+      setD("fireflies", String(this.fireflies.length));
+      setD("dayPhase", env.phase);
+      setD("daylight", env.daylight.toFixed(2));
+      setD("meteors", String(env.meteorsLaunched || 0));
+      setD("activeAnims", Array.from(activeSet).join(","));
+      setD("visitedAnims", String(this.visitedAnims25.size));
     }
   }
 
   _startLoop() {
     if (this._looping) return;
     this._looping = true;
+    this._prevBandTop = 0;
+    this._prevBandBot = this.docH;
+    this._fullSyncTick = 0;
     let last = performance.now();
     const step = (now) => {
       if (this.reducedMotion) {
@@ -3210,7 +3518,8 @@ export class StarlightPixelDog {
       const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
       last = now;
       this.update(dt);
-      this.render();
+      this._fullSyncTick = (this._fullSyncTick + 1) % 45;
+      this.render(this._fullSyncTick === 0);
       requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -3380,6 +3689,7 @@ export class StarlightPixelDog {
     }
   }
 
+  // WHY: Integrates 60 Hz continuous sub-pixel 2D curved steering, stride bob, tilt, and squash-stretch with zero moonwalking on stationary poses.
   _updateCompanions(dt, env) {
     for (let i = 0; i < this.companions.length; i++) {
       const c = this.companions[i];
@@ -3388,32 +3698,66 @@ export class StarlightPixelDog {
       if (LOCOMOTION_ANIMS.has(c.anim)) {
         const u = Math.min(1, c.timer / Math.max(0.45, c.duration));
         const ease = u * u * (3 - 2 * u);
-        let nx = c.startPt.x + (c.targetPt.x - c.startPt.x) * ease;
-        let ny = c.startPt.y + (c.targetPt.y - c.startPt.y) * ease;
+        const inv = 1 - ease;
+        const ctrl = c.ctrlPt || c.targetPt;
+        let nx = inv * inv * c.startPt.x + 2 * inv * ease * ctrl.x + ease * ease * c.targetPt.x;
+        let ny = inv * inv * c.startPt.y + 2 * inv * ease * ctrl.y + ease * ease * c.targetPt.y;
 
         if (c.anim === "chaseButterfly" && this.butterflies.length) {
           const bf = this.butterflies[c.id % this.butterflies.length];
-          nx += Math.sin(this.animTime * 6 + c.id) * 4;
-          if (Math.hypot(bf.x - c.x, bf.y - c.y) < 38) {
+          nx += Math.sin(this.animTime * 5.4 + c.id) * 3.5;
+          if (Math.hypot(bf.x - c.x, bf.y - c.y) < 42) {
             this._startleButterfly(bf);
           }
         }
 
-        if (Math.abs(nx - c.x) > 0.15) c.facing = nx >= c.x ? 1 : -1;
+        if (this.portraitCircle) {
+          const pc = this.portraitCircle;
+          const minR = pc.r + 40;
+          const pd = Math.hypot(nx - pc.cx, ny - pc.cy);
+          if (pd < minR) {
+            if (this.docW < 540) {
+              ny = ny < pc.cy ? Math.max(46, pc.cy - minR) : Math.min(this.docH - 18, pc.cy + minR + 50);
+            } else {
+              const pa = pd > 1 ? Math.atan2(ny - pc.cy, nx - pc.cx) : 0.7;
+              nx = Math.max(32, Math.min(this.docW - 32, pc.cx + Math.cos(pa) * minR));
+              ny = Math.max(46, Math.min(this.docH - 18, pc.cy + Math.sin(pa) * minR));
+            }
+          }
+        }
+
+        if (Math.abs(nx - c.x) > 0.12) c.facing = nx >= c.x ? 1 : -1;
         c.x = nx;
         c.y = ny;
 
         if (c.anim === "hop") {
-          c.hopY = -Math.abs(Math.sin(this.animTime * 8.2 + c.id)) * 9 - Math.sin(u * Math.PI) * c.travelArc;
+          const ph = this.animTime * 8.4 + c.id * 1.1;
+          const s = Math.abs(Math.sin(ph));
+          c.hopY = -s * 10.5 - Math.sin(u * Math.PI) * c.travelArc;
+          c.tilt = Math.cos(ph) * 0.062 * c.facing;
+          c.squashX = 1 - (s - 0.4) * 0.065;
+          c.squashY = 1 + (s - 0.4) * 0.075;
         } else if (c.anim === "gallop" || c.anim === "chaseButterfly") {
-          c.hopY = -Math.abs(Math.sin(this.animTime * 12.5 + c.id)) * 4.5 - Math.sin(u * Math.PI) * c.travelArc;
+          const ph = this.animTime * 12.6 + c.id * 0.9;
+          c.hopY = -Math.abs(Math.sin(ph)) * 5.0;
+          c.tilt = Math.sin(ph) * 0.052 * c.facing;
+          c.squashX = 1 + Math.cos(ph * 2) * 0.038;
+          c.squashY = 1 - Math.cos(ph * 2) * 0.032;
         } else {
-          c.hopY = -Math.sin(u * Math.PI) * c.travelArc;
+          const freq = c.anim === "walk" || c.anim === "crouchStalk" ? 6.8 : 9.6;
+          const ph = this.animTime * freq + c.id * 1.3;
+          c.hopY = -Math.abs(Math.sin(ph)) * 2.2;
+          c.tilt = Math.sin(ph) * 0.028 * c.facing;
+          c.squashX = 1 + Math.cos(ph * 2) * 0.022;
+          c.squashY = 1 - Math.cos(ph * 2) * 0.020;
         }
         c.shakeX = 0;
 
         if (u >= 1) {
           c.hopY = 0;
+          c.tilt = 0;
+          c.squashX = 1;
+          c.squashY = 1;
           if (c.anim === "crouchStalk") {
             this._enterCompanionIdle(c, "pounce");
           } else {
@@ -3422,12 +3766,22 @@ export class StarlightPixelDog {
         }
       } else {
         const u = Math.min(1, c.timer / Math.max(0.4, c.duration));
+        const br = Math.sin(this.animTime * 2.6 + c.id * 0.95);
         c.shakeX = 0;
+        c.squashX = 1 - br * 0.015;
+        c.squashY = 1 + br * 0.021;
+        c.tilt = c.anim === "perchSway" ? Math.sin(this.animTime * 2.2 + c.id) * 0.048 : br * 0.010;
+
         if (c.anim === "binky") {
-          c.hopY = -Math.sin(u * Math.PI) * 16;
+          const lift = Math.sin(u * Math.PI);
+          c.hopY = -lift * 17;
+          c.squashX = 1 - lift * 0.05;
+          c.squashY = 1 + lift * 0.07;
           if (u > 0.42 && u < 0.56) c.facing = -c.facing;
         } else if (c.anim === "pounce") {
-          c.hopY = u < 0.7 ? -Math.sin((u / 0.7) * Math.PI) * 14 : 0;
+          const lift = u < 0.7 ? Math.sin((u / 0.7) * Math.PI) : 0;
+          c.hopY = -lift * 14;
+          c.tilt = lift * 0.07 * c.facing;
         } else if (c.anim === "boopFirefly") {
           c.hopY = -Math.sin(u * Math.PI) * 10;
         } else if (c.anim === "happySpin") {
@@ -3435,7 +3789,8 @@ export class StarlightPixelDog {
           c.hopY = -Math.abs(Math.sin(c.timer * 10)) * 5;
         } else if (c.anim === "shakeFur") {
           c.hopY = 0;
-          c.shakeX = Math.sin(this.animTime * 38 + c.id) * 2;
+          c.shakeX = Math.sin(this.animTime * 38 + c.id) * 2.2;
+          c.tilt = Math.sin(this.animTime * 34 + c.id) * 0.06;
         } else if (c.anim === "drink" && c.targetProp && Math.random() < dt * 1.8) {
           this._spawnWaterRipple(c.targetProp.x, c.targetProp.y - 4);
         } else {
@@ -3445,6 +3800,9 @@ export class StarlightPixelDog {
         if (c.timer >= c.duration) {
           c.hopY = 0;
           c.shakeX = 0;
+          c.tilt = 0;
+          c.squashX = 1;
+          c.squashY = 1;
           this._pickCompanionNextAction(c, env);
         }
       }
@@ -3456,6 +3814,11 @@ export class StarlightPixelDog {
     this.localCycleTime = (this.localCycleTime + dt) % DAY_NIGHT_CYCLE_SEC;
     this._datasetAccum += dt;
     this.shakeX = 0;
+    const idleBr = Math.sin(this.animTime * 2.7);
+    this.tilt = idleBr * 0.010;
+    this.squashX = 1 - idleBr * 0.014;
+    this.squashY = 1 + idleBr * 0.020;
+
     if (this.autoEmoteCooldown > 0) this.autoEmoteCooldown = Math.max(0, this.autoEmoteCooldown - dt);
     if (this.petEmoteGuard > 0) this.petEmoteGuard = Math.max(0, this.petEmoteGuard - dt);
     if (this.earPerkTimer > 0) this.earPerkTimer = Math.max(0, this.earPerkTimer - dt);
@@ -3489,19 +3852,41 @@ export class StarlightPixelDog {
         } else {
           smooth = (u - 0.5 * ramp) / (1 - ramp);
         }
-        const nx = this.startPt.x + (this.targetPt.x - this.startPt.x) * smooth;
-        const ny = this.startPt.y + (this.targetPt.y - this.startPt.y) * smooth;
+        const inv = 1 - smooth;
+        const ctrl = this.ctrlPt || this.targetPt;
+        let nx = inv * inv * this.startPt.x + 2 * inv * smooth * ctrl.x + smooth * smooth * this.targetPt.x;
+        let ny = inv * inv * this.startPt.y + 2 * inv * smooth * ctrl.y + smooth * smooth * this.targetPt.y;
+        if (this.portraitCircle) {
+          const pc = this.portraitCircle;
+          const minR = pc.r + 44;
+          const pd = Math.hypot(nx - pc.cx, ny - pc.cy);
+          if (pd < minR) {
+            if (this.docW < 540) {
+              ny = ny < pc.cy ? Math.max(46, pc.cy - minR) : Math.min(this.docH - 18, pc.cy + minR + 52);
+            } else {
+              const pa = pd > 1 ? Math.atan2(ny - pc.cy, nx - pc.cx) : 0.7;
+              nx = Math.max(32, Math.min(this.docW - 32, pc.cx + Math.cos(pa) * minR));
+              ny = Math.max(46, Math.min(this.docH - 18, pc.cy + Math.sin(pa) * minR));
+            }
+          }
+        }
         const vx = nx - this.x;
-        if (Math.abs(vx) > 0.25) {
+        if (Math.abs(vx) > 0.14) {
           this.facing = vx >= 0 ? 1 : -1;
         }
         this.x = nx;
         this.y = ny;
-        const strideBounce = this.state === "run" ? Math.abs(Math.sin(this.animTime * 13)) * 3.2 : 0;
-        this.hopY = -Math.sin(u * Math.PI) * this.travelArc - strideBounce;
+
+        const isRun = this.state === "run";
+        const ph = this.animTime * (isRun ? 13.4 : 9.8);
+        const strideBounce = Math.abs(Math.sin(ph)) * (isRun ? 4.4 : 2.2);
+        this.hopY = -strideBounce;
+        this.tilt = Math.sin(ph) * (isRun ? 0.052 : 0.028) * this.facing;
+        this.squashX = 1 + Math.cos(ph * 2) * (isRun ? 0.038 : 0.022);
+        this.squashY = 1 - Math.cos(ph * 2) * (isRun ? 0.032 : 0.020);
 
         this.stepAccum += dt;
-        const puffStep = this.state === "run" ? 0.12 : 0.18;
+        const puffStep = isRun ? 0.12 : 0.18;
         if (this.stepAccum >= puffStep) {
           this.stepAccum = 0;
           this._spawnPawPuff();
@@ -3509,6 +3894,9 @@ export class StarlightPixelDog {
 
         if (u >= 1) {
           this.hopY = 0;
+          this.tilt = 0;
+          this.squashX = 1;
+          this.squashY = 1;
           this._chooseIdleBehavior();
         }
       }
@@ -3544,6 +3932,11 @@ export class StarlightPixelDog {
       this.stateTimer += dt;
       const creep = this.facing * 14 * dt;
       this.x = Math.max(38, Math.min(this.docW - 38, this.x + creep));
+      const bf = this.activeButterfly;
+      if (bf) {
+        const dy = (bf.y - this.y) * dt * 0.8;
+        this.y = Math.max(46, Math.min(this.docH - 18, this.y + dy));
+      }
       if (this.stateTimer >= this.stateDuration) {
         this._startPounceButterfly();
       }
@@ -3995,10 +4388,11 @@ export class StarlightPixelDog {
     return c;
   }
 
-  _drawProps(ctx, env) {
+  _drawProps(ctx, env, minY = -Infinity, maxY = Infinity) {
     const nightGlow = env.nightGlow;
     for (let i = 0; i < this.props.length; i++) {
       const p = this.props[i];
+      if (p.y < minY || p.y > maxY) continue;
       const sp = this.propSprites[p.id];
       if (!sp) continue;
 
@@ -4044,6 +4438,19 @@ export class StarlightPixelDog {
     ctx.globalAlpha = 1;
   }
 
+  _drawAnimalBody(ctx, sprite, cx, groundY, drawW, drawH, hopY, tilt, sx, sy) {
+    ctx.save();
+    ctx.translate(cx, groundY + 5 + hopY);
+    if (!this.reducedMotion) {
+      if (tilt) ctx.rotate(tilt);
+      if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
+    }
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(sprite, -drawW * 0.5, -drawH, drawW, drawH);
+    ctx.restore();
+  }
+
   _drawCompanionRange(ctx, minY, maxY) {
     for (let i = 0; i < this.companions.length; i++) {
       const c = this.companions[i];
@@ -4051,45 +4458,46 @@ export class StarlightPixelDog {
       const bank = this.companionSprites[c.species];
       if (!bank) continue;
 
-      const drawW = bank.width * PIXEL_SCALE;
-      const drawH = bank.height * PIXEL_SCALE;
-      const swayX = (!this.reducedMotion && c.anim === "perchSway") ? Math.round(Math.sin(this.animTime * 2.2 + c.id) * 1.5) : 0;
-      const snapX = Math.round((c.x + c.shakeX + swayX - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-      const snapY = Math.round((c.y - drawH + 4 + c.hopY) / PIXEL_SCALE) * PIXEL_SCALE;
-      const groundY = Math.round(c.y / PIXEL_SCALE) * PIXEL_SCALE;
+      const drawW = bank.width * ANIMAL_SCALE;
+      const drawH = bank.height * ANIMAL_SCALE;
+      const swayX = (!this.reducedMotion && c.anim === "perchSway") ? Math.sin(this.animTime * 2.2 + c.id) * 1.8 : 0;
+      const cx = c.x + c.shakeX + swayX;
+      const topY = c.y - drawH + 5 + c.hopY;
 
       const hopRatio = Math.min(1, Math.abs(c.hopY) / 16);
-      const shW = Math.max(6, Math.round((drawW * 0.34 * (1 - hopRatio * 0.3)) / PIXEL_SCALE) * PIXEL_SCALE);
-      const shCenterX = Math.round(c.x / PIXEL_SCALE) * PIXEL_SCALE;
+      const shRx = Math.max(7, drawW * 0.34 * (1 - hopRatio * 0.30));
+      const shRy = Math.max(2.6, PIXEL_SCALE * 1.45 * (1 - hopRatio * 0.25));
 
       ctx.fillStyle = "#040814";
-      ctx.globalAlpha = 0.36 * (1 - hopRatio * 0.35);
-      ctx.fillRect(shCenterX - shW, groundY - PIXEL_SCALE, shW * 2, PIXEL_SCALE * 2);
+      ctx.globalAlpha = 0.38 * (1 - hopRatio * 0.35);
+      ctx.beginPath();
+      ctx.ellipse(cx, c.y, shRx, shRy, 0, 0, Math.PI * 2);
+      ctx.fill();
 
       const dirSet = c.facing >= 0 ? bank.right : bank.left;
       const fk = this._selectCompanionFrame(c);
       const sprite = dirSet[fk] || dirSet.idle0;
-      ctx.globalAlpha = 1;
-      ctx.drawImage(sprite, snapX, snapY, drawW, drawH);
+      this._drawAnimalBody(ctx, sprite, cx, c.y, drawW, drawH, c.hopY, c.tilt || 0, c.squashX || 1, c.squashY || 1);
 
       if (!this.reducedMotion && c.anim === "stargazeMeteor") {
-        this._drawPixelStar(ctx, c.x + c.facing * 8, snapY - 4, "#fde047", 0.90, true);
+        this._drawPixelStar(ctx, cx + c.facing * 10, topY - 4, "#fde047", 0.90, true);
       } else if (!this.reducedMotion && c.anim === "sleepCurl" && Math.floor(this.animTime * 2 + c.id) % 2 === 0) {
-        this._drawPixelStar(ctx, c.x + c.facing * 8, snapY - 2, "#7dd3fc", 0.72, false);
+        this._drawPixelStar(ctx, cx + c.facing * 10, topY - 2, "#7dd3fc", 0.72, false);
       }
     }
   }
 
-  _drawFireflies(ctx, env) {
+  _drawFireflies(ctx, env, minY = -Infinity, maxY = Infinity) {
     const nightVis = this.reducedMotion ? 0.85 : Math.max(0.05, env.nightGlow);
     for (let i = 0; i < this.fireflies.length; i++) {
       const ff = this.fireflies[i];
+      if (ff.y < minY || ff.y > maxY) continue;
       const pulse = this.reducedMotion ? 0.78 : (0.38 + 0.62 * (0.5 + 0.5 * Math.sin(ff.pulsePhase)));
       const alpha = Math.min(1, nightVis * pulse + ff.boopFlash * 0.85);
       if (alpha <= 0.06) continue;
 
-      const fx = Math.round(ff.x / PIXEL_SCALE) * PIXEL_SCALE;
-      const fy = Math.round(ff.y / PIXEL_SCALE) * PIXEL_SCALE;
+      const fx = ff.x;
+      const fy = ff.y;
 
       ctx.fillStyle = ff.color;
       ctx.globalAlpha = alpha * 0.28;
@@ -4108,22 +4516,18 @@ export class StarlightPixelDog {
   _drawSeedsAndDew(ctx) {
     for (let i = 0; i < this.dandelionSeeds.length; i++) {
       const sd = this.dandelionSeeds[i];
-      const sx = Math.round(sd.x / PIXEL_SCALE) * PIXEL_SCALE;
-      const sy = Math.round(sd.y / PIXEL_SCALE) * PIXEL_SCALE;
       ctx.globalAlpha = Math.max(0, Math.min(1, sd.life * 0.9));
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(sx - PIXEL_SCALE, sy - PIXEL_SCALE, PIXEL_SCALE * 3, PIXEL_SCALE);
+      ctx.fillRect(sd.x - PIXEL_SCALE, sd.y - PIXEL_SCALE, PIXEL_SCALE * 3, PIXEL_SCALE);
       ctx.fillStyle = "#dfd2b5";
-      ctx.fillRect(sx, sy, PIXEL_SCALE, PIXEL_SCALE * 2);
+      ctx.fillRect(sd.x, sd.y, PIXEL_SCALE, PIXEL_SCALE * 2);
     }
 
     for (let i = 0; i < this.dewDrops.length; i++) {
       const d = this.dewDrops[i];
-      const dx = Math.round(d.x / PIXEL_SCALE) * PIXEL_SCALE;
-      const dy = Math.round(d.y / PIXEL_SCALE) * PIXEL_SCALE;
       ctx.globalAlpha = Math.max(0, Math.min(1, d.life * 0.92));
       ctx.fillStyle = d.color;
-      ctx.fillRect(dx, dy, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(d.x, d.y, PIXEL_SCALE, PIXEL_SCALE);
     }
     ctx.globalAlpha = 1;
   }
@@ -4138,49 +4542,26 @@ export class StarlightPixelDog {
     return seq[Math.floor(bf.flapPhase) % seq.length];
   }
 
-  _drawFloraClusters(ctx) {
+  _drawFloraClusters(ctx, minY = -Infinity, maxY = Infinity) {
     for (let i = 0; i < this.floraClusters.length; i++) {
       const cl = this.floraClusters[i];
+      if (cl.y < minY || cl.y > maxY) continue;
       const baseX = Math.round(cl.x / PIXEL_SCALE) * PIXEL_SCALE;
       const baseY = Math.round(cl.y / PIXEL_SCALE) * PIXEL_SCALE;
+      const sway = this.reducedMotion ? 0 : (cl.bend * 1.1 + Math.sin(this.animTime * 1.6 + cl.x * 0.012) * 1.1);
 
       ctx.fillStyle = "#040814";
-      ctx.globalAlpha = 0.38;
+      ctx.globalAlpha = 0.36;
       ctx.fillRect(baseX - 8 * PIXEL_SCALE, baseY - PIXEL_SCALE, 16 * PIXEL_SCALE, PIXEL_SCALE * 2);
 
       ctx.globalAlpha = 1;
-      for (let b = 0; b < cl.blades.length; b++) {
-        const bl = cl.blades[b];
-        const breeze = this.reducedMotion ? 0 : Math.sin(this.animTime * 1.65 + cl.x * 0.012 + bl.phase) * 0.82;
-        const tipShift = bl.lean + cl.bend + breeze;
-        const shades = BLADE_SHADES[bl.shade];
-        for (let s = 0; s < bl.height; s++) {
-          const frac = s / Math.max(1, bl.height - 1);
-          const curve = Math.round(frac * frac * tipShift);
-          const px = baseX + (bl.dx + curve) * PIXEL_SCALE;
-          const py = baseY - s * PIXEL_SCALE;
-          ctx.fillStyle = frac < 0.35 ? shades[0] : (frac < 0.78 ? shades[1] : shades[2]);
-          ctx.fillRect(px, py, PIXEL_SCALE, PIXEL_SCALE);
-        }
-      }
-
-      for (let f = 0; f < cl.flowers.length; f++) {
-        const fl = cl.flowers[f];
-        const breeze = this.reducedMotion ? 0 : Math.sin(this.animTime * 1.55 + cl.x * 0.012 + fl.phase) * 0.78;
-        const sway = cl.bend * 0.9 + breeze;
-        let topX = baseX + fl.dx * PIXEL_SCALE;
-        let topY = baseY;
-        for (let s = 0; s < fl.stemH; s++) {
-          const frac = s / Math.max(1, fl.stemH - 1);
-          const curve = Math.round(frac * frac * sway);
-          topX = baseX + (fl.dx + curve) * PIXEL_SCALE;
-          topY = baseY - s * PIXEL_SCALE;
-          ctx.fillStyle = s < 2 ? "#064e3b" : "#15803d";
-          ctx.fillRect(topX, topY, PIXEL_SCALE, PIXEL_SCALE);
-        }
-        const bloom = this.flowerSprites[fl.kind] || this.flowerSprites.gold;
-        ctx.drawImage(bloom, topX - 2 * PIXEL_SCALE, topY - 4 * PIXEL_SCALE, 5 * PIXEL_SCALE, 5 * PIXEL_SCALE);
-      }
+      ctx.drawImage(
+        cl.sprite,
+        Math.round(baseX - 12 * PIXEL_SCALE + sway),
+        baseY - 16 * PIXEL_SCALE,
+        cl.spW * PIXEL_SCALE,
+        cl.spH * PIXEL_SCALE
+      );
     }
   }
 
@@ -4188,10 +4569,10 @@ export class StarlightPixelDog {
     if (!this.twig) return;
     const tw = this.twig;
     const sprite = this.facing >= 0 ? this.twigSpriteRight : this.twigSpriteLeft;
-    const w = TWIG_W * PIXEL_SCALE;
-    const h = TWIG_H * PIXEL_SCALE;
-    const tx = Math.round((tw.x - w * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-    const ty = Math.round((tw.y - h * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
+    const w = TWIG_W * ANIMAL_SCALE;
+    const h = TWIG_H * ANIMAL_SCALE;
+    const tx = tw.x - w * 0.5;
+    const ty = tw.y - h * 0.5;
 
     if (tw.phase === "landed" || tw.phase === "delivered") {
       ctx.fillStyle = "#040814";
@@ -4201,85 +4582,118 @@ export class StarlightPixelDog {
       this._drawPixelStar(ctx, tx + w - PIXEL_SCALE * 2, ty - PIXEL_SCALE, "#fde047", glow, false);
     }
     ctx.globalAlpha = 1;
+    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(sprite, tx, ty, w, h);
   }
 
-  _drawButterflies(ctx) {
-    const drawW = BF_W * PIXEL_SCALE;
-    const drawH = BF_H * PIXEL_SCALE;
+  _drawButterflies(ctx, minY = -Infinity, maxY = Infinity) {
+    const drawW = BF_W * BF_SCALE;
+    const drawH = BF_H * BF_SCALE;
     for (let i = 0; i < this.butterflies.length; i++) {
       const bf = this.butterflies[i];
+      if (bf.y < minY || bf.y > maxY) continue;
       const spBank = this.butterflySprites[bf.species];
       if (!spBank) continue;
       const dirBank = bf.facing >= 0 ? spBank.right : spBank.left;
       const fKey = this._selectButterflyFrame(bf);
       const sprite = dirBank[fKey] || dirBank.open;
 
-      const bob = (this.reducedMotion || bf.mode === "perched" || bf.mode === "nosePerched")
-        ? 0
-        : (fKey === "open" ? 1 : (fKey === "folded" ? -2 : 0));
-      const bx = Math.round((bf.x - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-      const by = Math.round((bf.y - drawH + 4 + bob) / PIXEL_SCALE) * PIXEL_SCALE;
+      const perched = this.reducedMotion || bf.mode === "perched" || bf.mode === "nosePerched";
+      const bob = perched ? 0 : Math.sin(bf.flapPhase) * 2.2;
+      const bx = bf.x - drawW * 0.5;
+      const by = bf.y - drawH + 4 + bob;
 
-      if (!this.reducedMotion && bf.mode !== "perched" && bf.mode !== "nosePerched") {
+      if (!perched) {
         ctx.globalAlpha = 0.20;
         ctx.fillStyle = bf.species === "morpho" ? "#7dd3fc" : "#fde047";
-        ctx.fillRect(bx + 4 * PIXEL_SCALE, by + 3 * PIXEL_SCALE, 5 * PIXEL_SCALE, 4 * PIXEL_SCALE);
+        ctx.fillRect(bx + 4 * BF_SCALE, by + 3 * BF_SCALE, 5 * BF_SCALE, 4 * BF_SCALE);
       }
 
+      ctx.save();
+      ctx.translate(bf.x, bf.y + bob);
+      if (!perched) {
+        ctx.rotate(Math.cos(bf.flapPhase * 0.5) * 0.08 * bf.facing);
+        ctx.scale(1, 0.90 + 0.14 * Math.abs(Math.sin(bf.flapPhase)));
+      }
+      ctx.imageSmoothingEnabled = false;
       ctx.globalAlpha = 1;
-      ctx.drawImage(sprite, bx, by, drawW, drawH);
+      ctx.drawImage(sprite, -drawW * 0.5, -drawH + 4, drawW, drawH);
+      ctx.restore();
     }
   }
 
   _drawPixelStar(ctx, x, y, color, alpha, big) {
-    const px = Math.round(x / PIXEL_SCALE) * PIXEL_SCALE;
-    const py = Math.round(y / PIXEL_SCALE) * PIXEL_SCALE;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = color;
-    ctx.fillRect(px, py, PIXEL_SCALE, PIXEL_SCALE);
+    ctx.fillRect(x, y, PIXEL_SCALE, PIXEL_SCALE);
     if (big) {
-      ctx.fillRect(px - PIXEL_SCALE, py, PIXEL_SCALE, PIXEL_SCALE);
-      ctx.fillRect(px + PIXEL_SCALE, py, PIXEL_SCALE, PIXEL_SCALE);
-      ctx.fillRect(px, py - PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
-      ctx.fillRect(px, py + PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(x - PIXEL_SCALE, y, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(x + PIXEL_SCALE, y, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(x, y - PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(x, y + PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(px, py, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(x, y, PIXEL_SCALE, PIXEL_SCALE);
     }
   }
 
-  render() {
+  render(fullPass = true) {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.docW, this.docH);
     const env = this._currentEnv();
 
-    const drawW = SPRITE_W * PIXEL_SCALE;
-    const drawH = SPRITE_H * PIXEL_SCALE;
-    const snapX = Math.round((this.x + this.shakeX - drawW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-    const snapY = Math.round((this.y - drawH + 6 + this.hopY) / PIXEL_SCALE) * PIXEL_SCALE;
-    const groundY = Math.round(this.y / PIXEL_SCALE) * PIXEL_SCALE;
+    let bandTop = 0;
+    let bandBot = this.docH;
+    let clearTop = 0;
+    let clearBot = this.docH;
 
-    const hopRatio = Math.min(1, Math.abs(this.hopY) / 18);
-    const shW = Math.round((20 * (1 - hopRatio * 0.30)) / PIXEL_SCALE) * PIXEL_SCALE;
-    const shMidW = Math.round((15 * (1 - hopRatio * 0.30)) / PIXEL_SCALE) * PIXEL_SCALE;
-    const shCoreW = Math.round((10 * (1 - hopRatio * 0.32)) / PIXEL_SCALE) * PIXEL_SCALE;
-    const shCenterX = Math.round(this.x / PIXEL_SCALE) * PIXEL_SCALE;
+    if (!fullPass && !this.reducedMotion) {
+      const vh = window.innerHeight || 900;
+      const sy = window.scrollY || 0;
+      bandTop = Math.max(0, Math.floor(sy - 120));
+      bandBot = Math.min(this.docH, Math.ceil(sy + vh + 120));
+      clearTop = Math.min(bandTop, this._prevBandTop ?? bandTop);
+      clearBot = Math.max(bandBot, this._prevBandBot ?? bandBot);
+    }
+    this._prevBandTop = bandTop;
+    this._prevBandBot = bandBot;
 
     ctx.save();
+    ctx.clearRect(0, clearTop, this.docW, clearBot - clearTop);
     ctx.imageSmoothingEnabled = false;
 
-    this._drawProps(ctx, env);
-    this._drawWaterRipples(ctx);
-    this._drawFloraClusters(ctx);
-    this._drawCompanionRange(ctx, -Infinity, this.y);
+    const minY = fullPass || this.reducedMotion ? -Infinity : clearTop + 20;
+    const maxY = fullPass || this.reducedMotion ? Infinity : clearBot - 20;
 
-    ctx.fillStyle = "#040814";
-    ctx.globalAlpha = 0.34 * (1 - hopRatio * 0.38);
-    ctx.fillRect(shCenterX - shW, groundY - PIXEL_SCALE, shW * 2, PIXEL_SCALE * 2);
-    ctx.globalAlpha = 0.46 * (1 - hopRatio * 0.38);
-    ctx.fillRect(shCenterX - shMidW, groundY - PIXEL_SCALE * 2, shMidW * 2, PIXEL_SCALE * 4);
-    ctx.globalAlpha = 0.58 * (1 - hopRatio * 0.38);
-    ctx.fillRect(shCenterX - shCoreW, groundY - PIXEL_SCALE, shCoreW * 2, PIXEL_SCALE * 2);
+    const drawW = SPRITE_W * ANIMAL_SCALE;
+    const drawH = SPRITE_H * ANIMAL_SCALE;
+    const cx = this.x + this.shakeX;
+    const topY = this.y - drawH + 5 + this.hopY;
+    const dogInBand = this.y >= minY && this.y <= maxY;
+
+    const hopRatio = Math.min(1, Math.abs(this.hopY) / 18);
+    const shOuterRx = 27 * (1 - hopRatio * 0.30);
+    const shMidRx = 20 * (1 - hopRatio * 0.30);
+    const shCoreRx = 13 * (1 - hopRatio * 0.32);
+
+    this._drawProps(ctx, env, minY, maxY);
+    this._drawWaterRipples(ctx);
+    this._drawFloraClusters(ctx, minY, maxY);
+    this._drawCompanionRange(ctx, minY, Math.min(maxY, this.y));
+
+    if (dogInBand) {
+      ctx.fillStyle = "#040814";
+      ctx.globalAlpha = 0.32 * (1 - hopRatio * 0.38);
+      ctx.beginPath();
+      ctx.ellipse(cx, this.y, shOuterRx, 3.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.44 * (1 - hopRatio * 0.38);
+      ctx.beginPath();
+      ctx.ellipse(cx, this.y, shMidRx, 2.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.56 * (1 - hopRatio * 0.38);
+      ctx.beginPath();
+      ctx.ellipse(cx, this.y, shCoreRx, 1.9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     if (this.twig && this.twig.phase !== "carried") {
       this._drawTwig(ctx);
@@ -4287,50 +4701,49 @@ export class StarlightPixelDog {
 
     for (let i = 0; i < this.pawPuffs.length; i++) {
       const p = this.pawPuffs[i];
-      const px = Math.round(p.x / PIXEL_SCALE) * PIXEL_SCALE;
-      const py = Math.round(p.y / PIXEL_SCALE) * PIXEL_SCALE;
+      if (p.y < minY || p.y > maxY) continue;
       ctx.globalAlpha = Math.max(0, p.life * 0.82);
       ctx.fillStyle = p.color;
-      ctx.fillRect(px, py, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(p.x, p.y, PIXEL_SCALE, PIXEL_SCALE);
       if (p.life > 0.45) {
         ctx.fillStyle = "#fff8e3";
-        ctx.fillRect(px + PIXEL_SCALE, py - PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
+        ctx.fillRect(p.x + PIXEL_SCALE, p.y - PIXEL_SCALE, PIXEL_SCALE, PIXEL_SCALE);
       }
     }
 
-    const frameKey = this._selectFrameKey();
-    const bank = this.facing >= 0 ? this.spritesRight : this.spritesLeft;
-    const sprite = bank[frameKey] || bank.sit0;
-    ctx.globalAlpha = 1;
-    ctx.drawImage(sprite, snapX, snapY, drawW, drawH);
+    if (dogInBand) {
+      const frameKey = this._selectFrameKey();
+      const bank = this.facing >= 0 ? this.spritesRight : this.spritesLeft;
+      const sprite = bank[frameKey] || bank.sit0;
+      this._drawAnimalBody(ctx, sprite, cx, this.y, drawW, drawH, this.hopY, this.tilt, this.squashX, this.squashY);
+    }
 
-    if (this.twig && this.twig.phase === "carried") {
+    if (this.twig && this.twig.phase === "carried" && dogInBand) {
       this._drawTwig(ctx);
     }
 
-    this._drawCompanionRange(ctx, this.y, Infinity);
-    this._drawButterflies(ctx);
-    this._drawFireflies(ctx, env);
+    this._drawCompanionRange(ctx, Math.max(minY, this.y), maxY);
+    this._drawButterflies(ctx, minY, maxY);
+    this._drawFireflies(ctx, env, minY, maxY);
     this._drawSeedsAndDew(ctx);
 
     for (let i = 0; i < this.pollenMotes.length; i++) {
       const m = this.pollenMotes[i];
-      const mx = Math.round(m.x / PIXEL_SCALE) * PIXEL_SCALE;
-      const my = Math.round(m.y / PIXEL_SCALE) * PIXEL_SCALE;
       ctx.globalAlpha = Math.max(0, Math.min(1, m.life * 0.92));
       ctx.fillStyle = m.color;
-      ctx.fillRect(mx, my, PIXEL_SCALE, PIXEL_SCALE);
+      ctx.fillRect(m.x, m.y, PIXEL_SCALE, PIXEL_SCALE);
     }
 
     if (this.emote && this.emoteSprites[this.emote.kind]) {
       const em = this.emote;
       const norm = Math.min(1, em.age / Math.max(0.2, em.duration));
       const fade = this.reducedMotion ? 0.96 : (norm < 0.18 ? (norm / 0.18) : (norm > 0.76 ? (1 - norm) / 0.24 : 1));
-      const floatLift = this.reducedMotion ? 4 : Math.round(norm * 10);
-      const emW = EMOTE_SIZE * PIXEL_SCALE;
-      const emX = Math.round((this.x + this.facing * 12 - emW * 0.5) / PIXEL_SCALE) * PIXEL_SCALE;
-      const emY = Math.round((snapY - emW + 2 - floatLift) / PIXEL_SCALE) * PIXEL_SCALE;
+      const floatLift = this.reducedMotion ? 4 : norm * 12;
+      const emW = EMOTE_SIZE * ANIMAL_SCALE;
+      const emX = cx + this.facing * 15 - emW * 0.5;
+      const emY = topY - emW + 2 - floatLift;
       ctx.globalAlpha = Math.max(0, Math.min(1, fade * 0.96));
+      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(this.emoteSprites[em.kind], emX, emY, emW, emW);
     }
 

@@ -400,6 +400,8 @@ export class LiquidStarrySky {
     this.garPlanesDay = null;
     this.bgBaked = null;
     this.bgBakedDay = null;
+    this._panVisible = true;
+    this._garVisible = true;
 
     this._resize();
     this._bindEvents();
@@ -647,8 +649,8 @@ export class LiquidStarrySky {
     const skyTileH = Math.max(340, Math.round(skyTileW * 0.36));
     const garTileW = Math.min(w, 1440);
     const garBandH = Math.max(340, Math.round(garTileW * 0.34));
-    const skyPlanes = this._bakeCalligraphicPlanes(skyOnly, skyTileW, skyTileH, "sky", isDay);
-    const garPlanes = this._bakeCalligraphicPlanes(gar, garTileW, garBandH, "garden", isDay);
+    const skyPlanes = (isDay ? this.panPlanesDay : this.panPlanes) || this._bakeCalligraphicPlanes(skyOnly, skyTileW, skyTileH, "sky", isDay);
+    const garPlanes = (isDay ? this.garPlanesDay : this.garPlanes) || this._bakeCalligraphicPlanes(gar, garTileW, garBandH, "garden", isDay);
 
     if (skyPlanes) {
       const skyTile = document.createElement("canvas");
@@ -743,11 +745,12 @@ export class LiquidStarrySky {
 
   _resize() {
     if (this._planeCaches) this._planeCaches.clear();
-    this.dpr = 1;
+    // WHY: Cap large-canvas DPR to 1.5 to prevent GPU memory spikes from full-page backing stores at 4K+.
+    this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const docEl = document.documentElement;
     this.bgW = Math.max(320, docEl.clientWidth || window.innerWidth || 1440);
     this.bgH = Math.max(window.innerHeight || 900, docEl.scrollHeight || 1400, document.body.offsetHeight || 1400);
-    this.bgDpr = 1;
+    this.bgDpr = Math.min(window.devicePixelRatio || 1, 1.5);
     this.bgCanvas.width = Math.round(this.bgW * this.bgDpr);
     this.bgCanvas.height = Math.round(this.bgH * this.bgDpr);
     this.bgCtx.setTransform(this.bgDpr, 0, 0, this.bgDpr, 0, 0);
@@ -831,6 +834,18 @@ export class LiquidStarrySky {
         }
       });
       ro.observe(document.body);
+    }
+
+    if (typeof IntersectionObserver === "function") {
+      const io = new IntersectionObserver((entries) => {
+        for (let i = 0; i < entries.length; i++) {
+          const ent = entries[i];
+          if (ent.target === this.panCanvas) this._panVisible = ent.isIntersecting;
+          else if (ent.target === this.garCanvas) this._garVisible = ent.isIntersecting;
+        }
+      }, { rootMargin: "90px 0px" });
+      if (this.panCanvas) io.observe(this.panCanvas);
+      if (this.garCanvas) io.observe(this.garCanvas);
     }
 
     window.addEventListener("pointermove", (ev) => {
@@ -941,6 +956,8 @@ export class LiquidStarrySky {
   }
 
   injectImpulse(nx, ny, fx, fy) {
+    if (Math.abs(fx) + Math.abs(fy) < 0.02) return;
+    this._fluidEnergy = 1.0;
     const gxCenter = Math.max(1, Math.min(this.cols - 2, nx * this.cols));
     const gyCenter = Math.max(1, Math.min(this.rows - 2, ny * this.rows));
     for (let gy = 1; gy < this.rows - 1; gy++) {
@@ -1203,13 +1220,21 @@ export class LiquidStarrySky {
     return [ux + fx * 0.022, uy + fy * 0.048];
   }
 
+  _getFlowStrokeSprite(col) {
+    if (!this._flowStrokeSprites) this._flowStrokeSprites = new Map();
+    const hit = this._flowStrokeSprites.get(col);
+    if (hit) return hit;
+    const c = document.createElement("canvas");
+    c.width = 28;
+    c.height = 10;
+    const sc = c.getContext("2d");
+    drawTaperedImpastoStroke(sc, 2, 5, 14, 3.2, 26, 5, col, 2.2, 0.92);
+    this._flowStrokeSprites.set(col, c);
+    return c;
+  }
+
   _drawFluidImpastoFlow(ctx, particles, w, h, maxNy, dt, daylight = 0) {
     ctx.save();
-    ctx.lineCap = "round";
-    ctx.font = "700 8.5px 'JetBrains Mono', ui-monospace, monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
       const [vx, vy] = this._starryVortexVelocity(p.nx, p.ny);
@@ -1232,27 +1257,22 @@ export class LiquidStarrySky {
       const y = p.ny * h;
       const ang = Math.atan2(vy * h, vx * w);
       const len = 8.2 + Math.min(11, Math.hypot(vx * w, vy * h) * 0.13);
-      const tx = Math.cos(ang) * len;
-      const ty = Math.sin(ang) * len;
       const col = daylight > 0.55 ? p.dayColor : p.color;
+      const sp = this._getFlowStrokeSprite(col);
 
-      drawTaperedImpastoStroke(
-        ctx,
-        x - tx,
-        y - ty,
-        x - ty * 0.24,
-        y + tx * 0.24,
-        x + tx,
-        y + ty,
-        col,
-        p.width * 1.15,
-        env * 0.64
-      );
+      ctx.save();
+      ctx.globalAlpha = env * 0.72;
+      ctx.translate(x, y);
+      ctx.rotate(ang);
+      ctx.drawImage(sp, -len, -4, len * 2, 8);
+      ctx.restore();
     }
     ctx.restore();
   }
 
   _stepFluidSolver(dt) {
+    if (!this._fluidEnergy || this._fluidEnergy < 0.004) return;
+    this._fluidEnergy *= Math.pow(0.28, dt);
     const W = this.cols;
     const H = this.rows;
     this.vx0.set(this.vx);
@@ -1642,20 +1662,24 @@ export class LiquidStarrySky {
 
   _getOrUpdatePlaneCache(cacheKey, nightPlanes, dayPlanes, w, h, gxShift, gyShift, env) {
     if (!this._planeCaches) this._planeCaches = new Map();
+    const cw = Math.max(1, Math.round(w * this.dpr));
+    const ch = Math.max(1, Math.round(h * this.dpr));
     let entry = this._planeCaches.get(cacheKey);
-    if (!entry || entry.w !== w || entry.h !== h) {
+    if (!entry || entry.w !== cw || entry.h !== ch) {
       const c = document.createElement("canvas");
-      c.width = w;
-      c.height = h;
-      entry = { canvas: c, ctx: c.getContext("2d", { alpha: false }), w, h, gx: -99, gy: -99, dl: -99, dw: -99, ss: -99 };
+      c.width = cw;
+      c.height = ch;
+      const ectx = c.getContext("2d", { alpha: false });
+      ectx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      entry = { canvas: c, ctx: ectx, w: cw, h: ch, gx: -99, gy: -99, dl: -99, dw: -99, ss: -99 };
       this._planeCaches.set(cacheKey, entry);
     }
     const needsUpdate =
-      Math.abs(gxShift - entry.gx) > 0.002 ||
-      Math.abs(gyShift - entry.gy) > 0.002 ||
-      Math.abs(env.daylight - entry.dl) > 0.014 ||
-      Math.abs(env.dawn - entry.dw) > 0.018 ||
-      Math.abs(env.sunset - entry.ss) > 0.018;
+      Math.abs(gxShift - entry.gx) > 0.0025 ||
+      Math.abs(gyShift - entry.gy) > 0.0025 ||
+      Math.abs(env.daylight - entry.dl) > 0.020 ||
+      Math.abs(env.dawn - entry.dw) > 0.024 ||
+      Math.abs(env.sunset - entry.ss) > 0.024;
 
     if (needsUpdate) {
       entry.gx = gxShift;
@@ -1880,15 +1904,19 @@ export class LiquidStarrySky {
       Math.abs(env.dawn - this._lastBgDawn) > 0.035 ||
       Math.abs(env.sunset - this._lastBgSunset) > 0.035;
 
+    const bpr = this.bgDpr || 1;
     if (this.bgBaked && bgPhaseChanged) {
       this._lastBgDaylight = env.daylight;
       this._lastBgDawn = env.dawn;
       this._lastBgSunset = env.sunset;
-      if (!this._bgComp || this._bgComp.width !== this.bgW || this._bgComp.height !== this.bgH) {
+      const bcW = Math.max(1, Math.round(this.bgW * bpr));
+      const bcH = Math.max(1, Math.round(this.bgH * bpr));
+      if (!this._bgComp || this._bgComp.width !== bcW || this._bgComp.height !== bcH) {
         this._bgComp = document.createElement("canvas");
-        this._bgComp.width = this.bgW;
-        this._bgComp.height = this.bgH;
+        this._bgComp.width = bcW;
+        this._bgComp.height = bcH;
         this._bgCompCtx = this._bgComp.getContext("2d", { alpha: false });
+        this._bgCompCtx.setTransform(bpr, 0, 0, bpr, 0, 0);
       }
       const bcc = this._bgCompCtx;
       bcc.globalAlpha = 1;
@@ -1915,7 +1943,7 @@ export class LiquidStarrySky {
       this.bgCtx.rect(0, 0, gutterW + 8, bandH);
       this.bgCtx.rect(this.bgW - gutterW - 8, 0, gutterW + 8, bandH);
       this.bgCtx.clip();
-      this.bgCtx.drawImage(this._bgComp, 0, 0, this.bgW, bandH, 0, 0, this.bgW, bandH);
+      this.bgCtx.drawImage(this._bgComp, 0, 0, Math.round(this.bgW * bpr), Math.round(bandH * bpr), 0, 0, this.bgW, bandH);
       if (hasBgOverlay) {
         this._drawGiantMeteors(this.bgCtx, this.bgW, bandH, 0.85, env.daylight);
         if (this.bgWakeGlyphs.length > 0) {
@@ -1926,7 +1954,7 @@ export class LiquidStarrySky {
       this._bgHadOverlay = hasBgOverlay;
     }
 
-    if (this.panCtx && (dt === 0 || isVisible(this.panCanvas))) {
+    if (this.panCtx && (dt === 0 || this._panVisible)) {
       const w = this.panW;
       const h = this.panH;
       this.bodyScreenPositions = [];
@@ -1942,7 +1970,7 @@ export class LiquidStarrySky {
       this._drawWakePool(this.panCtx, this.wakeGlyphs, w, h, dt);
     }
 
-    if (this.garCtx && (dt === 0 || isVisible(this.garCanvas))) {
+    if (this.garCtx && (dt === 0 || this._garVisible)) {
       const w = this.garW;
       const h = this.garH;
       this._drawCompositePlanes(this.garCtx, this.garPlanes, this.garPlanesDay, w, h, gxShift * 1.12, gyShift * 1.12, env, "gar");

@@ -139,7 +139,6 @@ PROP_NAMES = (
 PART_KEYS = ("lb", "tl", "bd", "lf", "hd", "ew")
 PART_SHORT = {"rig": "r", "lb": "b", "tl": "t", "bd": "d", "lf": "f", "hd": "h", "ew": "e", "sh": "s"}
 
-# WHY: Each sub-part is authored around its anatomical joint (0, 0) facing +X so GPU CSS transforms pivot cleanly.
 ANIMAL_CATALOG = {
     "shiba_dog": {
         "shadow": (10.5, 2.2),
@@ -1488,6 +1487,12 @@ def _norm_scene(scene_kind):
         return "matrix"
     if "core" in s or "02" in s:
         return "core"
+    if "card1" in s:
+        return "card1"
+    if "card2" in s:
+        return "card2"
+    if "card3" in s:
+        return "card3"
     return "nocturne"
 
 
@@ -1536,7 +1541,6 @@ def _compute_merged_spans(rows, ox=0, oy=0):
 
 
 def _merge_grid_rects(rows, ox=0, oy=0):
-    # WHY: Preserves merged horizontal/vertical <rect> runs for modular articulated animal sub-parts.
     elems = []
     for hex_col, merged in _compute_merged_spans(rows, ox, oy):
         rects = []
@@ -1549,7 +1553,6 @@ def _merge_grid_rects(rows, ox=0, oy=0):
 
 
 def _merge_grid_paths(rows, ox=0, oy=0):
-    # WHY: Lossless crispEdges axis-aligned path encoding shrinks pixel micro-habitat <defs> by >3.5x.
     elems = []
     for hex_col, merged in _compute_merged_spans(rows, ox, oy):
         cmds = []
@@ -1569,14 +1572,18 @@ def _merge_grid_paths(rows, ox=0, oy=0):
     return "".join(elems)
 
 
+SCHED_S = (0.00, 0.12, 0.25, 0.38, 0.50, 0.62, 0.75, 0.88, 1.00)
+SCHED_T = (0.00, 0.13, 0.26, 0.39, 0.51, 0.64, 0.77, 0.89, 1.00)
+
+
 def _build_css(prefix):
     # WHY: 100% GPU-composited CSS transforms/opacity with per-species joint pivots and strict reduced-motion freeze.
     p = prefix
     kf = [
         ".eco-stage{shape-rendering:crispEdges}",
         ".eco-calm,.%s-eco-calm{display:none}" % p,
-        ".%s-r,.%s-s,.%s-sway,.%s-rip{transform-origin:0 0}" % (p, p, p, p),
-        ".%s-r,.%s-b,.%s-t,.%s-d,.%s-f,.%s-h,.%s-e,.%s-s{animation-timing-function:ease-in-out;animation-iteration-count:infinite}"
+        ".%s-r,.%s-s,.%s-sway,.%s-rip,#%s-eco-bfm0,#%s-eco-bfg0{transform-origin:0 0}" % (p, p, p, p, p, p),
+        ".%s-r,.%s-b,.%s-t,.%s-d,.%s-f,.%s-h,.%s-e,.%s-s{animation-timing-function:cubic-bezier(0.42,0,0.58,1);animation-iteration-count:infinite;will-change:transform}"
         % (p, p, p, p, p, p, p, p),
         ".%s-s{fill:#030712;fill-opacity:.52}" % p,
     ]
@@ -1591,32 +1598,32 @@ def _build_css(prefix):
 
     kf.extend([
         "@keyframes %s-k-bob1{50%%{transform:translateY(-1.1px)}}" % p,
-        "@keyframes %s-k-bob2{50%%{transform:translateY(-2.3px)}}" % p,
-        "@keyframes %s-k-gal{0%%,100%%{transform:rotate(4deg)}45%%{transform:translateY(-4.6px) rotate(-7deg)}}" % p,
-        "@keyframes %s-k-hop{0%%,100%%{transform:scale(1.06,.92)}45%%{transform:translateY(-6.5px) rotate(-8deg) scale(.96,1.05)}}" % p,
-        "@keyframes %s-k-binky{0%%,100%%{transform:scale(1.08,.9)}35%%{transform:translateY(-10px) rotate(-13deg)}65%%{transform:translateY(-8px) rotate(10deg)}}" % p,
-        "@keyframes %s-k-leg1{0%%,100%%{transform:rotate(-18deg)}50%%{transform:rotate(18deg)}}" % p,
-        "@keyframes %s-k-leg1r{0%%,100%%{transform:rotate(18deg)}50%%{transform:rotate(-18deg)}}" % p,
-        "@keyframes %s-k-leg2{0%%,100%%{transform:rotate(-27deg)}50%%{transform:rotate(27deg)}}" % p,
-        "@keyframes %s-k-leg2r{0%%,100%%{transform:rotate(27deg)}50%%{transform:rotate(-27deg)}}" % p,
-        "@keyframes %s-k-leg3{0%%,100%%{transform:rotate(-38deg)}50%%{transform:rotate(32deg)}}" % p,
-        "@keyframes %s-k-leg3r{0%%,100%%{transform:rotate(36deg)}50%%{transform:rotate(-30deg)}}" % p,
-        "@keyframes %s-k-kick{45%%{transform:rotate(42deg)}75%%{transform:rotate(-16deg)}}" % p,
+        "@keyframes %s-k-bob2{50%%{transform:translateY(-2.2px)}}" % p,
+        "@keyframes %s-k-gal{0%%,100%%{transform:translateY(0) rotate(3.5deg)}50%%{transform:translateY(-4.4px) rotate(-6.5deg)}}" % p,
+        "@keyframes %s-k-hop{0%%,100%%{transform:translateY(0) rotate(0deg) scale(1.05,.93)}50%%{transform:translateY(-6.2px) rotate(-6.5deg) scale(.96,1.04)}}" % p,
+        "@keyframes %s-k-binky{0%%,100%%{transform:scale(1.07,.91)}35%%{transform:translateY(-9.5px) rotate(-12deg)}65%%{transform:translateY(-7.5px) rotate(9deg)}}" % p,
+        "@keyframes %s-k-leg1{0%%,100%%{transform:rotate(-17deg)}50%%{transform:rotate(17deg)}}" % p,
+        "@keyframes %s-k-leg1r{0%%,100%%{transform:rotate(17deg)}50%%{transform:rotate(-17deg)}}" % p,
+        "@keyframes %s-k-leg2{0%%,100%%{transform:rotate(-25deg)}50%%{transform:rotate(25deg)}}" % p,
+        "@keyframes %s-k-leg2r{0%%,100%%{transform:rotate(25deg)}50%%{transform:rotate(-25deg)}}" % p,
+        "@keyframes %s-k-leg3{0%%,100%%{transform:rotate(-33deg)}50%%{transform:rotate(31deg)}}" % p,
+        "@keyframes %s-k-leg3r{0%%,100%%{transform:rotate(31deg)}50%%{transform:rotate(-33deg)}}" % p,
+        "@keyframes %s-k-kick{45%%{transform:rotate(40deg)}75%%{transform:rotate(-15deg)}}" % p,
         "@keyframes %s-k-nod1{0%%,100%%{transform:rotate(-3deg)}50%%{transform:rotate(4deg)}}" % p,
-        "@keyframes %s-k-nod2{0%%,100%%{transform:rotate(-10deg)}50%%{transform:rotate(8deg)}}" % p,
+        "@keyframes %s-k-nod2{0%%,100%%{transform:rotate(-9deg)}50%%{transform:rotate(8deg)}}" % p,
         "@keyframes %s-k-ear1{0%%,100%%{transform:rotate(-4deg)}50%%{transform:rotate(5deg)}}" % p,
-        "@keyframes %s-k-ear2{0%%,100%%{transform:rotate(-12deg)}50%%{transform:rotate(8deg)}}" % p,
-        "@keyframes %s-k-ear3{0%%,100%%{transform:rotate(-22deg)}50%%{transform:rotate(14deg)}}" % p,
+        "@keyframes %s-k-ear2{0%%,100%%{transform:rotate(-11deg)}50%%{transform:rotate(8deg)}}" % p,
+        "@keyframes %s-k-ear3{0%%,100%%{transform:rotate(-20deg)}50%%{transform:rotate(14deg)}}" % p,
         "@keyframes %s-k-ear4{0%%,70%%,100%%{transform:rotate(-18deg)}35%%{transform:rotate(-4deg)}}" % p,
-        "@keyframes %s-k-wing{0%%,100%%{transform:rotate(6deg)}50%%{transform:rotate(-28deg) scaleY(.78)}}" % p,
+        "@keyframes %s-k-wing{0%%,100%%{transform:rotate(6deg) scaleY(1)}50%%{transform:rotate(-26deg) scaleY(.8)}}" % p,
         "@keyframes %s-k-wag1{0%%,100%%{transform:rotate(-9deg)}50%%{transform:rotate(11deg)}}" % p,
-        "@keyframes %s-k-wag2{0%%,100%%{transform:rotate(-16deg)}50%%{transform:rotate(20deg)}}" % p,
-        "@keyframes %s-k-wag3{0%%,100%%{transform:rotate(-20deg)}50%%{transform:rotate(28deg)}}" % p,
-        "@keyframes %s-k-wag4{0%%,100%%{transform:rotate(-26deg)}50%%{transform:rotate(34deg)}}" % p,
+        "@keyframes %s-k-wag2{0%%,100%%{transform:rotate(-15deg)}50%%{transform:rotate(19deg)}}" % p,
+        "@keyframes %s-k-wag3{0%%,100%%{transform:rotate(-20deg)}50%%{transform:rotate(25deg)}}" % p,
+        "@keyframes %s-k-wag4{0%%,100%%{transform:rotate(-24deg)}50%%{transform:rotate(30deg)}}" % p,
         "@keyframes %s-k-sh1{50%%{transform:scale(.93,.95)}}" % p,
         "@keyframes %s-k-sh2{50%%{transform:scale(.86,.9)}}" % p,
-        "@keyframes %s-k-sh3{0%%,100%%{transform:scale(1.04,1)}45%%{transform:scale(.74,.8)}}" % p,
-        "@keyframes %s-k-sh4{0%%,100%%{transform:scale(1.06,1)}45%%{transform:scale(.64,.72)}}" % p,
+        "@keyframes %s-k-sh3{0%%,100%%{transform:scale(1.04,1)}50%%{transform:scale(.75,.82)}}" % p,
+        "@keyframes %s-k-sh4{0%%,100%%{transform:scale(1.05,1)}50%%{transform:scale(.66,.74)}}" % p,
         "@keyframes %s-k-leanf{0%%,100%%{transform:rotate(5deg) translateY(.8px)}50%%{transform:rotate(7deg) translateY(1.2px)}}" % p,
         "@keyframes %s-k-graze{0%%,100%%{transform:translate(1px,2px) rotate(22deg)}50%%{transform:translate(1.5px,2.8px) rotate(29deg)}}" % p,
         "@keyframes %s-k-sniff{0%%,100%%{transform:translate(1px,1.5px) rotate(18deg)}50%%{transform:translate(2.4px,2.2px) rotate(25deg)}}" % p,
@@ -1661,20 +1668,22 @@ def _build_css(prefix):
         "@keyframes %s-pend{0%%,100%%{transform:rotate(-5deg)}50%%{transform:rotate(5.5deg)}}" % p,
         "@keyframes %s-rip{0%%{transform:scale(.35);opacity:.88}80%%,100%%{transform:scale(1.55,1.45);opacity:0}}" % p,
         "@keyframes %s-glint{0%%,100%%{opacity:.3}50%%{opacity:.98}}" % p,
-        "@keyframes %s-q3a{0%%{opacity:1}26%%{opacity:0}}" % p,
-        "@keyframes %s-q3b{0%%{opacity:0}26%%{opacity:1}74%%{opacity:0}}" % p,
-        "@keyframes %s-q3c{0%%{opacity:0}74%%{opacity:1}}" % p,
-        "@keyframes %s-q4a{0%%{opacity:1}24%%{opacity:0}}" % p,
-        "@keyframes %s-q4b{0%%{opacity:0}24%%{opacity:1}50%%{opacity:0}}" % p,
-        "@keyframes %s-q4c{0%%{opacity:0}50%%{opacity:1}76%%{opacity:0}}" % p,
-        "@keyframes %s-q4d{0%%{opacity:0}76%%{opacity:1}}" % p,
-        ".%s-q30{animation:%s-q3a 60s step-end infinite}" % (p, p),
-        ".%s-q31{animation:%s-q3b 60s step-end infinite}" % (p, p),
-        ".%s-q32{animation:%s-q3c 60s step-end infinite}" % (p, p),
-        ".%s-q40{animation:%s-q4a 60s step-end infinite}" % (p, p),
-        ".%s-q41{animation:%s-q4b 60s step-end infinite}" % (p, p),
-        ".%s-q42{animation:%s-q4c 60s step-end infinite}" % (p, p),
-        ".%s-q43{animation:%s-q4d 60s step-end infinite}" % (p, p),
+    ])
+    for tag, sched in (("s", SCHED_S), ("t", SCHED_T)):
+        pcts = [int(round(v * 100)) for v in sched]
+        n_ph = len(pcts) - 1
+        for slot in range(n_ph):
+            on_start, on_end = pcts[slot], pcts[slot + 1]
+            if slot == 0:
+                vals = "0%%{opacity:1}%d%%{opacity:0}" % on_end
+            elif slot == n_ph - 1:
+                vals = "0%%{opacity:0}%d%%{opacity:1}" % on_start
+            else:
+                vals = "0%%{opacity:0}%d%%{opacity:1}%d%%{opacity:0}" % (on_start, on_end)
+            kf.append("@keyframes %s-q%s%d{%s}" % (p, tag, slot, vals))
+        for slot in range(n_ph):
+            kf.append(".%s-q%s%d{animation:%s-q%s%d 60s step-end infinite}" % (p, tag, slot, p, tag, slot))
+    kf.extend([
         ".%s-night-glow{animation:%s-night-env 60s ease-in-out infinite}" % (p, p),
         ".%s-ltn-glow{animation:%s-ltn-env 60s ease-in-out infinite}" % (p, p),
         ".%s-breeze{animation:%s-breeze 4.6s ease-in-out infinite}" % (p, p),
@@ -1688,7 +1697,7 @@ def _build_css(prefix):
             if part_key in spec:
                 kname, kdur = spec[part_key]
                 kf.append(
-                    ".%s-a%d .%s-%s{animation:%s-%s %s infinite}"
+                    ".%s-a%d .%s-%s{animation:%s-%s %s cubic-bezier(0.42,0,0.58,1) infinite}"
                     % (p, a_idx, p, PART_SHORT[part_key], p, kname, kdur)
                 )
     kf.append(
@@ -1701,11 +1710,17 @@ def _build_css(prefix):
         ".%s-ffp{animation:%s-ff-pulse 2.2s ease-in-out infinite;transform-origin:0 0}" % (p, p)
     )
     kf.append(
+        "@keyframes %s-k-bfwing{0%%,100%%{transform:scaleY(1) rotate(-5deg)}50%%{transform:scaleY(.22) rotate(9deg)}}" % p
+    )
+    kf.append(
+        "#%s-eco-bfm0,#%s-eco-bfg0{animation:%s-k-bfwing .38s cubic-bezier(0.42,0,0.58,1) infinite;will-change:transform}" % (p, p, p)
+    )
+    kf.append(
         "@media (prefers-reduced-motion: reduce){"
         ".eco-live,.%s-eco-live,.pup-live{display:none !important;animation:none !important}"
-        ".eco-live *,.%s-eco-live *{animation:none !important}"
+        ".eco-live *,.%s-eco-live *,#%s-eco-bfm0,#%s-eco-bfg0{animation:none !important}"
         ".eco-calm,.%s-eco-calm,.pup-calm{display:inline !important;animation:none !important}"
-        "}" % (p, p, p)
+        "}" % (p, p, p, p, p)
     )
     return "<style>%s</style>" % "".join(kf)
 
@@ -1759,13 +1774,7 @@ def render_ecosystem_defs(prefix, scene_kind="nocturne"):
     for bf_code, frames in BF_FRAMES.items():
         for f_i, f_grid in enumerate(frames):
             defs.append('<g id="%s-eco-%s%d">%s</g>' % (p, bf_code, f_i, _merge_grid_paths(f_grid, -5, -4)))
-        defs.append(
-            '<g id="%s-%s-fl">'
-            '<g opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0;0;0" dur=".4s" repeatCount="indefinite"/><use href="#%s-eco-%s0"/></g>'
-            '<g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;1" dur=".4s" repeatCount="indefinite"/><use href="#%s-eco-%s1"/></g>'
-            '<g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;1;0" dur=".4s" repeatCount="indefinite"/><use href="#%s-eco-%s2"/></g>'
-            "</g>" % (p, bf_code, p, bf_code, p, bf_code, p, bf_code)
-        )
+        defs.append('<g id="%s-%s-fl"><use href="#%s-eco-%s0"/></g>' % (p, bf_code, p, bf_code))
 
     for em_key, (ex, ey, egrid) in EMOTE_GRIDS.items():
         defs.append('<g id="%s-em-%s">%s</g>' % (p, em_key, _merge_grid_paths(egrid, ex, ey)))
@@ -1781,17 +1790,22 @@ def _firefly_zones(scene):
         return [
             (48, 44, 260, 228),
             (890, 44, 1152, 228),
-            (318, 256, 962, 283),
-            (340, 62, 860, 214),
+            (318, 252, 962, 282),
+            (72, 318, 850, 462),
         ]
     if scene == "core":
         return [
-            (26, 28, 104, 88),
-            (392, 28, 470, 88),
-            (26, 468, 152, 552),
-            (340, 468, 472, 552),
-            (742, 22, 942, 62),
-            (516, 540, 1168, 558),
+            (44, 438, 138, 548),
+            (356, 438, 468, 548),
+            (506, 78, 604, 344),
+            (824, 78, 952, 344),
+            (972, 400, 1164, 526),
+            (520, 538, 1164, 556),
+        ]
+    if scene.startswith("card"):
+        return [
+            (48, 44, 246, 144),
+            (252, 44, 346, 144),
         ]
     return [
         (42, 48, 380, 348),
@@ -1806,7 +1820,7 @@ def render_fireflies_svg(prefix, scene_kind="nocturne", width=1200, height=388, 
     p = prefix
     rng = random.Random("eco-ff-%s-%d-%d" % (scene, int(width), int(height)))
     zones = _firefly_zones(scene)
-    n_ff = count if count is not None else (16 if scene == "nocturne" else (14 if scene == "matrix" else 12))
+    n_ff = count if count is not None else (16 if scene == "nocturne" else (14 if scene == "matrix" else (4 if scene.startswith("card") else 12)))
 
     live_items = []
     calm_items = []
@@ -1814,10 +1828,10 @@ def render_fireflies_svg(prefix, scene_kind="nocturne", width=1200, height=388, 
         zx0, zy0, zx1, zy1 = zones[i % len(zones)]
         x0 = rng.uniform(zx0 + 8, zx1 - 8)
         y0 = rng.uniform(zy0 + 5, zy1 - 5)
-        dx1 = rng.uniform(-32, 32)
-        dy1 = rng.uniform(-16, 16)
-        dx2 = rng.uniform(-34, 34)
-        dy2 = rng.uniform(-18, 18)
+        dx1 = rng.uniform(-28, 28)
+        dy1 = rng.uniform(-14, 14)
+        dx2 = rng.uniform(-30, 30)
+        dy2 = rng.uniform(-16, 16)
         x1 = min(zx1 - 4, max(zx0 + 4, x0 + dx1))
         y1 = min(zy1 - 3, max(zy0 + 3, y0 + dy1))
         x2 = min(zx1 - 4, max(zx0 + 4, x0 + dx2))
@@ -1827,8 +1841,8 @@ def render_fireflies_svg(prefix, scene_kind="nocturne", width=1200, height=388, 
             num(x1, 1), num(y1, 1),
             num(x2, 1), num(y2, 1),
             num((x1 + x2) * 0.5, 1), num((y1 + y2) * 0.5, 1),
-            num(x0 - dx1 * 0.5, 1), num(y0 - dy1 * 0.5, 1),
-            num(x0 + dx2 * 0.4, 1), num(y0 - dy2 * 0.4, 1),
+            num(min(zx1 - 4, max(zx0 + 4, x0 - dx1 * 0.5)), 1), num(min(zy1 - 3, max(zy0 + 3, y0 - dy1 * 0.5)), 1),
+            num(min(zx1 - 4, max(zx0 + 4, x0 + dx2 * 0.4)), 1), num(min(zy1 - 3, max(zy0 + 3, y0 - dy2 * 0.4)), 1),
             num(x0, 1), num(y0, 1),
         )
         ff_ref = "#%s-ff0" % p if i % 3 != 0 else "#%s-ff1" % p
@@ -1854,7 +1868,6 @@ def render_fireflies_svg(prefix, scene_kind="nocturne", width=1200, height=388, 
 
 
 def _scene_props_layout(scene):
-    # WHY: Every scene mounts all 32 props in verified non-overlapping habitat coordinates clear of all text/UI boxes.
     if scene == "matrix":
         return [
             ("cypress_alcove", 40, 247.0, 1.12, None),
@@ -1892,38 +1905,38 @@ def _scene_props_layout(scene):
         ]
     if scene == "core":
         return [
-            ("wood_birdhouse", 34, 82, 1.12, None),
-            ("starlight_windchime", 66, 72, 1.14, None),
-            ("weathervane", 426, 74, 1.14, None),
-            ("straw_nest", 454, 82, 1.14, None),
-            ("cypress_alcove", 28, 556, 1.18, None),
-            ("iron_lantern", 52, 555, 1.14, None),
-            ("sunflower_cluster", 78, 556, 1.20, (0.26, 0.38)),
-            ("dandelion_puff", 106, 556, 1.20, (0.44, 0.56)),
-            ("lavender_tuft", 134, 556, 1.18, None),
-            ("clover_bed", 184, 558, 1.12, None),
-            ("chamomile_patch", 246, 558, 1.10, None),
-            ("pebble_bank", 306, 558, 1.12, None),
-            ("dew_puddle", 354, 556, 1.20, (0.60, 0.74)),
-            ("lilypad_lotus", 388, 556, 1.18, None),
-            ("cattail_reeds", 418, 556, 1.16, None),
-            ("wild_rose_bush", 446, 556, 1.18, None),
-            ("firefly_jar", 470, 556, 1.16, None),
-            ("mossy_stone", 530, 349.0, 1.08, None),
-            ("acorn_stash", 558, 349.0, 1.10, (0.30, 0.44)),
-            ("glow_mushroom_blue", 590, 349.0, 1.08, None),
-            ("crystal_geode", 854, 349.0, 1.08, None),
-            ("amanita_mushroom", 888, 349.0, 1.08, None),
-            ("hollow_oak_log", 926, 349.0, 1.04, None),
-            ("provence_stone_wall", 518, 560.5, 1.06, None),
-            ("wood_signpost", 566, 560.5, 1.00, None),
-            ("wheat_sheaf", 614, 560.5, 1.04, None),
-            ("berry_bush", 666, 560.5, 1.06, (0.48, 0.60)),
-            ("garden_bench", 726, 560.5, 1.06, None),
-            ("oak_barrel", 784, 560.5, 1.04, None),
-            ("mini_footbridge", 848, 560.5, 1.06, None),
-            ("stream_brook", 914, 560.5, 1.06, None),
-            ("splash_fountain", 1148, 560.5, 1.02, None),
+            ("cypress_alcove", 506, 342.0, 1.10, None),
+            ("iron_lantern", 538, 341.0, 1.12, None),
+            ("sunflower_cluster", 568, 342.0, 1.12, (0.26, 0.38)),
+            ("straw_nest", 598, 343.0, 1.10, None),
+            ("glow_mushroom_blue", 826, 342.0, 1.08, None),
+            ("crystal_geode", 856, 342.0, 1.08, None),
+            ("amanita_mushroom", 886, 343.0, 1.08, None),
+            ("hollow_oak_log", 918, 343.0, 1.06, None),
+            ("acorn_stash", 948, 342.0, 1.08, (0.30, 0.44)),
+            ("mossy_stone", 974, 368.0, 1.06, None),
+            ("firefly_jar", 1016, 368.0, 1.08, None),
+            ("wood_signpost", 1060, 369.0, 1.04, None),
+            ("starlight_windchime", 1106, 370.0, 1.06, None),
+            ("weathervane", 1152, 370.0, 1.06, None),
+            ("provence_stone_wall", 30, 546.0, 1.14, None),
+            ("dandelion_puff", 62, 548.0, 1.16, (0.44, 0.56)),
+            ("lavender_tuft", 92, 550.0, 1.16, None),
+            ("clover_bed", 122, 551.0, 1.14, None),
+            ("chamomile_patch", 150, 552.0, 1.12, None),
+            ("pebble_bank", 344, 552.0, 1.12, None),
+            ("dew_puddle", 374, 550.0, 1.16, (0.60, 0.74)),
+            ("lilypad_lotus", 406, 550.0, 1.14, None),
+            ("cattail_reeds", 436, 548.0, 1.14, None),
+            ("wild_rose_bush", 466, 546.0, 1.14, None),
+            ("wood_birdhouse", 528, 552.0, 1.04, None),
+            ("wheat_sheaf", 604, 553.0, 1.06, None),
+            ("berry_bush", 684, 553.0, 1.06, (0.48, 0.60)),
+            ("garden_bench", 768, 553.0, 1.06, None),
+            ("oak_barrel", 852, 553.0, 1.04, None),
+            ("mini_footbridge", 944, 553.0, 1.06, None),
+            ("stream_brook", 1042, 553.0, 1.06, None),
+            ("splash_fountain", 1144, 552.0, 1.02, None),
         ]
     return [
         ("cypress_alcove", 38, 344, 1.38, None),
@@ -1961,10 +1974,33 @@ def _scene_props_layout(scene):
     ]
 
 
+def _card_props(card_id):
+    if card_id == "card1":
+        return [
+            ("sunflower_cluster", 34, 152, 0.88, (0.24, 0.36)),
+            ("lavender_tuft", 72, 153, 0.86, None),
+            ("mossy_stone", 316, 153, 0.84, None),
+            ("firefly_jar", 352, 152, 0.86, None),
+        ]
+    if card_id == "card2":
+        return [
+            ("glow_mushroom_blue", 36, 152, 0.86, None),
+            ("clover_bed", 76, 153, 0.84, None),
+            ("acorn_stash", 312, 152, 0.86, (0.46, 0.58)),
+            ("berry_bush", 350, 152, 0.86, None),
+        ]
+    return [
+        ("cypress_alcove", 34, 151, 0.86, None),
+        ("dandelion_puff", 74, 152, 0.86, (0.28, 0.42)),
+        ("crystal_geode", 318, 152, 0.86, None),
+        ("chamomile_patch", 354, 153, 0.84, None),
+    ]
+
+
 def _render_props_layer(prefix, scene):
     p = prefix
     prop_idx_map = {nm: idx for idx, nm in enumerate(PROP_NAMES)}
-    layout = _scene_props_layout(scene)
+    layout = _card_props(scene) if scene.startswith("card") else _scene_props_layout(scene)
     live = []
     calm = []
 
@@ -2017,219 +2053,296 @@ def _render_props_layer(prefix, scene):
     return "".join(live), "".join(calm), len(layout)
 
 
+def _loop_8(mode, pts, stat_poses, trav_poses):
+    sched = SCHED_S if mode == "S" else SCHED_T
+    segs = []
+    for k in range(4):
+        x0, y0 = pts[k]
+        x1, y1 = pts[(k + 1) % 4]
+        t_dir = 1 if x1 >= x0 else -1
+        s_anim, s_face, s_em = stat_poses[k]
+        t_anim, t_em = trav_poses[k]
+        if mode == "S":
+            segs.append((sched[2 * k], x0, y0, s_anim, s_face, s_em))
+            segs.append((sched[2 * k + 1], x0, y0, t_anim, t_dir, t_em))
+        else:
+            segs.append((sched[2 * k], x0, y0, t_anim, t_dir, t_em))
+            segs.append((sched[2 * k + 1], x1, y1, s_anim, s_face, s_em))
+    segs.append((1.00, pts[0][0], pts[0][1], segs[0][3], segs[0][4], None))
+    return segs
+
+
 def _scene_menagerie_cast(scene):
-    # WHY: Synchronizes diurnal/nocturnal habits across the 60s Day-Night cycle while exercising all 25 ANIMATION_NAMES.
+    # WHY: Strict stationary/travel alternation across 60s loop, exercising all 25 ANIMATION_NAMES with zero moonwalking.
     if scene == "matrix":
         return [
-            ("shiba_dog", 1.38, [
-                (0.00, 588, 287.5, "stargaze_meteor", 1, "sparkle"),
-                (0.24, 588, 287.5, "stretch_bow", 1, None),
-                (0.50, 488, 287.5, "trot", -1, None),
-                (0.76, 636, 287.5, "belly_roll", 1, "heart"),
-                (1.00, 588, 287.5, "stargaze_meteor", 1, None),
-            ]),
-            ("red_fox", 1.36, [
-                (0.00, 424, 287.5, "crouch_stalk", 1, None),
-                (0.24, 504, 287.5, "pounce_play", 1, "sparkle"),
-                (0.50, 442, 287.5, "sleep_curl_breathe", -1, "zzz"),
-                (0.76, 482, 287.5, "boop_firefly", 1, None),
-                (1.00, 424, 287.5, "crouch_stalk", 1, None),
-            ]),
-            ("calico_cat", 1.34, [
-                (0.00, 610, 287.5, "groom_paw", -1, None),
-                (0.26, 674, 287.5, "sun_bask", 1, "heart"),
-                (0.74, 616, 287.5, "scratch_ear", -1, None),
-                (1.00, 610, 287.5, "groom_paw", -1, None),
-            ]),
-            ("cottontail_rabbit", 1.36, [
-                (0.00, 344, 287.5, "ear_perk_alert", 1, None),
-                (0.26, 382, 287.5, "binky_leap", 1, "sparkle"),
-                (0.74, 396, 287.5, "graze_nibble", -1, None),
-                (1.00, 344, 287.5, "ear_perk_alert", 1, None),
-            ]),
-            ("red_squirrel", 1.34, [
-                (0.00, 196, 247.0, "tail_wag_happy", 1, None),
-                (0.26, 226, 247.0, "happy_spin", 1, "note"),
-                (0.74, 206, 247.0, "shake_fur", -1, None),
-                (1.00, 196, 247.0, "tail_wag_happy", 1, None),
-            ]),
-            ("tawny_owl", 1.38, [
-                (0.00, 146, 118.0, "gallop", 1, None),
-                (0.26, 138, 228.0, "sleep_curl_breathe", -1, "zzz"),
-                (0.74, 232, 108.0, "perch_sway", 1, "sparkle"),
-                (1.00, 146, 118.0, "gallop", 1, None),
-            ]),
-            ("mallard_duck", 1.34, [
-                (0.00, 898, 287.5, "sleep_curl_breathe", -1, None),
-                (0.26, 918, 287.5, "drink_ripple", 1, None),
-                (0.74, 938, 287.5, "walk", -1, "note"),
-                (1.00, 898, 287.5, "sleep_curl_breathe", -1, None),
-            ]),
-            ("hedgehog", 1.34, [
-                (0.00, 716, 287.5, "sniff_ground", 1, None),
-                (0.26, 748, 287.5, "sleep_curl_breathe", -1, "zzz"),
-                (0.74, 728, 287.5, "walk", 1, None),
-                (1.00, 716, 287.5, "sniff_ground", 1, None),
-            ]),
-            ("spotted_deer", 1.28, [
-                (0.00, 804, 287.5, "stargaze_meteor", -1, None),
-                (0.26, 868, 287.5, "gallop", 1, "sparkle"),
-                (0.74, 824, 287.5, "graze_nibble", -1, None),
-                (1.00, 804, 287.5, "stargaze_meteor", -1, None),
-            ]),
-            ("tree_frog", 1.36, [
-                (0.00, 938, 247.0, "hop", 1, "note"),
-                (0.26, 954, 247.0, "sun_bask", -1, None),
-                (0.74, 934, 247.0, "yawn", 1, None),
-                (1.00, 938, 247.0, "hop", 1, None),
-            ]),
-            ("azure_bluebird", 1.34, [
-                (0.00, 1084, 247.0, "perch_sway", -1, None),
-                (0.26, 986, 134.0, "chase_butterfly", -1, "note"),
-                (0.74, 1068, 247.0, "sleep_curl_breathe", -1, "zzz"),
-                (1.00, 1084, 247.0, "perch_sway", -1, None),
-            ]),
+            ("shiba_dog", 1.79, _loop_8(
+                "S",
+                [(118, 368), (436, 442), (728, 364), (512, 266)],
+                [("stargaze_meteor", 1, "sparkle"), ("belly_roll", 1, "heart"), ("stretch_bow", -1, None), ("tail_wag_happy", -1, None)],
+                [("trot", None), ("gallop", None), ("walk", None), ("trot", None)],
+            )),
+            ("red_fox", 1.77, _loop_8(
+                "T",
+                [(224, 438), (586, 366), (824, 448), (384, 264)],
+                [("crouch_stalk", 1, None), ("sleep_curl_breathe", -1, "zzz"), ("sniff_ground", -1, None), ("shake_fur", 1, None)],
+                [("pounce_play", "sparkle"), ("trot", None), ("boop_firefly", None), ("gallop", None)],
+            )),
+            ("calico_cat", 1.74, _loop_8(
+                "S",
+                [(642, 266), (488, 388), (776, 434), (948, 368)],
+                [("groom_paw", -1, None), ("scratch_ear", 1, None), ("sun_bask", 1, "heart"), ("yawn", -1, None)],
+                [("walk", None), ("trot", None), ("walk", None), ("trot", None)],
+            )),
+            ("cottontail_rabbit", 1.77, _loop_8(
+                "T",
+                [(88, 424), (318, 364), (534, 454), (336, 266)],
+                [("ear_perk_alert", 1, None), ("graze_nibble", 1, None), ("sniff_ground", -1, None), ("sun_bask", -1, None)],
+                [("binky_leap", "sparkle"), ("hop", None), ("hop", None), ("binky_leap", None)],
+            )),
+            ("red_squirrel", 1.74, _loop_8(
+                "S",
+                [(164, 142), (386, 208), (242, 372), (112, 238)],
+                [("tail_wag_happy", 1, None), ("happy_spin", -1, "note"), ("graze_nibble", -1, None), ("shake_fur", 1, None)],
+                [("hop", None), ("binky_leap", None), ("hop", None), ("trot", None)],
+            )),
+            ("tawny_owl", 1.80, _loop_8(
+                "T",
+                [(124, 88), (476, 152), (836, 84), (568, 212)],
+                [("perch_sway", 1, "sparkle"), ("stargaze_meteor", -1, None), ("sleep_curl_breathe", -1, "zzz"), ("yawn", -1, None)],
+                [("gallop", None), ("chase_butterfly", None), ("gallop", None), ("gallop", None)],
+            )),
+            ("mallard_duck", 1.74, _loop_8(
+                "S",
+                [(918, 266), (1086, 372), (952, 452), (792, 374)],
+                [("drink_ripple", 1, None), ("graze_nibble", -1, None), ("sleep_curl_breathe", -1, None), ("sun_bask", 1, "note")],
+                [("walk", None), ("walk", None), ("trot", None), ("walk", None)],
+            )),
+            ("hedgehog", 1.74, _loop_8(
+                "T",
+                [(364, 412), (662, 456), (838, 368), (596, 362)],
+                [("sniff_ground", 1, None), ("belly_roll", 1, None), ("scratch_ear", -1, None), ("sleep_curl_breathe", -1, "zzz")],
+                [("walk", None), ("trot", None), ("walk", None), ("walk", None)],
+            )),
+            ("spotted_deer", 1.76, _loop_8(
+                "S",
+                [(748, 198), (1034, 154), (1128, 398), (788, 264)],
+                [("stargaze_meteor", 1, None), ("ear_perk_alert", 1, None), ("drink_ripple", -1, None), ("stretch_bow", -1, None)],
+                [("gallop", "sparkle"), ("trot", None), ("gallop", None), ("trot", None)],
+            )),
+            ("tree_frog", 1.77, _loop_8(
+                "T",
+                [(936, 256), (1126, 366), (1018, 454), (842, 398)],
+                [("sun_bask", 1, None), ("yawn", -1, None), ("perch_sway", -1, "note"), ("crouch_stalk", 1, None)],
+                [("hop", "note"), ("boop_firefly", None), ("hop", None), ("pounce_play", None)],
+            )),
+            ("azure_bluebird", 1.74, _loop_8(
+                "S",
+                [(1078, 96), (712, 134), (312, 82), (648, 188)],
+                [("perch_sway", -1, None), ("happy_spin", -1, "note"), ("sleep_curl_breathe", 1, "zzz"), ("groom_paw", 1, None)],
+                [("chase_butterfly", "note"), ("gallop", None), ("gallop", None), ("chase_butterfly", None)],
+            )),
         ]
     if scene == "core":
         return [
-            ("shiba_dog", 1.28, [
-                (0.00, 92, 556.0, "stargaze_meteor", 1, "sparkle"),
-                (0.24, 134, 556.0, "stretch_bow", 1, None),
-                (0.50, 246, 558.0, "trot", 1, None),
-                (0.76, 114, 556.0, "belly_roll", -1, "heart"),
-                (1.00, 92, 556.0, "stargaze_meteor", 1, None),
-            ]),
-            ("red_fox", 1.26, [
-                (0.00, 434, 556.0, "crouch_stalk", -1, None),
-                (0.24, 398, 556.0, "pounce_play", -1, "sparkle"),
-                (0.50, 438, 556.0, "sleep_curl_breathe", 1, "zzz"),
-                (0.76, 416, 556.0, "boop_firefly", -1, None),
-                (1.00, 434, 556.0, "crouch_stalk", -1, None),
-            ]),
-            ("calico_cat", 1.22, [
-                (0.00, 544, 349.0, "groom_paw", 1, None),
-                (0.26, 578, 349.0, "sun_bask", -1, "heart"),
-                (0.74, 554, 349.0, "scratch_ear", 1, None),
-                (1.00, 544, 349.0, "groom_paw", 1, None),
-            ]),
-            ("cottontail_rabbit", 1.18, [
-                (0.00, 642, 560.5, "ear_perk_alert", 1, None),
-                (0.26, 686, 560.5, "binky_leap", 1, None),
-                (0.74, 638, 560.5, "graze_nibble", -1, None),
-                (1.00, 642, 560.5, "ear_perk_alert", 1, None),
-            ]),
-            ("red_squirrel", 1.22, [
-                (0.00, 916, 349.0, "tail_wag_happy", -1, None),
-                (0.26, 886, 349.0, "happy_spin", 1, "note"),
-                (0.74, 904, 349.0, "shake_fur", -1, None),
-                (1.00, 916, 349.0, "tail_wag_happy", -1, None),
-            ]),
-            ("tawny_owl", 1.24, [
-                (0.00, 58, 54.0, "perch_sway", 1, "sparkle"),
-                (0.26, 36, 66.0, "sleep_curl_breathe", 1, "zzz"),
-                (0.74, 84, 44.0, "gallop", 1, None),
-                (1.00, 58, 54.0, "perch_sway", 1, None),
-            ]),
-            ("mallard_duck", 1.24, [
-                (0.00, 346, 556.0, "sleep_curl_breathe", 1, None),
-                (0.26, 368, 556.0, "drink_ripple", 1, None),
-                (0.74, 382, 556.0, "walk", -1, "note"),
-                (1.00, 346, 556.0, "sleep_curl_breathe", 1, None),
-            ]),
-            ("hedgehog", 1.18, [
-                (0.00, 804, 560.5, "sniff_ground", 1, None),
-                (0.26, 828, 560.5, "sleep_curl_breathe", -1, None),
-                (0.74, 812, 560.5, "walk", 1, None),
-                (1.00, 804, 560.5, "sniff_ground", 1, None),
-            ]),
-            ("spotted_deer", 1.04, [
-                (0.00, 984, 560.5, "stargaze_meteor", -1, None),
-                (0.26, 1068, 560.5, "gallop", 1, None),
-                (0.74, 960, 560.5, "drink_ripple", -1, None),
-                (1.00, 984, 560.5, "stargaze_meteor", -1, None),
-            ]),
-            ("tree_frog", 1.18, [
-                (0.00, 1118, 560.5, "hop", -1, None),
-                (0.26, 1132, 560.5, "sun_bask", 1, None),
-                (0.74, 1122, 560.5, "yawn", -1, None),
-                (1.00, 1118, 560.5, "hop", -1, None),
-            ]),
-            ("azure_bluebird", 1.22, [
-                (0.00, 452, 66.0, "sleep_curl_breathe", -1, None),
-                (0.26, 842, 42.0, "chase_butterfly", 1, "note"),
-                (0.74, 442, 58.0, "perch_sway", -1, None),
-                (1.00, 452, 66.0, "sleep_curl_breathe", -1, None),
-            ]),
+            ("shiba_dog", 1.70, _loop_8(
+                "S",
+                [(392, 538), (546, 332), (528, 126), (424, 458)],
+                [("stargaze_meteor", 1, "sparkle"), ("belly_roll", 1, "heart"), ("stretch_bow", -1, None), ("tail_wag_happy", -1, None)],
+                [("trot", None), ("gallop", None), ("trot", None), ("walk", None)],
+            )),
+            ("red_fox", 1.66, _loop_8(
+                "T",
+                [(882, 364), (1128, 368), (1084, 492), (1134, 366)],
+                [("crouch_stalk", 1, None), ("sniff_ground", 1, None), ("sleep_curl_breathe", -1, "zzz"), ("shake_fur", -1, None)],
+                [("pounce_play", "sparkle"), ("trot", None), ("boop_firefly", None), ("gallop", None)],
+            )),
+            ("calico_cat", 1.68, _loop_8(
+                "S",
+                [(538, 118), (562, 326), (878, 334), (862, 312)],
+                [("groom_paw", 1, None), ("sun_bask", 1, "heart"), ("scratch_ear", -1, None), ("yawn", -1, None)],
+                [("walk", None), ("trot", None), ("walk", None), ("trot", None)],
+            )),
+            ("cottontail_rabbit", 1.66, _loop_8(
+                "T",
+                [(56, 538), (114, 452), (68, 544), (128, 536)],
+                [("ear_perk_alert", 1, None), ("graze_nibble", -1, None), ("sun_bask", 1, None), ("drink_ripple", -1, None)],
+                [("binky_leap", "sparkle"), ("hop", None), ("hop", None), ("binky_leap", None)],
+            )),
+            ("red_squirrel", 1.66, _loop_8(
+                "S",
+                [(524, 298), (558, 98), (886, 94), (534, 118)],
+                [("tail_wag_happy", 1, None), ("happy_spin", 1, "note"), ("graze_nibble", 1, None), ("shake_fur", -1, None)],
+                [("hop", None), ("gallop", None), ("hop", None), ("binky_leap", None)],
+            )),
+            ("tawny_owl", 1.72, _loop_8(
+                "T",
+                [(518, 88), (886, 86), (928, 122), (862, 92)],
+                [("perch_sway", 1, "sparkle"), ("stargaze_meteor", 1, None), ("sleep_curl_breathe", -1, "zzz"), ("yawn", -1, None)],
+                [("gallop", None), ("gallop", None), ("chase_butterfly", None), ("gallop", None)],
+            )),
+            ("mallard_duck", 1.66, _loop_8(
+                "S",
+                [(384, 538), (456, 448), (464, 542), (388, 468)],
+                [("drink_ripple", 1, None), ("graze_nibble", 1, None), ("sleep_curl_breathe", -1, None), ("sun_bask", -1, "note")],
+                [("walk", None), ("trot", None), ("walk", None), ("walk", None)],
+            )),
+            ("hedgehog", 1.66, _loop_8(
+                "T",
+                [(1058, 434), (1148, 516), (1064, 522), (1142, 424)],
+                [("sniff_ground", 1, None), ("belly_roll", -1, None), ("scratch_ear", 1, None), ("sleep_curl_breathe", -1, "zzz")],
+                [("walk", None), ("walk", None), ("trot", None), ("walk", None)],
+            )),
+            ("spotted_deer", 1.72, _loop_8(
+                "S",
+                [(864, 324), (926, 366), (1136, 368), (938, 366)],
+                [("stargaze_meteor", 1, None), ("drink_ripple", 1, None), ("stretch_bow", -1, None), ("ear_perk_alert", -1, None)],
+                [("gallop", "sparkle"), ("trot", None), ("trot", None), ("gallop", None)],
+            )),
+            ("tree_frog", 1.66, _loop_8(
+                "T",
+                [(1126, 228), (1154, 368), (1068, 486), (1134, 332)],
+                [("sun_bask", 1, None), ("yawn", -1, None), ("crouch_stalk", -1, None), ("perch_sway", 1, "note")],
+                [("hop", "note"), ("boop_firefly", None), ("hop", None), ("pounce_play", None)],
+            )),
+            ("azure_bluebird", 1.68, _loop_8(
+                "S",
+                [(1134, 96), (1152, 244), (1126, 366), (1146, 178)],
+                [("perch_sway", -1, None), ("happy_spin", -1, "note"), ("groom_paw", -1, None), ("sleep_curl_breathe", 1, "zzz")],
+                [("chase_butterfly", "note"), ("gallop", None), ("gallop", None), ("chase_butterfly", None)],
+            )),
         ]
+    if scene.startswith("card"):
+        card_casts = {
+            "card1": [
+                ("shiba_dog", 1.62, _loop_8(
+                    "S",
+                    [(56, 128), (196, 74), (336, 134), (244, 142)],
+                    [("stargaze_meteor", 1, "sparkle"), ("tail_wag_happy", 1, None), ("belly_roll", -1, "heart"), ("stretch_bow", -1, None)],
+                    [("trot", None), ("gallop", None), ("trot", None), ("walk", None)],
+                )),
+                ("calico_cat", 1.58, _loop_8(
+                    "T",
+                    [(328, 66), (132, 118), (62, 62), (286, 138)],
+                    [("groom_paw", -1, None), ("sun_bask", 1, "heart"), ("scratch_ear", 1, None), ("sleep_curl_breathe", -1, "zzz")],
+                    [("walk", None), ("trot", None), ("walk", None), ("trot", None)],
+                )),
+                ("azure_bluebird", 1.56, _loop_8(
+                    "S",
+                    [(338, 96), (228, 56), (92, 86), (296, 118)],
+                    [("perch_sway", -1, None), ("happy_spin", -1, "note"), ("yawn", 1, None), ("perch_sway", -1, None)],
+                    [("chase_butterfly", "note"), ("gallop", None), ("gallop", None), ("boop_firefly", None)],
+                )),
+            ],
+            "card2": [
+                ("red_fox", 1.62, _loop_8(
+                    "S",
+                    [(62, 132), (218, 68), (338, 136), (176, 142)],
+                    [("crouch_stalk", 1, None), ("sniff_ground", 1, None), ("sleep_curl_breathe", -1, "zzz"), ("shake_fur", -1, None)],
+                    [("pounce_play", "sparkle"), ("trot", None), ("walk", None), ("gallop", None)],
+                )),
+                ("cottontail_rabbit", 1.60, _loop_8(
+                    "T",
+                    [(326, 122), (156, 136), (58, 66), (278, 92)],
+                    [("graze_nibble", -1, None), ("ear_perk_alert", 1, None), ("sun_bask", 1, None), ("drink_ripple", 1, None)],
+                    [("hop", None), ("binky_leap", "sparkle"), ("hop", None), ("hop", None)],
+                )),
+                ("tawny_owl", 1.64, _loop_8(
+                    "S",
+                    [(340, 58), (186, 56), (88, 98), (298, 78)],
+                    [("perch_sway", -1, "sparkle"), ("stargaze_meteor", -1, None), ("yawn", 1, None), ("sleep_curl_breathe", -1, "zzz")],
+                    [("gallop", None), ("chase_butterfly", None), ("gallop", None), ("gallop", None)],
+                )),
+            ],
+            "card3": [
+                ("spotted_deer", 1.60, _loop_8(
+                    "S",
+                    [(68, 134), (228, 78), (340, 138), (188, 142)],
+                    [("stargaze_meteor", 1, "sparkle"), ("graze_nibble", 1, None), ("ear_perk_alert", -1, None), ("stretch_bow", -1, None)],
+                    [("trot", None), ("gallop", None), ("walk", None), ("trot", None)],
+                )),
+                ("red_squirrel", 1.58, _loop_8(
+                    "T",
+                    [(324, 66), (144, 58), (62, 98), (286, 132)],
+                    [("happy_spin", -1, "note"), ("tail_wag_happy", 1, None), ("groom_paw", 1, None), ("shake_fur", -1, None)],
+                    [("hop", None), ("binky_leap", None), ("hop", None), ("hop", None)],
+                )),
+                ("tree_frog", 1.56, _loop_8(
+                    "S",
+                    [(336, 126), (254, 142), (128, 118), (298, 76)],
+                    [("sun_bask", -1, None), ("yawn", -1, None), ("perch_sway", 1, "note"), ("crouch_stalk", 1, None)],
+                    [("hop", None), ("boop_firefly", None), ("hop", None), ("pounce_play", None)],
+                )),
+            ],
+        }
+        return card_casts.get(scene, card_casts["card1"])
     return [
-        ("shiba_dog", 1.56, [
-            (0.00, 142, 356.0, "stargaze_meteor", 1, "sparkle"),
-            (0.24, 198, 362.0, "stretch_bow", 1, None),
-            (0.50, 336, 368.0, "trot", 1, None),
-            (0.76, 248, 364.0, "belly_roll", -1, "heart"),
-            (1.00, 142, 356.0, "stargaze_meteor", 1, None),
-        ]),
-        ("red_fox", 1.52, [
-            (0.00, 526, 368.0, "crouch_stalk", 1, None),
-            (0.24, 604, 368.0, "pounce_play", 1, "sparkle"),
-            (0.50, 488, 368.0, "sleep_curl_breathe", -1, "zzz"),
-            (0.76, 558, 368.0, "boop_firefly", 1, None),
-            (1.00, 526, 368.0, "crouch_stalk", 1, None),
-        ]),
-        ("calico_cat", 1.48, [
-            (0.00, 662, 354.0, "groom_paw", 1, None),
-            (0.26, 692, 364.0, "sun_bask", 1, "heart"),
-            (0.74, 650, 364.0, "scratch_ear", -1, None),
-            (1.00, 662, 354.0, "groom_paw", 1, None),
-        ]),
-        ("cottontail_rabbit", 1.50, [
-            (0.00, 362, 370.0, "ear_perk_alert", 1, None),
-            (0.26, 408, 372.0, "binky_leap", 1, "sparkle"),
-            (0.74, 424, 372.0, "graze_nibble", -1, None),
-            (1.00, 362, 370.0, "ear_perk_alert", 1, None),
-        ]),
-        ("red_squirrel", 1.46, [
-            (0.00, 496, 368.0, "tail_wag_happy", 1, None),
-            (0.26, 528, 370.0, "happy_spin", 1, "note"),
-            (0.74, 504, 370.0, "shake_fur", -1, None),
-            (1.00, 496, 368.0, "tail_wag_happy", 1, None),
-        ]),
-        ("tawny_owl", 1.50, [
-            (0.00, 186, 122.0, "gallop", 1, None),
-            (0.26, 1138, 326.0, "sleep_curl_breathe", -1, "zzz"),
-            (0.74, 412, 98.0, "perch_sway", 1, "sparkle"),
-            (1.00, 186, 122.0, "gallop", 1, None),
-        ]),
-        ("mallard_duck", 1.48, [
-            (0.00, 982, 364.0, "sleep_curl_breathe", -1, None),
-            (0.26, 1008, 364.0, "drink_ripple", 1, None),
-            (0.74, 1036, 362.0, "walk", 1, "note"),
-            (1.00, 982, 364.0, "sleep_curl_breathe", -1, None),
-        ]),
-        ("hedgehog", 1.48, [
-            (0.00, 764, 368.0, "sniff_ground", 1, None),
-            (0.26, 796, 366.0, "sleep_curl_breathe", -1, "zzz"),
-            (0.74, 776, 368.0, "walk", 1, None),
-            (1.00, 764, 368.0, "sniff_ground", 1, None),
-        ]),
-        ("spotted_deer", 1.44, [
-            (0.00, 848, 362.0, "stargaze_meteor", -1, None),
-            (0.26, 938, 364.0, "gallop", 1, "sparkle"),
-            (0.74, 878, 362.0, "graze_nibble", -1, None),
-            (1.00, 848, 362.0, "stargaze_meteor", -1, None),
-        ]),
-        ("tree_frog", 1.50, [
-            (0.00, 1082, 356.0, "hop", -1, "note"),
-            (0.26, 1062, 358.0, "sun_bask", 1, None),
-            (0.74, 1082, 356.0, "yawn", -1, None),
-            (1.00, 1082, 356.0, "hop", -1, None),
-        ]),
-        ("azure_bluebird", 1.46, [
-            (0.00, 1166, 338.0, "sleep_curl_breathe", -1, None),
-            (0.26, 768, 152.0, "chase_butterfly", -1, "note"),
-            (0.74, 264, 344.0, "perch_sway", 1, None),
-            (1.00, 1166, 338.0, "sleep_curl_breathe", -1, None),
-        ]),
+        ("shiba_dog", 1.98, _loop_8(
+            "S",
+            [(118, 332), (486, 248), (784, 344), (368, 192)],
+            [("stargaze_meteor", 1, "sparkle"), ("stretch_bow", 1, None), ("belly_roll", -1, "heart"), ("tail_wag_happy", -1, None)],
+            [("trot", None), ("gallop", None), ("trot", None), ("walk", None)],
+        )),
+        ("red_fox", 1.96, _loop_8(
+            "T",
+            [(456, 338), (742, 226), (968, 326), (628, 286)],
+            [("crouch_stalk", 1, None), ("sleep_curl_breathe", -1, "zzz"), ("sniff_ground", -1, None), ("shake_fur", -1, None)],
+            [("pounce_play", "sparkle"), ("trot", None), ("boop_firefly", None), ("gallop", None)],
+        )),
+        ("calico_cat", 1.92, _loop_8(
+            "S",
+            [(648, 346), (892, 238), (586, 178), (434, 294)],
+            [("groom_paw", 1, None), ("scratch_ear", -1, None), ("sun_bask", -1, "heart"), ("yawn", 1, None)],
+            [("walk", None), ("trot", None), ("walk", None), ("trot", None)],
+        )),
+        ("cottontail_rabbit", 1.95, _loop_8(
+            "T",
+            [(84, 264), (336, 346), (548, 234), (246, 176)],
+            [("ear_perk_alert", 1, None), ("graze_nibble", 1, None), ("sniff_ground", -1, None), ("sun_bask", -1, None)],
+            [("binky_leap", "sparkle"), ("hop", None), ("hop", None), ("binky_leap", None)],
+        )),
+        ("red_squirrel", 1.90, _loop_8(
+            "S",
+            [(218, 198), (442, 156), (294, 298), (96, 214)],
+            [("tail_wag_happy", 1, None), ("happy_spin", -1, "note"), ("graze_nibble", -1, None), ("groom_paw", 1, None)],
+            [("hop", None), ("hop", None), ("binky_leap", None), ("trot", None)],
+        )),
+        ("tawny_owl", 1.96, _loop_8(
+            "T",
+            [(168, 86), (618, 128), (1046, 78), (542, 68)],
+            [("perch_sway", 1, "sparkle"), ("stargaze_meteor", -1, None), ("sleep_curl_breathe", -1, "zzz"), ("yawn", 1, None)],
+            [("gallop", None), ("gallop", None), ("chase_butterfly", None), ("gallop", None)],
+        )),
+        ("mallard_duck", 1.92, _loop_8(
+            "S",
+            [(956, 348), (1132, 264), (924, 212), (836, 326)],
+            [("drink_ripple", 1, None), ("graze_nibble", -1, None), ("sun_bask", -1, "note"), ("sleep_curl_breathe", 1, None)],
+            [("walk", None), ("walk", None), ("trot", None), ("walk", None)],
+        )),
+        ("hedgehog", 1.92, _loop_8(
+            "T",
+            [(718, 354), (942, 294), (1094, 346), (848, 252)],
+            [("sniff_ground", 1, None), ("belly_roll", 1, None), ("scratch_ear", -1, None), ("sleep_curl_breathe", -1, "zzz")],
+            [("walk", None), ("walk", None), ("trot", None), ("walk", None)],
+        )),
+        ("spotted_deer", 1.88, _loop_8(
+            "S",
+            [(812, 296), (1088, 204), (838, 156), (568, 256)],
+            [("stargaze_meteor", 1, None), ("drink_ripple", -1, None), ("ear_perk_alert", -1, None), ("stretch_bow", 1, None)],
+            [("gallop", "sparkle"), ("trot", None), ("gallop", None), ("trot", None)],
+        )),
+        ("tree_frog", 1.95, _loop_8(
+            "T",
+            [(1048, 338), (904, 232), (1126, 196), (988, 296)],
+            [("sun_bask", -1, None), ("yawn", 1, None), ("perch_sway", -1, "note"), ("crouch_stalk", 1, None)],
+            [("hop", "note"), ("boop_firefly", None), ("hop", None), ("pounce_play", None)],
+        )),
+        ("azure_bluebird", 1.90, _loop_8(
+            "S",
+            [(1112, 118), (748, 92), (338, 114), (694, 168)],
+            [("perch_sway", -1, None), ("happy_spin", -1, "note"), ("sleep_curl_breathe", 1, "zzz"), ("shake_fur", 1, None)],
+            [("chase_butterfly", "note"), ("gallop", None), ("gallop", None), ("chase_butterfly", None)],
+        )),
     ]
 
 
@@ -2247,13 +2360,13 @@ def _render_single_animal(prefix, actor_idx, species, scale, segments):
     rig_parts = ['<use class="%s-%s" href="#%s-%d%s"/>' % (p, PART_SHORT[pk], p, s_idx, PART_SHORT[pk]) for pk in PART_KEYS]
     rig_inner = '<g class="%s-r">%s</g>' % (p, "".join(rig_parts))
 
-    n_ph = len(active)
+    q_tag = "t" if len(segments) > 1 and abs(segments[1][0] - 0.13) < 0.005 else "s"
     used_anims = [s[3] for s in active]
     slots_svg = []
     for ph_i, s in enumerate(active):
         anim_name = s[3]
         a_idx = ANIMATION_NAMES.index(anim_name)
-        q_cls = "%s-q%d%d" % (p, n_ph, ph_i)
+        q_cls = "%s-q%s%d" % (p, q_tag, ph_i)
         flip_attr = "" if s[4] >= 0 else ' transform="scale(-1 1)"'
         slots_svg.append(
             '<g class="%s %s-a%d" data-anim="%s"%s>%s%s</g>'
@@ -2263,7 +2376,7 @@ def _render_single_animal(prefix, actor_idx, species, scale, segments):
     emotes_svg = []
     for ph_i, s in enumerate(active):
         if s[5]:
-            q_cls = "%s-q%d%d" % (p, n_ph, ph_i)
+            q_cls = "%s-q%s%d" % (p, q_tag, ph_i)
             emotes_svg.append('<use class="%s" href="#%s-em-%s"/>' % (q_cls, p, s[5]))
 
     live_node = (
@@ -2299,22 +2412,27 @@ def _render_butterflies_layer(prefix, scene):
     p = prefix
     if scene == "matrix":
         paths = [
-            ("bfm", "M 366,262 C 448,228 566,242 642,264 C 572,278 446,278 366,262 Z", "19s", 1.35),
-            ("bfg", "M 744,264 C 818,236 912,240 956,264 C 896,278 806,278 744,264 Z", "22s", 1.32),
-            ("bfm", "M 88,186 C 148,142 236,154 258,196 C 212,222 132,216 88,186 Z", "24s", 1.28),
+            ("bfm", "M 366,260 C 448,232 566,242 642,262 C 572,272 446,272 366,260 Z", "19s", 1.45),
+            ("bfg", "M 744,262 C 818,236 912,240 956,262 C 896,272 806,272 744,262 Z", "22s", 1.42),
+            ("bfm", "M 188,396 C 288,362 436,368 498,412 C 412,438 262,432 188,396 Z", "24s", 1.38),
         ]
     elif scene == "core":
         paths = [
-            ("bfm", "M 54,518 C 88,486 136,494 144,528 C 118,544 76,542 54,518 Z", "18s", 1.30),
-            ("bfg", "M 358,520 C 392,486 446,494 458,528 C 424,544 382,542 358,520 Z", "21s", 1.28),
-            ("bfm", "M 754,48 C 808,26 894,30 926,52 C 874,64 798,62 754,48 Z", "23s", 1.22),
+            ("bfm", "M 54,518 C 88,486 136,494 144,528 C 118,544 76,542 54,518 Z", "18s", 1.38),
+            ("bfg", "M 362,520 C 396,488 446,494 458,528 C 424,544 384,542 362,520 Z", "21s", 1.36),
+            ("bfm", "M 852,108 C 886,84 928,90 940,122 C 912,136 872,132 852,108 Z", "23s", 1.34),
+        ]
+    elif scene.startswith("card"):
+        paths = [
+            ("bfm", "M 56,78 C 126,48 234,54 276,88 C 214,112 112,106 56,78 Z", "17s", 1.18),
+            ("bfg", "M 248,118 C 286,94 332,100 344,128 C 314,142 272,140 248,118 Z", "20s", 1.12),
         ]
     else:
         paths = [
-            ("bfm", "M 164,316 C 268,256 418,268 486,324 C 396,348 254,344 164,316 Z", "21s", 1.48),
-            ("bfg", "M 548,318 C 658,258 812,268 896,322 C 792,346 648,344 548,318 Z", "24s", 1.46),
-            ("bfm", "M 862,306 C 948,254 1068,262 1126,312 C 1046,336 936,332 862,306 Z", "19.5s", 1.42),
-            ("bfg", "M 92,268 C 172,218 278,228 318,278 C 254,298 154,294 92,268 Z", "26s", 1.38),
+            ("bfm", "M 164,316 C 268,256 418,268 486,324 C 396,348 254,344 164,316 Z", "21s", 1.56),
+            ("bfg", "M 548,318 C 658,258 812,268 896,322 C 792,346 648,344 548,318 Z", "24s", 1.52),
+            ("bfm", "M 862,306 C 948,254 1068,262 1126,312 C 1046,336 936,332 862,306 Z", "19.5s", 1.48),
+            ("bfg", "M 92,228 C 172,178 278,188 318,238 C 254,258 154,254 92,228 Z", "26s", 1.44),
         ]
 
     live = []

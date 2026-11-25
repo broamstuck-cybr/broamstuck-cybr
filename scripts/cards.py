@@ -29,6 +29,14 @@ from theme import (
     van_gogh_starry_backdrop,
 )
 
+try:
+    from ecosystem_defs import render_ecosystem_defs, render_ecosystem_stage
+    HAS_ECOSYSTEM = True
+except ImportError:
+    render_ecosystem_defs = None
+    render_ecosystem_stage = None
+    HAS_ECOSYSTEM = False
+
 CARD_W = 392
 CARD_H = 264
 
@@ -138,21 +146,51 @@ def _render_blender_model(model_data, yaw_deg=28.0, pitch_deg=21.0, fov=262.0, c
     if model_data.get("transit"):
         p_start = _cam_project(-66.0, -3.5, 0.0, 196.0, cy, yaw_deg, pitch_deg, fov)
         p_end = _cam_project(66.0, -3.5, 0.0, 196.0, cy, yaw_deg, pitch_deg, fov)
-        deck_path = "M%s,%s L%s,%s" % (num(p_start[0], 1), num(p_start[1], 1), num(p_end[0], 1), num(p_end[1], 1))
+        mx_t = num((p_start[0] + p_end[0]) * 0.5, 1)
+        my_t = num((p_start[1] + p_end[1]) * 0.5, 1)
+        star_d = star_path(0, 0, 4.4, 1.6, 4)
         nodes.append(
-            '<g>'
+            "<style>@keyframes ff-tr{0%%{transform:translate3d(%spx,%spx,0)}100%%{transform:translate3d(%spx,%spx,0)}}"
+            ".ff-tr{will-change:transform;animation:ff-tr 5.2s linear infinite}</style>"
+            '<g class="pup-live ff-tr">'
             '<circle cx="0" cy="0" r="5.2" fill="%s" fill-opacity="0.22"/>'
             '<path d="%s" fill="%s"/>'
             '<circle cx="0" cy="0" r="1.2" fill="#ffffff"/>'
-            '<animateMotion path="%s" dur="5.2s" repeatCount="indefinite"/>'
             "</g>"
-            % (CADMIUM, star_path(0, 0, 4.4, 1.6, 4), IVORY_WARM, deck_path)
+            '<g class="pup-calm" transform="translate(%s %s)">'
+            '<circle cx="0" cy="0" r="5.2" fill="%s" fill-opacity="0.22"/>'
+            '<path d="%s" fill="%s"/>'
+            '<circle cx="0" cy="0" r="1.2" fill="#ffffff"/>'
+            "</g>"
+            % (
+                num(p_start[0], 1), num(p_start[1], 1), num(p_end[0], 1), num(p_end[1], 1),
+                CADMIUM, star_d, IVORY_WARM, mx_t, my_t, CADMIUM, star_d, IVORY_WARM,
+            )
         )
     return nodes
 
 
-def _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, meta):
+def _as_markup_list(payload):
+    if payload is None:
+        return []
+    if isinstance(payload, (list, tuple)):
+        return [str(x) for x in payload if x]
+    return [str(payload)] if payload else []
+
+
+def _ecosystem_card_bundle(prefix, scene_kind):
+    if HAS_ECOSYSTEM and render_ecosystem_defs is not None and render_ecosystem_stage is not None:
+        raw_defs = "".join(_as_markup_list(render_ecosystem_defs(prefix, scene_kind)))
+        stage_nodes = _as_markup_list(render_ecosystem_stage(prefix, scene_kind, CARD_W, CARD_H))
+        if "<defs" in raw_defs:
+            return [], [raw_defs], stage_nodes
+        return [raw_defs], [], stage_nodes
+    return [], [], []
+
+
+def _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, meta, scene_kind="card1"):
     clip_defs, frame_nodes = nocturne_card(CARD_W, CARD_H, prefix, radius=16)
+    eco_in_defs, eco_top_defs, eco_stage = _ecosystem_card_bundle(prefix, scene_kind)
     raw_lang = meta.get("lang") or ""
     lang = "TypeScript" if raw_lang in ("", "Code") else raw_lang
     stars = int(meta.get("stars") or 0)
@@ -166,6 +204,7 @@ def _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, 
     ]
     parts.extend(nocturne_defs(prefix))
     parts.extend(clip_defs)
+    parts.extend(eco_in_defs)
     parts.extend(
         [
             '<clipPath id="%s-art-clip"><rect x="14" y="14" width="364" height="142" rx="10"/></clipPath>' % prefix,
@@ -177,6 +216,7 @@ def _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, 
             "</defs>",
         ]
     )
+    parts.extend(eco_top_defs)
     parts.extend(frame_nodes)
 
     parts.append('<rect x="14" y="14" width="364" height="142" rx="10" fill="%s"/>' % BG_WELL)
@@ -217,6 +257,8 @@ def _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, 
         % (CARD_W - 31, CARD_W - 22, CARD_W - 28, CARD_W - 22, CARD_W - 22, accent)
     )
 
+    parts.extend(eco_stage)
+
     parts.append("</svg>")
     return "\n".join(parts)
 
@@ -233,6 +275,7 @@ def render_flagship_cards(repo_map):
             "fforum3.vercel.app",
             EMERALD_MID,
             _render_blender_model(models.get("v3", {}), yaw_deg=29.0, pitch_deg=21.0, fov=252.0, cy=95.0),
+            "card1",
         ),
         (
             "card-fforum-v2.svg",
@@ -243,6 +286,7 @@ def render_flagship_cards(repo_map):
             "",
             SKY_SOFT,
             _render_blender_model(models.get("v2", {}), yaw_deg=25.0, pitch_deg=19.0, fov=236.0, cy=96.0),
+            "card2",
         ),
         (
             "card-fforum-v1.svg",
@@ -253,9 +297,10 @@ def render_flagship_cards(repo_map):
             "f-forum.vercel.app",
             FIREFLY_GOLD,
             _render_blender_model(models.get("v1", {}), yaw_deg=23.0, pitch_deg=22.0, fov=252.0, cy=104.0),
+            "card3",
         ),
     ]
     out = {}
-    for fname, prefix, key, title, subtitle, domain_tag, accent, art_nodes in specs:
-        out[fname] = _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, repo_map.get(key, {}))
+    for fname, prefix, key, title, subtitle, domain_tag, accent, art_nodes, scene_kind in specs:
+        out[fname] = _render_single_card(prefix, title, subtitle, domain_tag, accent, art_nodes, repo_map.get(key, {}), scene_kind)
     return out

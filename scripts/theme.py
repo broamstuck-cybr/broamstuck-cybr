@@ -51,9 +51,12 @@ LANG_PALETTE = {
 REDUCED_MOTION_STYLE = (
     "<style>"
     ".pup-calm, .cel-calm, .eco-calm { display: none; } "
+    ".cel-live, .eco-live { will-change: transform, opacity; } "
+    "@keyframes vg-spin360 { to { transform: rotate(360deg); } } "
+    ".vg-spin { transform-box: fill-box; transform-origin: center; will-change: transform; animation: vg-spin360 18s linear infinite; } "
     "@media (prefers-reduced-motion: reduce) { "
     "*, *::before, *::after { animation: none !important; transition: none !important; } "
-    ".vg-drift { animation: none !important; } "
+    ".vg-drift, .vg-spin { animation: none !important; } "
     ".pup-live, .cel-live, .eco-live { display: none !important; } "
     ".pup-calm, .cel-calm, .eco-calm { display: inline !important; } "
     "g:has(> animateMotion) { display: none !important; } "
@@ -152,7 +155,6 @@ def quant_hex(hex_col, step=6):
 
 
 def merge_close_runs(runs, tol=9):
-    # WHY: Coalesces adjacent micro-glyph runs within <=3.5% RGB delta to cut ~350KB of redundant <tspan> tags with zero visual loss.
     merged = []
     prev_rgb = None
     for col_h, txt in runs:
@@ -345,6 +347,118 @@ def _inside_boxes(px, py, boxes, pad=0.0):
     return False
 
 
+def _lum_rgb(r, g, b):
+    return 0.299 * r + 0.587 * g + 0.114 * b
+
+
+def _tint_vg_rgb(r, g, b, motif):
+    span = max(r, g, b) - min(r, g, b)
+    lum = _lum_rgb(r, g, b)
+    if span < 26 and lum > 138:
+        lift = (26 - span) / 26.0
+        if motif in (2, 4) or r > b + 4:
+            r = min(255, int(r + 16 * lift))
+            g = min(252, int(g + 8 * lift))
+            b = max(118, int(b - 34 * lift))
+        else:
+            r = max(182, int(r - 12 * lift))
+            g = min(248, int(g + 6 * lift))
+            b = min(255, int(b + 20 * lift))
+    return r, g, b
+
+
+def _build_top_palette(rgb_weights, max_colors=56, step=16):
+    hs = step // 2
+    buckets = {}
+    for (r, g, b), w in rgb_weights.items():
+        qr = min(255, ((r + hs) // step) * step)
+        qg = min(255, ((g + hs) // step) * step)
+        qb = min(255, ((b + hs) // step) * step)
+        k = (qr, qg, qb)
+        buckets[k] = buckets.get(k, 0.0) + w
+    if not buckets:
+        return ["#08152d"], {}
+    scored = sorted(
+        buckets.items(),
+        key=lambda kv: kv[1] * (1.0 + 0.008 * (max(kv[0]) - min(kv[0])) + 0.002 * _lum_rgb(*kv[0])),
+        reverse=True,
+    )
+    chosen_rgb = [kv[0] for kv in scored[:max_colors]]
+    chosen_hex = ["#%02x%02x%02x" % c for c in chosen_rgb]
+    lut = {}
+    for k in buckets:
+        if k in chosen_rgb:
+            lut[k] = chosen_rgb.index(k)
+        else:
+            kr, kg, kb = k
+            best_i = 0
+            best_d = 1e18
+            for idx, (cr, cg, cb) in enumerate(chosen_rgb):
+                dr, dg, db = kr - cr, kg - cg, kb - cb
+                d = 2 * dr * dr + 4 * dg * dg + 3 * db * db
+                if d < best_d:
+                    best_d = d
+                    best_i = idx
+            lut[k] = best_i
+    return chosen_hex, (step, hs, lut, chosen_rgb)
+
+
+def _map_palette_idx(r, g, b, pal_meta):
+    step, hs, lut, chosen_rgb = pal_meta
+    qr = min(255, ((r + hs) // step) * step)
+    qg = min(255, ((g + hs) // step) * step)
+    qb = min(255, ((b + hs) // step) * step)
+    idx = lut.get((qr, qg, qb))
+    if idx is not None:
+        return idx
+    best_i = 0
+    best_d = 1e18
+    for i, (cr, cg, cb) in enumerate(chosen_rgb):
+        dr, dg, db = qr - cr, qg - cg, qb - cb
+        d = 2 * dr * dr + 4 * dg * dg + 3 * db * db
+        if d < best_d:
+            best_d = d
+            best_i = i
+    lut[(qr, qg, qb)] = best_i
+    return best_i
+
+
+def _glyph_oil_dab(ch, cx, cy, col_step, row_step):
+    rx = col_step * 0.78
+    ry = row_step * 0.78
+    if ch == "/":
+        return "M%s,%sL%s,%s" % (num(cx - rx, 1), num(cy + ry, 1), num(cx + rx, 1), num(cy - ry, 1))
+    if ch == "\\":
+        return "M%s,%sL%s,%s" % (num(cx - rx, 1), num(cy - ry, 1), num(cx + rx, 1), num(cy + ry, 1))
+    if ch in ("|", "!"):
+        return "M%s,%sL%s,%s" % (num(cx, 1), num(cy - ry * 1.25, 1), num(cx, 1), num(cy + ry * 1.25, 1))
+    if ch in ("~", "="):
+        return "M%s,%sQ%s,%s %s,%s" % (
+            num(cx - rx * 1.25, 1), num(cy, 1),
+            num(cx, 1), num(cy - ry * 0.48, 1),
+            num(cx + rx * 1.25, 1), num(cy, 1),
+        )
+    if ch == "(":
+        return "M%s,%sQ%s,%s %s,%s" % (
+            num(cx + rx * 0.4, 1), num(cy - ry, 1),
+            num(cx - rx * 0.75, 1), num(cy, 1),
+            num(cx + rx * 0.4, 1), num(cy + ry, 1),
+        )
+    if ch == ")":
+        return "M%s,%sQ%s,%s %s,%s" % (
+            num(cx - rx * 0.4, 1), num(cy - ry, 1),
+            num(cx + rx * 0.75, 1), num(cy, 1),
+            num(cx - rx * 0.4, 1), num(cy + ry, 1),
+        )
+    if ch == "v":
+        return "M%s,%sL%s,%sL%s,%s" % (
+            num(cx - rx * 0.65, 1), num(cy - ry * 0.55, 1),
+            num(cx, 1), num(cy + ry * 0.85, 1),
+            num(cx + rx * 0.65, 1), num(cy - ry * 0.55, 1),
+        )
+    return "M%s,%sL%s,%s" % (num(cx - rx * 0.7, 1), num(cy - ry * 0.25, 1), num(cx + rx * 0.7, 1), num(cy + ry * 0.25, 1))
+
+
 def van_gogh_starry_backdrop(
     prefix,
     width,
@@ -355,14 +469,20 @@ def van_gogh_starry_backdrop(
     stroke_limit=1400,
     layer_key="panorama",
 ):
-    # WHY: Batches background cells and banded impasto strokes into multi-segment SVG paths to halve byte size and boost 60fps compositor speed.
+    # WHY: 2D-merged 56-pigment oil underpainting + <=96 curved impasto <path> batches + sparse x,y glyphs give museum craft at 60fps.
     scene = load_vangogh_scene()
     layer = scene.get(layer_key) or scene.get("panorama")
     if not layer:
         return []
 
     boxes = avoid_boxes or []
-    elems = ['<g pointer-events="none" opacity="%s">' % num(opacity_scale, 2)]
+    op_s = min(1.0, max(0.25, float(opacity_scale)))
+    elems = ['<g pointer-events="none">']
+
+    def _bake(r, g, b, alpha):
+        a = min(1.0, max(0.0, alpha))
+        ia = 1.0 - a
+        return (int(6 * ia + r * a), int(15 * ia + g * a), int(34 * ia + b * a))
 
     cols = max(1, int(layer.get("cols") or 204))
     rows = max(1, int(layer.get("rows") or 60))
@@ -370,146 +490,240 @@ def van_gogh_starry_backdrop(
     col_step = width / float(cols)
 
     bg_rows = layer.get("bg") or []
-    if bg_rows:
-        bg_by_col = {}
-        bg_order = []
-        for r_idx in range(0, len(bg_rows), 2):
-            x_cur = 0
-            ry = r_idx * row_step
-            rh = row_step * 2.15
-            ry_s, rh_s = num(ry, 1), num(rh, 1)
-            for bcol, blen in bg_rows[r_idx]:
-                px = x_cur * col_step
-                pw = blen * col_step + 0.6
-                if not _inside_boxes(px + pw * 0.5, ry + rh * 0.5, boxes, pad=8.0):
-                    lifted_bg = shade_hex(bcol, 1.04, 0.01)
-                    if lifted_bg not in bg_by_col:
-                        bg_by_col[lifted_bg] = []
-                        bg_order.append(lifted_bg)
-                    pw_s = num(pw, 1)
-                    bg_by_col[lifted_bg].append("M%s,%sh%sv%sh-%sz" % (num(px, 1), ry_s, pw_s, rh_s, pw_s))
-                x_cur += blen
-        elems.append('<g opacity="0.76">')
-        for col_k in bg_order:
-            elems.append('<path fill="%s" d="%s"/>' % (col_k, "".join(bg_by_col[col_k])))
+    grid = layer.get("grid") or []
+    motifs_raw = layer.get("motifs") or []
+
+    bg_cells = [[(8, 21, 45)] * cols for _ in range(rows)]
+    for r_idx in range(min(rows, len(bg_rows))):
+        c_cur = 0
+        for bcol, blen in bg_rows[r_idx]:
+            rgb_b = hex_to_rgb(shade_hex(bcol, 1.03, 0.01))
+            end_c = min(cols, c_cur + blen)
+            for c_i in range(c_cur, end_c):
+                bg_cells[r_idx][c_i] = rgb_b
+            c_cur = end_c
+
+    grid_cells = [[None] * cols for _ in range(rows)]
+    for r_idx in range(min(rows, len(grid))):
+        c_cur = 0
+        for col_h, chunk in grid[r_idx]:
+            rgb_g = hex_to_rgb(col_h) if col_h else None
+            for ch in chunk:
+                if c_cur >= cols:
+                    break
+                if ch != " " and rgb_g is not None:
+                    grid_cells[r_idx][c_cur] = (rgb_g, ch)
+                c_cur += 1
+
+    step_c = 1 if (width >= 900 and op_s > 0.85) else 2
+    step_r = 1 if (width >= 900 and op_s > 0.85) else 2
+    bcols = max(1, cols // step_c)
+    brows = max(1, rows // step_r)
+    cw_b = width / float(bcols)
+    rh_b = height / float(brows)
+    oil_rgb = [[None] * bcols for _ in range(brows)]
+    bg_weights = {}
+
+    for br_i in range(brows):
+        r0 = br_i * step_r
+        m_row = motifs_raw[min(rows - 1, r0)] if motifs_raw else ""
+        ry_mid = (br_i + 0.5) * rh_b
+        for bc_i in range(bcols):
+            rx_mid = (bc_i + 0.5) * cw_b
+            if boxes and _inside_boxes(rx_mid, ry_mid, boxes, pad=8.0):
+                continue
+            c0 = bc_i * step_c
+            m_val = int(m_row[min(len(m_row) - 1, c0)]) if m_row and m_row[min(len(m_row) - 1, c0)].isdigit() else 0
+            sr_acc = sg_acc = sb_acc = n_acc = 0
+            for dr in range(step_r):
+                rr = min(rows - 1, r0 + dr)
+                for dc in range(step_c):
+                    cc = min(cols - 1, c0 + dc)
+                    br_v, bg_v, bb_v = bg_cells[rr][cc]
+                    g_cell = grid_cells[rr][cc]
+                    if g_cell is not None:
+                        (gr_v, gg_v, gb_v), _ = g_cell
+                        mix = 0.60 if m_val in (1, 2, 3, 4) else 0.44
+                        br_v = int(br_v * (1.0 - mix) + gr_v * mix)
+                        bg_v = int(bg_v * (1.0 - mix) + gg_v * mix)
+                        bb_v = int(bb_v * (1.0 - mix) + gb_v * mix)
+                    sr_acc += br_v
+                    sg_acc += bg_v
+                    sb_acc += bb_v
+                    n_acc += 1
+            mr, mg, mb = _tint_vg_rgb(sr_acc // n_acc, sg_acc // n_acc, sb_acc // n_acc, m_val)
+            mr, mg, mb = _bake(mr, mg, mb, op_s * 0.94)
+            oil_rgb[br_i][bc_i] = (mr, mg, mb)
+            w_s = 2.6 if m_val in (2, 3, 4) else (1.5 if m_val == 1 else 1.0)
+            bg_weights[(mr, mg, mb)] = bg_weights.get((mr, mg, mb), 0.0) + w_s
+
+    if bg_weights:
+        bg_hex_list, bg_meta = _build_top_palette(bg_weights, max_colors=44, step=16)
+        idx_grid = [[-1] * bcols for _ in range(brows)]
+        for br_i in range(brows):
+            for bc_i in range(bcols):
+                cell_c = oil_rgb[br_i][bc_i]
+                if cell_c is not None:
+                    idx_grid[br_i][bc_i] = _map_palette_idx(cell_c[0], cell_c[1], cell_c[2], bg_meta)
+
+        visited = [[False] * bcols for _ in range(brows)]
+        paths_by_p = [[] for _ in range(len(bg_hex_list))]
+        for br_i in range(brows):
+            v_row = visited[br_i]
+            i_row = idx_grid[br_i]
+            bc_i = 0
+            while bc_i < bcols:
+                p_i = i_row[bc_i]
+                if p_i < 0 or v_row[bc_i]:
+                    bc_i += 1
+                    continue
+                w_span = 1
+                while bc_i + w_span < bcols and i_row[bc_i + w_span] == p_i and not v_row[bc_i + w_span]:
+                    w_span += 1
+                h_span = 1
+                while br_i + h_span < brows:
+                    nr_i = idx_grid[br_i + h_span]
+                    nr_v = visited[br_i + h_span]
+                    if not all(nr_i[k_c] == p_i and not nr_v[k_c] for k_c in range(bc_i, bc_i + w_span)):
+                        break
+                    h_span += 1
+                for rr in range(br_i, br_i + h_span):
+                    vr = visited[rr]
+                    for cc in range(bc_i, bc_i + w_span):
+                        vr[cc] = True
+                px = bc_i * cw_b
+                py = br_i * rh_b
+                pw = w_span * cw_b + (0.45 if bc_i + w_span < bcols else 0.0)
+                ph = h_span * rh_b + (0.45 if br_i + h_span < brows else 0.0)
+                pw_s, ph_s = num(pw, 1), num(ph, 1)
+                paths_by_p[p_i].append("M%s,%sh%sv%sh-%sz" % (num(px, 1), num(py, 1), pw_s, ph_s, pw_s))
+                bc_i += w_span
+
+        elems.append("<g>")
+        for p_i, d_parts in enumerate(paths_by_p):
+            if d_parts:
+                elems.append('<path fill="%s" d="%s"/>' % (bg_hex_list[p_i], "".join(d_parts)))
         elems.append("</g>")
 
     strokes = layer.get("strokes") or []
-    elems.append('<g fill="none" stroke-linecap="round">')
-    count = 0
-    w_scale = 1.48 if width >= 900 else 1.06
-    band_size = 980
-    cur_band = 0
-    band_map = {}
-    band_keys = []
-    anim_nodes = []
+    scale_f = max(0.55, min(1.15, width / 1100.0))
+    w_fine = num(max(1.0, 1.8 * scale_f), 1)
+    w_mid = num(max(1.6, 3.0 * scale_f), 1)
+    w_bold = num(max(2.5, 4.7 * scale_f), 1)
 
-    def _flush_band():
-        for b_key in band_keys:
-            sc_h, sw_s, sop_s = b_key
-            elems.append(
-                '<path stroke="%s" stroke-width="%s" stroke-opacity="%s" d="%s"/>'
-                % (sc_h, sw_s, sop_s, "".join(band_map[b_key]))
-            )
-        band_map.clear()
-        del band_keys[:]
+    target_n = min(
+        stroke_limit,
+        1350 if (width >= 900 and op_s > 0.85) else (420 if width >= 900 else (460 if width >= 440 else 260)),
+    )
+    stride_s = max(1, len(strokes) // max(1, target_n))
+    raw_stroke_cmds = []
+    stroke_weights = {}
 
-    for item in strokes:
-        if count >= stroke_limit:
-            break
+    for idx_s, item in enumerate(strokes[::stride_s][:target_n]):
         x0, y0, xm, ym, x1, y1, scol, sw, motif = item
-        px0, py0 = x0 * width, y0 * height
         pxm, pym = xm * width, ym * height
-        px1, py1 = x1 * width, y1 * height
-        if _inside_boxes(pxm, pym, boxes, pad=6.0):
+        if boxes and _inside_boxes(pxm, pym, boxes, pad=6.0):
             continue
-        band_idx = count // band_size
-        if band_idx != cur_band:
-            _flush_band()
-            cur_band = band_idx
-        count += 1
-        stroke_w = max(0.45, round(sw * w_scale * 4.0) / 4.0)
-        r_c, g_c, _ = hex_to_rgb(scol)
-        is_radiant = motif in (1, 2, 4) or (r_c + g_c) >= 340
-        lit_col = quant_hex(shade_hex(scol, 1.04, 0.03 if is_radiant else 0.01), 6)
-        d_str = "M%s,%sQ%s,%s %s,%s" % (num(px0, 1), num(py0, 1), num(pxm, 1), num(pym, 1), num(px1, 1), num(py1, 1))
-        sw_s = num(stroke_w, 2)
-        if motif in (1, 4) and count % 19 == 0:
-            dur = 4.8 + (count % 7) * 0.85
-            anim_nodes.append(
-                '<path class="pup-live" d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.90">'
-                '<animate attributeName="stroke-opacity" values="0.58;0.98;0.58" dur="%ss" repeatCount="indefinite"/>'
-                "</path>"
-                '<path class="pup-calm" d="%s" stroke="%s" stroke-width="%s" stroke-opacity="0.88"/>'
-                % (d_str, lit_col, sw_s, num(dur, 1), d_str, lit_col, sw_s)
-            )
-        else:
-            b_key = (lit_col, sw_s, "0.88")
-            if b_key not in band_map:
-                band_map[b_key] = []
-                band_keys.append(b_key)
-            band_map[b_key].append(d_str)
-        if is_radiant and count % 4 == 0:
-            spec_col = quant_hex(shade_hex(scol, 1.16, 0.10), 6)
-            spec_w = num(max(0.36, round(stroke_w * 0.40 * 4.0) / 4.0), 2)
-            s_key = (spec_col, spec_w, "0.58")
-            if s_key not in band_map:
-                band_map[s_key] = []
-                band_keys.append(s_key)
-            band_map[s_key].append(d_str)
-    _flush_band()
-    elems.extend(anim_nodes)
-    elems.append("</g>")
+        ex0 = pxm + (x0 * width - pxm) * 1.32
+        ey0 = pym + (y0 * height - pym) * 1.32
+        ex1 = pxm + (x1 * width - pxm) * 1.32
+        ey1 = pym + (y1 * height - pym) * 1.32
+        sr, sg, sb = hex_to_rgb(shade_hex(scol, 1.05, 0.03 if motif in (1, 2, 4) else 0.01))
+        sr, sg, sb = _tint_vg_rgb(sr, sg, sb, motif)
+        is_cyp = motif == 3 or (sg >= sr and sg >= 36 and sr < 130)
+        w_st = 3.2 if is_cyp else (2.0 if motif in (1, 2, 4) else 1.0)
+        tier_w = w_bold if idx_s % 3 == 0 else (w_mid if sw >= 0.80 else w_fine)
+        bk_rgb = _bake(sr, sg, sb, op_s * (0.84 if tier_w == w_bold else 0.94))
+        stroke_weights[bk_rgb] = stroke_weights.get(bk_rgb, 0.0) + w_st
+        d_str = "M%s,%sQ%s,%s %s,%s" % (num(ex0, 1), num(ey0, 1), num(pxm, 1), num(pym, 1), num(ex1, 1), num(ey1, 1))
+        raw_stroke_cmds.append((bk_rgb, tier_w, d_str))
 
-    grid = layer.get("grid") or []
+    if width >= 900 and op_s > 0.85:
+        for r_idx in range(0, rows, 2):
+            m_row = motifs_raw[r_idx] if r_idx < len(motifs_raw) else ""
+            py_c = (r_idx + 0.5) * row_step
+            for c_idx in range(0, cols, 2):
+                g_cell = grid_cells[r_idx][c_idx]
+                if g_cell is None:
+                    continue
+                m_val = int(m_row[c_idx]) if c_idx < len(m_row) and m_row[c_idx].isdigit() else 0
+                if m_val not in (3, 4):
+                    continue
+                px_c = (c_idx + 0.5) * col_step
+                if boxes and _inside_boxes(px_c, py_c, boxes, pad=7.0):
+                    continue
+                (gr, gg, gb), ch = g_cell
+                tr, tg, tb = _bake(*_tint_vg_rgb(gr, gg, gb, m_val), op_s * 0.94)
+                stroke_weights[(tr, tg, tb)] = stroke_weights.get((tr, tg, tb), 0.0) + (3.4 if m_val == 3 else 2.2)
+                dab_d = _glyph_oil_dab(ch, px_c, py_c, col_step * 1.28, row_step * 1.28)
+                raw_stroke_cmds.append(((tr, tg, tb), w_mid if m_val == 4 else w_fine, dab_d))
+
+    if stroke_weights:
+        st_hex_list, st_meta = _build_top_palette(stroke_weights, max_colors=32, step=16)
+        elems.append('<g fill="none" stroke-linecap="round">')
+        buckets = {}
+        for bk_rgb, w_tier, d_cmd in raw_stroke_cmds:
+            c_hex = st_hex_list[_map_palette_idx(bk_rgb[0], bk_rgb[1], bk_rgb[2], st_meta)]
+            buckets.setdefault((c_hex, w_tier), []).append(d_cmd)
+        for (c_hex, w_tier), segs in buckets.items():
+            elems.append('<path stroke="%s" stroke-width="%s" d="%s"/>' % (c_hex, w_tier, "".join(segs)))
+        elems.append("</g>")
+
     font_sz = width / (cols * 0.60)
-    elems.append('<g font-family="%s" font-size="%s" font-weight="600" aria-hidden="true">' % (FONT_MONO, num(font_sz, 2)))
+    mod_n = max(22, 18 + glyph_stride * 6) if width >= 800 else 34
+    glyph_by_col = {}
+    glyph_order = []
 
-    for r_idx in range(0, len(grid), max(1, glyph_stride)):
+    for r_idx in range(rows):
         py = (r_idx + 0.82) * row_step
-        runs = grid[r_idx]
-        if not boxes:
-            raw_runs = [(shade_hex(col_h, 1.03, 0.01) if col_h else None, ch) for col_h, ch in runs]
-            merged_runs = merge_close_runs(raw_runs, tol=12)
-            tspans = "".join(
-                ('<tspan fill="%s">%s</tspan>' % (sc, esc(txt))) if sc else esc(txt)
-                for sc, txt in merged_runs
-            )
-            elems.append(
-                '<text x="0" y="%s" textLength="%s" lengthAdjust="spacing" xml:space="preserve">%s</text>'
-                % (num(py, 2), num(width, 1), tspans)
-            )
-        else:
-            raw_runs = []
-            col_cur = 0
-            has_visible = False
-            for col_h, chunk in runs:
-                masked_chars = []
-                for k, ch in enumerate(chunk):
-                    px = (col_cur + k + 0.5) * col_step
-                    if _inside_boxes(px, py - row_step * 0.35, boxes, pad=8.0):
-                        masked_chars.append(" ")
-                    else:
-                        masked_chars.append(ch)
-                        if ch != " ":
-                            has_visible = True
-                col_cur += len(chunk)
-                joined = "".join(masked_chars)
-                sh_col = shade_hex(col_h, 1.03, 0.01) if (joined.strip() and col_h) else None
-                raw_runs.append((sh_col, joined))
-            if has_visible:
-                merged_runs = merge_close_runs(raw_runs, tol=9)
-                tspans = "".join(
-                    ('<tspan fill="%s">%s</tspan>' % (sc, esc(txt))) if sc else esc(txt)
-                    for sc, txt in merged_runs
-                )
-                elems.append(
-                    '<text x="0" y="%s" textLength="%s" lengthAdjust="spacing" xml:space="preserve">%s</text>'
-                    % (num(py, 2), num(width, 1), tspans)
-                )
+        m_row = motifs_raw[r_idx] if r_idx < len(motifs_raw) else ""
+        for c_idx in range(cols):
+            if (r_idx * 17 + c_idx * 31) % mod_n != 0:
+                continue
+            g_cell = grid_cells[r_idx][c_idx]
+            if g_cell is None:
+                continue
+            (gr, gg, gb), ch = g_cell
+            m_val = int(m_row[c_idx]) if c_idx < len(m_row) and m_row[c_idx].isdigit() else 0
+            lum_v = _lum_rgb(gr, gg, gb)
+            if not ((m_val in (1, 2, 4) and lum_v >= 178) or lum_v >= 214):
+                continue
+            px = (c_idx + 0.5) * col_step
+            if boxes and _inside_boxes(px, py - row_step * 0.35, boxes, pad=8.0):
+                continue
+            tr, tg, tb = _tint_vg_rgb(gr, gg, gb, m_val)
+            tr, tg, tb = _bake(tr, tg, tb, op_s * 0.88)
+            g_col = quant_hex("#%02x%02x%02x" % (tr, tg, tb), 32)
+            if g_col not in glyph_by_col:
+                glyph_by_col[g_col] = []
+                glyph_order.append(g_col)
+            glyph_by_col[g_col].append((px, py, ch))
 
-    elems.append("</g></g>")
+    if glyph_by_col:
+        elems.append('<g font-family="%s" font-size="%s" font-weight="600" aria-hidden="true">' % (FONT_MONO, num(font_sz, 2)))
+        for g_col in glyph_order:
+            tspans = "".join(
+                '<tspan x="%s" y="%s">%s</tspan>' % (num(px, 1), num(py, 1), esc(ch))
+                for px, py, ch in glyph_by_col[g_col]
+            )
+            elems.append('<text fill="%s">%s</text>' % (g_col, tspans))
+        elems.append("</g>")
+
+    elems.append("</g>")
     return elems
+
+
+def van_gogh_garden_band(prefix, width, height, avoid_boxes=None, opacity_scale=0.99, glyph_stride=1, stroke_limit=3400):
+    return van_gogh_starry_backdrop(
+        prefix,
+        width,
+        height,
+        avoid_boxes=avoid_boxes,
+        opacity_scale=opacity_scale,
+        glyph_stride=glyph_stride,
+        stroke_limit=stroke_limit,
+        layer_key="garden",
+    )
 
 
 def render_day_night_cycle(prefix, width, height, zone_rects, sun_arc=None, moon_arc=None):
@@ -633,7 +847,7 @@ def render_day_night_cycle(prefix, width, height, zone_rects, sun_arc=None, moon
         ".%(p)s-dn-meadow { opacity: 0; will-change: opacity; animation: %(p)s-kf-meadow 60s linear infinite; } "
         ".%(p)s-dn-sun { opacity: 0; will-change: transform, opacity; animation: %(p)s-kf-sun 60s linear infinite; } "
         ".%(p)s-dn-moon { opacity: 0.96; will-change: transform, opacity; animation: %(p)s-kf-moon 60s linear infinite; } "
-        ".%(p)s-sun-spin { animation: %(p)s-kf-spin 24s linear infinite; }"
+        ".%(p)s-sun-spin { will-change: transform; animation: %(p)s-kf-spin 24s linear infinite; }"
         "</style>"
     ) % {
         "p": prefix,
@@ -705,7 +919,6 @@ def render_day_night_cycle(prefix, width, height, zone_rects, sun_arc=None, moon
 
 
 def _meteor_body_markup(prefix, tail_len):
-    # WHY: Multi-gradient plasma wake (150-220px), #38bdf8 shockwave, #fef08a halo, #ffffff diamond coma, and crackling embers.
     tl = float(tail_len)
     core_l = tl * 0.78
     hot_l = tl * 0.48
@@ -840,8 +1053,8 @@ def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opac
         ("Neptune", 1.00, 2.9, "#60a5fa", "74s", 340, False),
     ]
     elems = [
-        '<g transform="translate(%s %s) rotate(%s)" opacity="%s" pointer-events="none">'
-        % (num(cx, 1), num(cy, 1), num(tilt_deg, 1), num(opacity, 2))
+        '<g transform="translate(%s %s) rotate(%s)" pointer-events="none">'
+        % (num(cx, 1), num(cy, 1), num(tilt_deg, 1))
     ]
     elems.append('<circle cx="0" cy="0" r="22" fill="%s" fill-opacity="0.12"/>' % CADMIUM)
     elems.append('<circle cx="0" cy="0" r="14.5" fill="none" stroke="%s" stroke-width="0.6" stroke-dasharray="2.4 2" stroke-opacity="0.58"/>' % CREAM)
@@ -852,6 +1065,7 @@ def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opac
     comet_ry = scale_y * 0.44
     peri_x = -comet_rx * 0.36
     aphe_x = comet_rx * 1.64
+    comet_cx = (peri_x + aphe_x) * 0.5
     comet_d = "M %s,0 A %s,%s 0 1,1 %s,0 A %s,%s 0 1,1 %s,0" % (
         num(peri_x, 1), num(comet_rx, 1), num(comet_ry, 1), num(aphe_x, 1),
         num(comet_rx, 1), num(comet_ry, 1), num(peri_x, 1),
@@ -862,25 +1076,38 @@ def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opac
         '<path d="%s" fill="#ffffff"/>'
         % (SKY_SOFT, star_path(0, 0, 4.1, 1.4, 4))
     )
-    elems.append(
-        '<g class="pup-live" transform="rotate(17)">%s'
-        '<animateMotion path="%s" dur="28s" rotate="auto" repeatCount="indefinite"/></g>'
-        '<g class="pup-calm" transform="rotate(17) translate(%s 0)">%s</g>'
-        % (comet_glyph, comet_d, num(peri_x, 1), comet_glyph)
-    )
+    orr_css = ["<style>"]
+    cm_kf = []
+    for st_i in range(13):
+        ang_c = math.pi + (2.0 * math.pi * st_i / 12.0)
+        cx_p = comet_cx + comet_rx * math.cos(ang_c)
+        cy_p = comet_ry * math.sin(ang_c)
+        rot_p = math.degrees(math.atan2(comet_ry * math.cos(ang_c), -comet_rx * math.sin(ang_c)))
+        cm_kf.append("%s%%{transform:translate3d(%spx,%spx,0) rotate(%sdeg)}" % (num(st_i * 100.0 / 12.0, 1), num(cx_p, 1), num(cy_p, 1), num(rot_p, 1)))
+    orr_css.append("@keyframes orr-cm{%s}.orr-cm{will-change:transform;animation:orr-cm 28s linear infinite}" % "".join(cm_kf))
 
-    for name, rf, pr, pcol, dur, phase_deg, has_ring in planets:
+    planet_nodes = [
+        '<g class="pup-live" transform="rotate(17)"><g class="orr-cm">%s</g></g>'
+        '<g class="pup-calm" transform="rotate(17) translate(%s 0)">%s</g>'
+        % (comet_glyph, num(peri_x, 1), comet_glyph)
+    ]
+
+    for p_idx, (name, rf, pr, pcol, dur, phase_deg, has_ring) in enumerate(planets):
         rx = scale_x * rf
         ry = scale_y * rf
-        orbit_d = "M %s,0 A %s,%s 0 1,1 %s,0 A %s,%s 0 1,1 %s,0" % (
-            num(-rx, 1), num(rx, 1), num(ry, 1), num(rx, 1),
-            num(rx, 1), num(ry, 1), num(-rx, 1),
-        )
         elems.append(
             '<ellipse cx="0" cy="0" rx="%s" ry="%s" fill="none" stroke="%s" stroke-width="0.58" stroke-opacity="0.36"/>'
             % (num(rx, 1), num(ry, 1), MILKY_DUST if rf > 0.5 else CREAM)
         )
-        neg_begin = -round((phase_deg / 360.0) * float(dur.rstrip("s")), 1)
+        p_kf = []
+        p0_rad = math.radians(phase_deg)
+        for st_i in range(13):
+            ang_p = p0_rad + (2.0 * math.pi * st_i / 12.0)
+            px_o = -rx * math.cos(ang_p)
+            py_o = -ry * math.sin(ang_p)
+            p_kf.append("%s%%{transform:translate3d(%spx,%spx,0)}" % (num(st_i * 100.0 / 12.0, 1), num(px_o, 1), num(py_o, 1)))
+        orr_css.append("@keyframes orr-p%d{%s}.orr-p%d{will-change:transform;animation:orr-p%d %s linear infinite}" % (p_idx, "".join(p_kf), p_idx, p_idx, dur))
+
         body_parts = []
         if has_ring:
             body_parts.append('<ellipse cx="0" cy="0" rx="%s" ry="%s" transform="rotate(-18)" fill="none" stroke="%s" stroke-width="1.05" stroke-opacity="0.92"/>' % (num(pr * 2.45, 1), num(pr * 0.86, 1), IVORY_WARM))
@@ -889,14 +1116,17 @@ def solar_system_orrery(cx, cy, scale_x=280.0, scale_y=62.0, tilt_deg=-9.5, opac
         body_parts.append('<path d="%s" fill="%s" stroke="#081226" stroke-width="0.45"/>' % (star_path(0, 0, pr * 1.38, pr * 0.68, 6), pcol))
         body_parts.append('<circle cx="0" cy="0" r="%s" fill="#ffffff" fill-opacity="0.78"/>' % num(max(0.7, pr * 0.28), 1))
         planet_svg = "".join(body_parts)
-        p_rad = math.radians(phase_deg)
-        st_x = -rx * math.cos(p_rad)
-        st_y = -ry * math.sin(p_rad)
-        elems.append(
-            '<g class="pup-live">%s<animateMotion path="%s" dur="%s" begin="%ss" repeatCount="indefinite"/></g>'
+        st_x = -rx * math.cos(p0_rad)
+        st_y = -ry * math.sin(p0_rad)
+        planet_nodes.append(
+            '<g class="pup-live orr-p%d">%s</g>'
             '<g class="pup-calm" transform="translate(%s %s)">%s</g>'
-            % (planet_svg, orbit_d, dur, num(neg_begin, 1), num(st_x, 1), num(st_y, 1), planet_svg)
+            % (p_idx, planet_svg, num(st_x, 1), num(st_y, 1), planet_svg)
         )
+
+    orr_css.append("</style>")
+    elems.append("".join(orr_css))
+    elems.extend(planet_nodes)
 
     elems.append("</g>")
     return elems

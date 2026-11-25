@@ -6,6 +6,7 @@ import os
 import shutil
 import urllib.request
 
+from build_portrait import render_portrait_svg
 from cards import render_flagship_cards
 from pixel_dog_svg import (
     core_stage_butterfly_cameo,
@@ -39,7 +40,6 @@ from theme import (
     celestial_defs,
     compact,
     esc,
-    merge_close_runs,
     nocturne_card,
     nocturne_defs,
     num,
@@ -453,7 +453,7 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
             avoid_boxes=[],
             opacity_scale=0.80,
             glyph_stride=1,
-            stroke_limit=1320,
+            stroke_limit=920,
             layer_key="sky",
         )
     )
@@ -540,11 +540,8 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         else:
             parts.append('<circle cx="%s" cy="%s" r="9.4" fill="%s" fill-opacity="0.18"/>' % (num(cx, 1), num(cy, 1), CADMIUM))
             parts.append(
-                '<circle class="pup-live" cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3.2 2.1" stroke-opacity="0.92">'
-                '<animateTransform attributeName="transform" type="rotate" from="0 %s %s" to="360 %s %s" dur="18s" repeatCount="indefinite"/>'
-                "</circle>"
-                '<circle class="pup-calm" cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3.2 2.1" stroke-opacity="0.92"/>'
-                % (num(cx, 1), num(cy, 1), CADMIUM, num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1), CADMIUM)
+                '<circle class="vg-spin" cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="0.9" stroke-dasharray="3.2 2.1" stroke-opacity="0.92"/>'
+                % (num(cx, 1), num(cy, 1), CADMIUM)
             )
             parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.58"/>' % (star_path(cx, cy, 6.9, 2.4, 8), IVORY_WARM))
     if zero_ticks:
@@ -782,7 +779,6 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     parts.extend(
         [
             '<clipPath id="core-left-clip"><rect x="1" y="1" width="483" height="562"/></clipPath>',
-            '<clipPath id="core-avatar-clip"><circle cx="246" cy="252" r="204"/></clipPath>',
             '<radialGradient id="core-crystal-glow" cx="0.50" cy="0.46" r="0.52">',
             '<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.18"/>',
             '<stop offset="54%" stop-color="#1d447f" stop-opacity="0.09"/>',
@@ -883,104 +879,8 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
             )
         )
 
-    parts.append('<g clip-path="url(#core-avatar-clip)">')
-    diam = ar * 2.0
-    x_left = acx - ar
-    y_top = acy - ar
-
-    # WHY: Batching portrait hatch/sky/contour segments by color cuts >5,500 DOM nodes and ~600KB with identical pixels.
-    hatch_n = max(int(portrait_hd.get("hatch_n") or 76), 1)
-    under_strokes = portrait_hd.get("under_strokes") or []
-    if under_strokes:
-        hstep = diam / float(hatch_n)
-        hatch_by_col = {}
-        hatch_order = []
-        for ax_i, ay_i, hcol, _, ang_deg in under_strokes:
-            px_a = x_left + (ax_i + 0.5) * hstep
-            py_a = y_top + (ay_i + 0.5) * hstep
-            rad = math.radians(ang_deg)
-            dx = math.cos(rad) * hstep * 0.74
-            dy = math.sin(rad) * hstep * 0.74
-            if hcol not in hatch_by_col:
-                hatch_by_col[hcol] = []
-                hatch_order.append(hcol)
-            hatch_by_col[hcol].append(
-                "M%s,%sL%s,%s" % (num(px_a - dx, 1), num(py_a - dy, 1), num(px_a + dx, 1), num(py_a + dy, 1))
-            )
-        parts.append('<g fill="none" stroke-linecap="round" stroke-width="%s" opacity="0.90">' % num(hstep * 0.92, 2))
-        for hc in hatch_order:
-            parts.append('<path stroke="%s" d="%s"/>' % (hc, "".join(hatch_by_col[hc])))
-        parts.append("</g>")
-
-    sky_strokes = portrait_hd.get("sky_strokes") or []
-    if sky_strokes:
-        sky_by_key = {}
-        sky_order = []
-        for s0x, s0y, smx, smy, s1x, s1y, scol, sop in sky_strokes:
-            sk_key = (scol, num(sop, 2))
-            if sk_key not in sky_by_key:
-                sky_by_key[sk_key] = []
-                sky_order.append(sk_key)
-            sky_by_key[sk_key].append(
-                "M%s,%sQ%s,%s %s,%s"
-                % (
-                    num(x_left + s0x * diam, 1), num(y_top + s0y * diam, 1),
-                    num(x_left + smx * diam, 1), num(y_top + smy * diam, 1),
-                    num(x_left + s1x * diam, 1), num(y_top + s1y * diam, 1),
-                )
-            )
-        parts.append('<g fill="none" stroke-linecap="round" stroke-width="1.05">')
-        for scol_k, sop_k in sky_order:
-            parts.append('<path stroke="%s" stroke-opacity="%s" d="%s"/>' % (scol_k, sop_k, "".join(sky_by_key[(scol_k, sop_k)])))
-        parts.append("</g>")
-
-    cols = max(int(portrait_hd.get("cols") or 216), 1)
-    rows = max(int(portrait_hd.get("rows") or 126), 1)
-    grid = portrait_hd.get("grid") or []
-    row_step = diam / float(rows)
-    font_sz = diam / (cols * 0.601)
-    start_y = y_top + row_step * 0.80
-
-    parts.append('<g font-family="%s" font-size="%s" font-weight="700" aria-hidden="true">' % (FONT_MONO, num(font_sz, 2)))
-    for r_idx, runs in enumerate(grid):
-        has_ink = any(col_hex is not None for col_hex, _ in runs)
-        if has_ink:
-            merged_runs = merge_close_runs(runs, tol=8)
-            tspan_parts = [
-                ('<tspan fill="%s">%s</tspan>' % (chx, esc(txt))) if chx is not None else esc(txt)
-                for chx, txt in merged_runs
-            ]
-            parts.append(
-                '<text x="%s" y="%s" textLength="%s" lengthAdjust="spacing" xml:space="preserve">%s</text>'
-                % (num(x_left, 1), num(start_y + r_idx * row_step, 2), num(diam, 1), "".join(tspan_parts))
-            )
-    parts.append("</g>")
-
-    contours = portrait_hd.get("contours") or []
-    if contours:
-        cnt_by_key = {}
-        cnt_order = []
-        for item in contours:
-            x0, y0, x1, y1, scol, sop = item[0], item[1], item[2], item[3], item[4], item[5]
-            ck = (scol, num(sop, 2))
-            if ck not in cnt_by_key:
-                cnt_by_key[ck] = []
-                cnt_order.append(ck)
-            cnt_by_key[ck].append(
-                "M%s,%sL%s,%s"
-                % (
-                    num(x_left + x0 * diam, 1),
-                    num(y_top + y0 * diam, 1),
-                    num(x_left + x1 * diam, 1),
-                    num(y_top + y1 * diam, 1),
-                )
-            )
-        parts.append('<g fill="none" stroke-linecap="round" stroke-width="0.62">')
-        for scol_k, sop_k in cnt_order:
-            parts.append('<path stroke="%s" stroke-opacity="%s" d="%s"/>' % (scol_k, sop_k, "".join(cnt_by_key[(scol_k, sop_k)])))
-        parts.append("</g>")
-
-    parts.append("</g>")
+    # WHY: Pure-vector 4-plane 4K portrait (<220 paths, 0 tspans, 0 <image>) renders cleanly under GitHub CSP at 60fps.
+    parts.extend(render_portrait_svg(portrait_hd, acx, acy, ar))
     parts.append('<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="1.05" stroke-opacity="0.74"/>' % (num(acx), num(acy), num(ar), CREAM))
 
     parts.append('<rect x="168" y="473" width="156" height="54" rx="10" fill="#050b18" fill-opacity="0.92" stroke="%s" stroke-width="0.8"/>' % BORDER_WARM)

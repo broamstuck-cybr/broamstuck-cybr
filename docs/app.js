@@ -2,7 +2,7 @@
 // WHY: Coordinates the calligraphic Van Gogh sky/garden engine, sculpted contribution constellation, 4K portrait, stack crystal, 4-state console, and Blender 3D stages.
 
 import { LiquidStarrySky, drawTaperedImpastoStroke } from "./sky-engine.js";
-import { PortraitStage, Radar5DStage, Forum3DStage } from "./models-3d.js";
+import { PortraitStage as LegacyPortraitStage, Radar5DStage, Forum3DStage } from "./models-3d.js";
 import { StarlightPixelDog } from "./pixel-dog.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -19,6 +19,294 @@ function drawStarPolygon(ctx, cx, cy, outerR, innerR, points = 6, rot = -Math.PI
     else ctx.lineTo(px, py);
   }
   ctx.closePath();
+}
+
+// WHY: Bakes the 4-plane pure-vector painterly portrait (sky, Guan Yu meadow, railing, subject) onto offscreen canvases at dpr<=2 for 60 FPS parallax.
+class PortraitStage {
+  constructor(canvas, portraitData) {
+    if (!portraitData || !portraitData.vector_layers) {
+      return new LegacyPortraitStage(canvas, portraitData);
+    }
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.data = portraitData;
+    this.mqReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    this.reducedMotion = this.mqReduced.matches;
+    this.pointer = { nx: 0.5, ny: 0.5, inside: false };
+    this.gaze = { tx: 0, ty: 0, x: 0, y: 0 };
+    this.angle = 0;
+    this._visible = true;
+    this._looping = false;
+
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const baseCss = Math.max(200, Math.min(460, Math.round(canvas.clientWidth || 324)));
+    this.size = Math.round(baseCss * this.dpr);
+    this.canvas.width = this.size;
+    this.canvas.height = this.size;
+
+    this.layers = [0, 1, 2, 3].map(() => {
+      const c = document.createElement("canvas");
+      c.width = this.size;
+      c.height = this.size;
+      return c;
+    });
+    this.composite = document.createElement("canvas");
+    this.composite.width = this.size;
+    this.composite.height = this.size;
+
+    this._bakeLayers();
+    this._bindEvents();
+    this.render();
+    if (!this.reducedMotion) {
+      this._animate();
+    }
+  }
+
+  _bakeLayers() {
+    const sz = this.size;
+    const cx = sz * 0.5;
+    const cy = sz * 0.5;
+    const r = sz * 0.464;
+    const diam = r * 2;
+    const x0 = cx - r;
+    const y0 = cy - r;
+
+    const ctxs = this.layers.map((c) => {
+      const lc = c.getContext("2d");
+      lc.clearRect(0, 0, sz, sz);
+      return lc;
+    });
+
+    const coordSz = this.data.coord_size || 2000;
+    const scale = diam / coordSz;
+    ctxs[0].fillStyle = this.data.bg_fill || "#081833";
+    ctxs[0].fillRect(0, 0, sz, sz);
+
+    const vl = this.data.vector_layers || {};
+    const specs = [
+      ["sky_polys", false],
+      ["sky_strokes", true],
+      ["meadow_polys", false],
+      ["meadow_strokes", true],
+      ["rail_polys", false],
+      ["subject_polys", false],
+      ["subject_strokes", true]
+    ];
+
+    for (let s = 0; s < specs.length; s++) {
+      const [lname, isStroke] = specs[s];
+      const arr = vl[lname] || [];
+      for (let i = 0; i < arr.length; i++) {
+        const it = arr[i];
+        const lc = ctxs[Math.min(3, Math.max(0, Number(it.plane || 0)))];
+        lc.save();
+        lc.translate(x0, y0);
+        lc.scale(scale, scale);
+        const p2d = new Path2D(it.d);
+        if (!isStroke) {
+          lc.globalAlpha = it.opacity ?? 1;
+          lc.fillStyle = it.fill;
+          lc.fill(p2d, it.rule || "nonzero");
+          if (it.seam) {
+            lc.strokeStyle = it.fill;
+            lc.lineWidth = it.seam;
+            lc.lineJoin = "round";
+            lc.stroke(p2d);
+          }
+        } else {
+          lc.globalAlpha = it.opacity ?? 0.84;
+          lc.strokeStyle = it.stroke;
+          lc.lineWidth = it.width || 3;
+          lc.lineCap = it.cap || "round";
+          lc.lineJoin = "round";
+          lc.stroke(p2d);
+        }
+        lc.restore();
+      }
+    }
+    ctxs.forEach((lc) => { lc.globalAlpha = 1; });
+  }
+
+  _bindEvents() {
+    this.mqReduced.addEventListener("change", (e) => {
+      this.reducedMotion = e.matches;
+      if (!this.reducedMotion) this._animate();
+      else this.render();
+    });
+
+    if (typeof IntersectionObserver === "function") {
+      const io = new IntersectionObserver((entries) => {
+        if (entries[0]) this._visible = entries[0].isIntersecting;
+      }, { rootMargin: "90px 0px" });
+      io.observe(this.canvas);
+    }
+
+    window.addEventListener("pointermove", (ev) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const cx = rect.left + rect.width * 0.5;
+      const cy = rect.top + rect.height * 0.5;
+      this.gaze.tx = Math.max(-1, Math.min(1, (ev.clientX - cx) / 380));
+      this.gaze.ty = Math.max(-1, Math.min(1, (ev.clientY - cy) / 380));
+      if (this.reducedMotion) {
+        this.gaze.x = this.gaze.tx;
+        this.gaze.y = this.gaze.ty;
+        this.render();
+      }
+    }, { passive: true });
+
+    const updateLocal = (ev) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const nx = (ev.clientX - rect.left) / Math.max(1, rect.width);
+      const ny = (ev.clientY - rect.top) / Math.max(1, rect.height);
+      const dist = Math.hypot(nx - 0.5, ny - 0.5);
+      this.pointer = { nx, ny, inside: dist <= 0.455 };
+      if (this.reducedMotion) this.render();
+    };
+    this.canvas.addEventListener("pointermove", updateLocal);
+    this.canvas.addEventListener("pointerdown", updateLocal);
+    this.canvas.addEventListener("pointerleave", () => {
+      this.pointer.inside = false;
+      if (this.reducedMotion) this.render();
+    });
+  }
+
+  _animate() {
+    if (this._looping) return;
+    this._looping = true;
+    let last = performance.now();
+    const step = (now) => {
+      if (this.reducedMotion) {
+        this._looping = false;
+        return;
+      }
+      const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
+      last = now;
+      if (this._visible) {
+        this.angle += dt * 0.24;
+        const k = Math.min(1, dt * 6.5);
+        this.gaze.x += (this.gaze.tx - this.gaze.x) * k;
+        this.gaze.y += (this.gaze.ty - this.gaze.y) * k;
+        this.render();
+      }
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  render() {
+    const ctx = this.ctx;
+    const sz = this.size;
+    const cx = sz * 0.5;
+    const cy = sz * 0.5;
+    const r = sz * 0.464;
+    const u = sz / 1240;
+
+    ctx.clearRect(0, 0, sz, sz);
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(this.angle * 0.30);
+    for (let deg = 0; deg < 360; deg += 15) {
+      const rad = (deg * Math.PI) / 180;
+      const r0 = r + 9 * u;
+      const r1 = r + (deg % 45 === 0 ? 25 : 15) * u;
+      ctx.strokeStyle = deg % 90 === 0 ? "rgba(254, 240, 138, 0.90)" : "rgba(125, 211, 252, 0.44)";
+      ctx.lineWidth = (deg % 45 === 0 ? 2.7 : 1.5) * u;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(rad) * r0, Math.sin(rad) * r0);
+      ctx.lineTo(Math.cos(rad) * r1, Math.sin(rad) * r1);
+      ctx.stroke();
+    }
+    const satA = this.angle * 1.4;
+    drawStarPolygon(ctx, Math.cos(satA) * (r + 20 * u), Math.sin(satA) * (r + 20 * u), 10.0 * u, 3.6 * u, 4, satA);
+    ctx.fillStyle = "#fde047";
+    ctx.fill();
+    ctx.restore();
+
+    const dxNorm = this.pointer.inside ? (this.pointer.nx - 0.5) * 1.35 : this.gaze.x * 0.62;
+    const dyNorm = this.pointer.inside ? (this.pointer.ny - 0.5) * 1.35 : this.gaze.y * 0.52;
+
+    if (
+      this._compDx === undefined ||
+      Math.hypot(dxNorm - this._compDx, dyNorm - this._compDy) > 0.002
+    ) {
+      this._compDx = dxNorm;
+      this._compDy = dyNorm;
+      const compCtx = this.composite.getContext("2d");
+      compCtx.clearRect(0, 0, sz, sz);
+      compCtx.save();
+      compCtx.beginPath();
+      compCtx.arc(cx, cy, r, 0, Math.PI * 2);
+      compCtx.clip();
+      const shifts = [-7.0 * u, 2.5 * u, 8.5 * u, 14.5 * u];
+      for (let p = 0; p < 4; p++) {
+        compCtx.drawImage(this.layers[p], dxNorm * shifts[p], dyNorm * shifts[p]);
+      }
+      compCtx.restore();
+    }
+
+    ctx.drawImage(this.composite, 0, 0);
+
+    if (this.pointer.inside) {
+      const loupeR = 162 * u;
+      const zoom = 2.25;
+      const rawLx = this.pointer.nx * sz;
+      const rawLy = this.pointer.ny * sz;
+      const offX = rawLx - cx;
+      const offY = rawLy - cy;
+      const offDist = Math.hypot(offX, offY);
+      const maxCenterDist = Math.max(0, r - loupeR - 8 * u);
+      const clampedLx = offDist > maxCenterDist && offDist > 0 ? cx + (offX / offDist) * maxCenterDist : rawLx;
+      const clampedLy = offDist > maxCenterDist && offDist > 0 ? cy + (offY / offDist) * maxCenterDist : rawLy;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - 2 * u, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.beginPath();
+      ctx.arc(clampedLx, clampedLy, loupeR, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = "#081833";
+      ctx.fillRect(clampedLx - loupeR, clampedLy - loupeR, loupeR * 2, loupeR * 2);
+      ctx.drawImage(
+        this.composite,
+        rawLx - loupeR / zoom,
+        rawLy - loupeR / zoom,
+        (loupeR * 2) / zoom,
+        (loupeR * 2) / zoom,
+        clampedLx - loupeR,
+        clampedLy - loupeR,
+        loupeR * 2,
+        loupeR * 2
+      );
+      ctx.restore();
+
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 4.2 * u;
+      ctx.beginPath();
+      ctx.arc(clampedLx, clampedLy, loupeR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+      ctx.lineWidth = 1.6 * u;
+      ctx.beginPath();
+      ctx.arc(clampedLx, clampedLy, loupeR - 3 * u, -Math.PI * 0.85, -Math.PI * 0.25);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = "rgba(253, 230, 138, 0.78)";
+    ctx.lineWidth = 4.0 * u;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(254, 249, 195, 0.52)";
+    ctx.lineWidth = 1.8 * u;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 2.5 * u, -Math.PI * 0.86, -Math.PI * 0.18);
+    ctx.stroke();
+  }
 }
 
 class CelestialMatrixStage {
@@ -299,6 +587,13 @@ class CelestialMatrixStage {
       if (!this.reducedMotion) this._loop();
       else this.render();
     });
+    this._visible = true;
+    if (typeof IntersectionObserver === "function") {
+      const io = new IntersectionObserver((entries) => {
+        if (entries[0]) this._visible = entries[0].isIntersecting;
+      }, { rootMargin: "90px 0px" });
+      io.observe(this.canvas);
+    }
     this.canvas.addEventListener("pointermove", pick);
     this.canvas.addEventListener("pointerdown", pick);
     this.canvas.addEventListener("keydown", (ev) => {
@@ -326,15 +621,18 @@ class CelestialMatrixStage {
   _loop() {
     if (this._looping) return;
     this._looping = true;
+    this._frameTick = 0;
     const step = () => {
       if (this.reducedMotion) {
         this._looping = false;
         return;
       }
-      const r = this.canvas.getBoundingClientRect();
-      if (r.width > 0 && r.bottom >= -80 && r.top <= (window.innerHeight || 900) + 80) {
+      if (this._visible) {
         this.time += 0.02;
-        this.render();
+        this._frameTick = (this._frameTick + 1) % 3;
+        if (this._frameTick === 0) {
+          this.render();
+        }
       }
       requestAnimationFrame(step);
     };
@@ -345,27 +643,45 @@ class CelestialMatrixStage {
     const ctx = this.ctx;
     ctx.drawImage(this.underlay, 0, 0, this.w, this.h);
 
+    if (!this._starSprites) {
+      const mkStar = (sz, outR, inR, pts, col, ring) => {
+        const sc = document.createElement("canvas");
+        sc.width = sz;
+        sc.height = sz;
+        const sctx = sc.getContext("2d");
+        const mid = sz * 0.5;
+        if (ring) {
+          sctx.strokeStyle = "rgba(253, 224, 71, 0.82)";
+          sctx.lineWidth = 1.05;
+          sctx.setLineDash([3, 2.2]);
+          sctx.beginPath();
+          sctx.arc(mid, mid, 7.6, 0, Math.PI * 2);
+          sctx.stroke();
+          sctx.setLineDash([]);
+        }
+        drawStarPolygon(sctx, mid, mid, outR, inR, pts, -Math.PI * 0.5);
+        sctx.fillStyle = col;
+        sctx.fill();
+        return sc;
+      };
+      this._starSprites = {
+        emerald: mkStar(14, 5.4, 2.0, 6, "#34d399", false),
+        gold: mkStar(18, 6.6, 2.4, 8, "#fde047", true)
+      };
+    }
+
     for (let k = 0; k < this.dynamicCells.length; k++) {
       const { cell: c, idx: i } = this.dynamicCells[k];
+      ctx.save();
+      ctx.translate(c.x, c.y);
       if (c.count <= 19) {
-        drawStarPolygon(ctx, c.x, c.y, 5.4, 2.0, 6, this.time * 0.25 + i);
-        ctx.fillStyle = "#34d399";
-        ctx.fill();
+        ctx.rotate(this.time * 0.25 + i);
+        ctx.drawImage(this._starSprites.emerald, -7, -7);
       } else {
-        ctx.save();
-        ctx.translate(c.x, c.y);
-        ctx.rotate(this.time * 0.35 + i);
-        ctx.strokeStyle = "rgba(253, 224, 71, 0.82)";
-        ctx.lineWidth = 1.05;
-        ctx.setLineDash([3, 2.2]);
-        ctx.beginPath();
-        ctx.arc(0, 0, 7.6, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-        drawStarPolygon(ctx, c.x, c.y, 6.6, 2.4, 8, -this.time * 0.25);
-        ctx.fillStyle = "#fde047";
-        ctx.fill();
+        ctx.rotate(this.time * 0.30 + i);
+        ctx.drawImage(this._starSprites.gold, -9, -9);
       }
+      ctx.restore();
     }
 
     if (this.selectedIdx >= 0 && this.cells[this.selectedIdx]) {
@@ -486,7 +802,15 @@ async function initObservatory() {
   const portraitStage = new PortraitStage(document.getElementById("portrait-canvas"), portraitData);
   const rawPortraitRender = portraitStage.render.bind(portraitStage);
   let portraitIdleTick = 0;
+  let portW = portraitStage.canvas.width;
+  let portH = portraitStage.canvas.height;
   portraitStage.render = () => {
+    if (portraitStage.canvas.width !== portW || portraitStage.canvas.height !== portH) {
+      portW = portraitStage.canvas.width;
+      portH = portraitStage.canvas.height;
+      rawPortraitRender();
+      return;
+    }
     if (
       !portraitStage.reducedMotion &&
       !portraitStage.pointer.inside &&
@@ -511,6 +835,29 @@ async function initObservatory() {
   };
 
   const radarStage = new Radar5DStage(document.getElementById("radar-canvas"), telemetry.langs5d, updateRadarReadout);
+  const rawRadarResize = radarStage._resize.bind(radarStage);
+  const rawRadarRender = radarStage.render.bind(radarStage);
+  let radarTick = 0;
+  let radarForce = true;
+  radarStage._resize = () => {
+    radarForce = true;
+    rawRadarResize();
+  };
+  radarStage.render = () => {
+    if (radarForce || radarStage.reducedMotion || radarStage.dragging || radarStage.hovered) {
+      radarForce = false;
+      rawRadarRender();
+      return;
+    }
+    radarTick = (radarTick + 1) % 3;
+    if (radarTick !== 1) return;
+    rawRadarRender();
+  };
+  const rawSetSel = radarStage.setSelected.bind(radarStage);
+  radarStage.setSelected = (name) => {
+    radarForce = true;
+    rawSetSel(name);
+  };
   updateRadarReadout(null);
 
   const metricCards = document.querySelectorAll(".metric-card");
@@ -657,9 +1004,32 @@ async function initObservatory() {
   renderConsole();
 
   const cardSky = vgScene.sky || vgScene.panorama;
-  new Forum3DStage(document.getElementById("stage-v3"), "v3", modelsBundle, cardSky, { yaw: 0.50 });
-  new Forum3DStage(document.getElementById("stage-v2"), "v2", modelsBundle, cardSky, { yaw: 0.43 });
-  new Forum3DStage(document.getElementById("stage-v1"), "v1", modelsBundle, cardSky, { yaw: 0.40, pitch: 0.38 });
+  const forumStages = [
+    new Forum3DStage(document.getElementById("stage-v3"), "v3", modelsBundle, cardSky, { yaw: 0.50 }),
+    new Forum3DStage(document.getElementById("stage-v2"), "v2", modelsBundle, cardSky, { yaw: 0.43 }),
+    new Forum3DStage(document.getElementById("stage-v1"), "v1", modelsBundle, cardSky, { yaw: 0.40, pitch: 0.38 })
+  ];
+  forumStages.forEach((st, idx) => {
+    const rawResize = st._resize.bind(st);
+    const rawRender = st.render.bind(st);
+    let tick = idx;
+    let needsPaint = true;
+    st._resize = () => {
+      needsPaint = true;
+      rawResize();
+    };
+    st.render = () => {
+      if (needsPaint || st.reducedMotion || st.dragging) {
+        needsPaint = false;
+        rawRender();
+        return;
+      }
+      tick = (tick + 1) % 3;
+      if (tick !== 0) return;
+      rawRender();
+    };
+    rawRender();
+  });
 
   const modal = document.getElementById("stage-modal");
   const modalTitle = document.getElementById("modal-title");
