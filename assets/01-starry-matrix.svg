@@ -8504,7 +8504,7 @@
 </g>
 </g>
 <rect x="16" y="16" width="1168" height="236" rx="10" fill="none" stroke="#2d446b" stroke-width="1"/>
-<text x="24" y="277" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="13.2" font-weight="500" fill="#f8fafc" text-anchor="start" xml:space="preserve"><tspan fill="#fde68a" font-weight="700">1,003</tspan><tspan fill="#c5d4ea">&#160;contributions&#160;&#160;&#183;&#160;&#160;</tspan><tspan fill="#7dd3fc" font-weight="600">20d</tspan><tspan fill="#c5d4ea">&#160;streak</tspan></text>
+<text x="24" y="277" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="13.2" font-weight="500" fill="#f8fafc" text-anchor="start" xml:space="preserve"><tspan fill="#fde68a" font-weight="700">1,004</tspan><tspan fill="#c5d4ea">&#160;contributions&#160;&#160;&#183;&#160;&#160;</tspan><tspan fill="#7dd3fc" font-weight="600">20d</tspan><tspan fill="#c5d4ea">&#160;streak</tspan></text>
 <text x="1028" y="277" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="10.2" font-weight="500" fill="#8fa5c4" text-anchor="end">Less</text>
 <path d="M1044,270 L1044.7,272.3 L1047,273 L1044.7,273.7 L1044,276 L1043.3,273.7 L1041,273 L1043.3,272.3 Z" fill="#2c4875"/>
 <path d="M1062,268.8 L1063.1,271.9 L1066.2,273 L1063.1,274.1 L1062,277.2 L1060.9,274.1 L1057.8,273 L1060.9,271.9 Z" fill="#7dd3fc"/>
@@ -14309,6 +14309,7 @@
 <line x1="1124" y1="412" x2="1124" y2="429.6" stroke="#7dd3fc" stroke-width="1.2" stroke-opacity="0.5"/>
 <line x1="1145" y1="324" x2="1145" y2="341.6" stroke="#fde047" stroke-width="1.2" stroke-opacity="0.53"/>
 <line x1="1145" y1="341.6" x2="1145" y2="359.2" stroke="#fde047" stroke-width="1.2" stroke-opacity="0.6"/>
+<line x1="1145" y1="359.2" x2="1145" y2="376.8" stroke="#fde047" stroke-width="1.2" stroke-opacity="0.52"/>
 </g>
 <path d="M72.3 324 H75.7 M74 322.3 V325.7" stroke="#243b63" stroke-width="0.85" stroke-opacity="0.82"/>
 <path d="M72.3 341.6 H75.7 M74 339.9 V343.3" stroke="#243b63" stroke-width="0.85" stroke-opacity="0.82"/>

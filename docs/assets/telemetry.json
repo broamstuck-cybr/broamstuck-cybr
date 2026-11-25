@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-11-25T05:55:04Z",
+  "updatedAt": "2026-11-25T07:58:59Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
-    "bytes": 81068033,
+    "bytes": 81111393,
     "bytesCompact": "81.1M",
-    "commits": 968,
+    "commits": 969,
     "stars": 21,
-    "contributions": 1003,
+    "contributions": 1004,
     "repos": 10
   },
   "streaks": {
@@ -66,7 +66,7 @@
       8,
       28,
       69,
-      44
+      45
     ]
   },
   "days": {
@@ -437,7 +437,7 @@
     "2026-11-22": 14,
     "2026-11-23": 9,
     "2026-11-24": 20,
-    "2026-11-25": 1
+    "2026-11-25": 2
   },
   "langs5d": [
     {
@@ -445,7 +445,7 @@
       "bytes": 61480003,
       "bytesCompact": "61.5M",
       "percent": 76,
-      "percentExact": 75.84,
+      "percentExact": 75.8,
       "repos": 4,
       "d2Volume": 0.864,
       "d3Breadth": 0.667,
@@ -473,7 +473,7 @@
       "bytes": 7058906,
       "bytesCompact": "7.1M",
       "percent": 9,
-      "percentExact": 8.71,
+      "percentExact": 8.7,
       "repos": 6,
       "d2Volume": 0.917,
       "d3Breadth": 1.0,
@@ -498,12 +498,12 @@
     },
     {
       "name": "Python",
-      "bytes": 356858,
-      "bytesCompact": "356.9K",
+      "bytes": 400218,
+      "bytesCompact": "400.2K",
       "percent": 0,
-      "percentExact": 0.44,
+      "percentExact": 0.49,
       "repos": 4,
-      "d2Volume": 0.689,
+      "d2Volume": 0.693,
       "d3Breadth": 0.667,
       "d4Gravity": 0.65,
       "d5Velocity": 0.759,
@@ -526,6 +526,13 @@
     }
   ],
   "events": [
+    {
+      "sha": "7c0dcf9",
+      "repo": "broamstuck-cybr",
+      "message": "fix(profile): restore 3-layer SVG oil underpainting, separate matrix dome, refine sky tiling & font metrics",
+      "time": "06:07",
+      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/7c0dcf96cf9922c59344b41867f6d6ccf0796ff0"
+    },
     {
       "sha": "4156da9",
       "repo": "broamstuck-cybr",
@@ -574,13 +581,6 @@
       "message": "docs(readme): add animated SVG banner, prototype architecture diagram & clean project layout",
       "time": "12:09",
       "url": "https://github.com/broamstuck-cybr/Socratic/commit/90a53d03b48eff3eb695ec187fdddd27289994d7"
-    },
-    {
-      "sha": "c53f113",
-      "repo": "F-Forum_v2",
-      "message": "docs(readme): add SVG banner, evolution mind-map & version bridge from F-Forum v1 to v3",
-      "time": "12:09",
-      "url": "https://github.com/broamstuck-cybr/F-Forum_v2/commit/c53f11341770f2ddc15f48b2dbfdbd5c9110f34d"
     }
   ],
   "forums": [
