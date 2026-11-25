@@ -200,8 +200,8 @@ def van_gogh_starry_backdrop(
     col_step = width / float(cols)
 
     bg_rows = layer.get("bg") or []
-    if bg_rows and opacity_scale >= 0.70:
-        elems.append('<g opacity="0.58">')
+    if bg_rows:
+        elems.append('<g opacity="0.68">')
         for r_idx in range(0, len(bg_rows), 2):
             x_cur = 0
             ry = r_idx * row_step

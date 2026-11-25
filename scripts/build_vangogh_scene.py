@@ -172,9 +172,13 @@ def sample_provence_cypress_matte(pr_px, pr_w, pr_h, u, v):
 
 
 # WHY: Samples Starry Night with aspect-corrected coordinates so stars, central vortex, and top-right Crescent Moon remain round instead of 2.8x horizontally squashed.
-def sample_aspect_starry_sky(st_px, st_w, st_h, nx, ny, aspect, include_moon=True, include_village=True):
-    v_max = 0.95 if include_village else 0.72
+def sample_aspect_starry_sky(st_px, st_w, st_h, nx, ny, aspect, include_moon=True, include_village=True, include_cypress=True):
+    v_max = 0.95 if include_village else 0.70
     sv = clamp(0.03 + ny * (v_max - 0.03), 0.025, v_max)
+
+    if not include_cypress:
+        u_sky = clamp(0.30 + nx * 0.47, 0.30, 0.77)
+        return enhance_vangogh_pigment(*sample_bilinear(st_px, st_w, st_h, u_sky, sv))
 
     u_left = clamp(0.02 + (nx / 0.74) * 0.80, 0.02, 0.82)
     r1, g1, b1 = enhance_vangogh_pigment(*sample_bilinear(st_px, st_w, st_h, u_left, sv))
@@ -318,10 +322,10 @@ def build_composite_canvas(starry_im, sf_im, pr_im, mode="panorama", w=864, h=26
             nx = (x + 0.5) / float(w)
 
             if mode == "sky":
-                r, g, b = sample_aspect_starry_sky(st_px, st_w, st_h, nx, ny, aspect, include_moon=False, include_village=False)
-                seam_x = smoothstep(0.0, 0.10, nx) * smoothstep(0.0, 0.10, 1.0 - nx)
+                r, g, b = sample_aspect_starry_sky(st_px, st_w, st_h, nx, ny, aspect, include_moon=False, include_village=False, include_cypress=False)
+                seam_x = smoothstep(0.0, 0.12, nx) * smoothstep(0.0, 0.12, 1.0 - nx)
                 if seam_x < 0.999:
-                    wr, wg, wb = sample_aspect_starry_sky(st_px, st_w, st_h, (nx + 0.5) % 1.0, ny, aspect, include_moon=False, include_village=False)
+                    wr, wg, wb = sample_aspect_starry_sky(st_px, st_w, st_h, (nx + 0.5) % 1.0, ny, aspect, include_moon=False, include_village=False, include_cypress=False)
                     r = r * seam_x + wr * (1.0 - seam_x)
                     g = g * seam_x + wg * (1.0 - seam_x)
                     b = b * seam_x + wb * (1.0 - seam_x)

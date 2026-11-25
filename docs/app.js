@@ -97,8 +97,11 @@ class CelestialMatrixStage {
       }
 
       const grid = this.vgSky.grid || [];
-      const fontSz = Math.max(4.0, this.w / (cols * 0.60));
-      lc.font = `700 ${fontSz.toFixed(2)}px 'JetBrains Mono', ui-monospace, monospace`;
+      const monoFamily = "'JetBrains Mono', ui-monospace, monospace";
+      lc.font = `700 20px ${monoFamily}`;
+      const unitAdv = (lc.measureText("MMMMMMMMMM").width / 200) || 0.6;
+      const fontSz = Math.max(1.8, colStep / unitAdv);
+      lc.font = `700 ${fontSz.toFixed(3)}px ${monoFamily}`;
       lc.textBaseline = "alphabetic";
       lc.globalAlpha = 0.78;
       for (let r = 0; r < grid.length; r++) {
@@ -415,6 +418,7 @@ async function initObservatory() {
     return;
   }
 
+  const skyHud = document.getElementById("sky-hud");
   const skyReadout = document.getElementById("sky-readout");
   const sky = new LiquidStarrySky(
     document.getElementById("sky-canvas"),
@@ -423,6 +427,7 @@ async function initObservatory() {
     vgScene,
     (bodyText) => {
       skyReadout.textContent = bodyText;
+      if (skyHud) skyHud.hidden = !bodyText;
     }
   );
 
@@ -621,7 +626,7 @@ async function initObservatory() {
     modalTitle.textContent = `${meta.title} — 360° Stage`;
     modalDesc.textContent = meta.summary;
     modalLiveLink.href = meta.liveUrl;
-    modalLiveLink.textContent = meta.id === "v2" ? "Open Repository" : `Open ${meta.domain}`;
+    modalLiveLink.textContent = meta.domain ? `Open ${meta.domain}` : "Open Repository";
     modalExplodeRange.value = "0";
     modalStage.setExplode(0);
     modalStage.setVariant(id);

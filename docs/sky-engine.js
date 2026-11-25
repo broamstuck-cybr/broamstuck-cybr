@@ -210,11 +210,14 @@ export class LiquidStarrySky {
 
     const grid = layerData.grid || [];
     const motifs = layerData.motifs || [];
-    const fontSz = Math.max(4.2, w / (cols * 0.595));
+    const monoFamily = "'JetBrains Mono', ui-monospace, monospace";
+    planes[0].ctx.font = `700 20px ${monoFamily}`;
+    const unitAdv = (planes[0].ctx.measureText("MMMMMMMMMM").width / 200) || 0.6;
+    const fontSz = Math.max(1.8, colStep / unitAdv);
 
     planes.forEach((p) => {
       p.ctx.globalAlpha = 0.96;
-      p.ctx.font = `700 ${fontSz.toFixed(2)}px 'JetBrains Mono', ui-monospace, monospace`;
+      p.ctx.font = `700 ${fontSz.toFixed(3)}px ${monoFamily}`;
       p.ctx.textBaseline = "alphabetic";
     });
 
@@ -253,15 +256,16 @@ export class LiquidStarrySky {
     return planes.map((p) => p.canvas);
   }
 
-  // WHY: Composes one continuous full-page Van Gogh Starry Night sky (vgScene.sky) flowing seamlessly down to a grounded Sunflowers & Provence bottom garden without duplicate margin moons or procedural stripe artifacts.
+  // WHY: Composes one continuous full-page Van Gogh Starry Night sky (vgScene.sky) flowing seamlessly down to a grounded Sunflowers & Provence bottom garden without duplicate margin moons, stretched ultrawide glyphs, or procedural stripe artifacts.
   _bakeFullPageBackdrop() {
     const w = this.bgW;
     const h = this.bgH;
+    const bgDpr = this.bgDpr || this.dpr;
     const c = document.createElement("canvas");
-    c.width = Math.max(1, Math.round(w * this.dpr));
-    c.height = Math.max(1, Math.round(h * this.dpr));
+    c.width = Math.max(1, Math.round(w * bgDpr));
+    c.height = Math.max(1, Math.round(h * bgDpr));
     const ctx = c.getContext("2d", { alpha: false });
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
 
     ctx.fillStyle = "#040814";
     ctx.fillRect(0, 0, w, h);
@@ -274,19 +278,21 @@ export class LiquidStarrySky {
       return;
     }
 
-    const skyTileH = Math.max(360, Math.round(w * 0.34));
-    const garBandH = Math.max(360, Math.round(w * 0.34));
-    const skyPlanes = this._bakeCalligraphicPlanes(skyOnly, w, skyTileH);
-    const garPlanes = this._bakeCalligraphicPlanes(gar, w, garBandH);
+    const skyTileW = Math.min(w, 1280);
+    const skyTileH = Math.max(340, Math.round(skyTileW * 0.36));
+    const garTileW = Math.min(w, 1440);
+    const garBandH = Math.max(340, Math.round(garTileW * 0.34));
+    const skyPlanes = this._bakeCalligraphicPlanes(skyOnly, skyTileW, skyTileH);
+    const garPlanes = this._bakeCalligraphicPlanes(gar, garTileW, garBandH);
 
     if (skyPlanes) {
       const skyTile = document.createElement("canvas");
-      skyTile.width = Math.max(1, Math.round(w * this.dpr));
-      skyTile.height = Math.max(1, Math.round(skyTileH * this.dpr));
+      skyTile.width = Math.max(1, Math.round(skyTileW * bgDpr));
+      skyTile.height = Math.max(1, Math.round(skyTileH * bgDpr));
       const stc = skyTile.getContext("2d", { alpha: false });
-      stc.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      stc.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
       for (let p = 0; p < skyPlanes.length; p++) {
-        stc.drawImage(skyPlanes[p], 0, 0, w, skyTileH);
+        stc.drawImage(skyPlanes[p], 0, 0, skyTileW, skyTileH);
       }
 
       const overlap = Math.round(skyTileH * 0.32);
@@ -295,22 +301,23 @@ export class LiquidStarrySky {
       skyFeather.width = skyTile.width;
       skyFeather.height = skyTile.height;
       const sfc = skyFeather.getContext("2d");
-      sfc.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-      sfc.drawImage(skyTile, 0, 0, w, skyTileH);
+      sfc.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
+      sfc.drawImage(skyTile, 0, 0, skyTileW, skyTileH);
       sfc.globalCompositeOperation = "destination-in";
       const fMask = sfc.createLinearGradient(0, 0, 0, overlap);
       fMask.addColorStop(0, "rgba(0,0,0,0)");
       fMask.addColorStop(1, "rgba(0,0,0,1)");
       sfc.fillStyle = fMask;
-      sfc.fillRect(0, 0, w, skyTileH);
+      sfc.fillRect(0, 0, skyTileW, skyTileH);
 
-      ctx.drawImage(skyTile, 0, 0, w, skyTileH);
+      for (let x = 0; x < w; x += skyTileW) {
+        ctx.drawImage(skyTile, x, 0, skyTileW, skyTileH);
+      }
       let tileIdx = 1;
       for (let y = step; y < h; y += step) {
-        const shiftX = Math.round(((tileIdx * 0.381966) % 1) * w);
-        ctx.drawImage(skyFeather, -shiftX, y, w, skyTileH);
-        if (shiftX > 0) {
-          ctx.drawImage(skyFeather, w - shiftX, y, w, skyTileH);
+        const shiftX = Math.round(((tileIdx * 0.381966) % 1) * skyTileW);
+        for (let x = -shiftX; x < w; x += skyTileW) {
+          ctx.drawImage(skyFeather, x, y, skyTileW, skyTileH);
         }
         tileIdx++;
       }
@@ -325,12 +332,12 @@ export class LiquidStarrySky {
     if (garPlanes) {
       const gy = Math.max(0, h - garBandH);
       const garComp = document.createElement("canvas");
-      garComp.width = Math.max(1, Math.round(w * this.dpr));
-      garComp.height = Math.max(1, Math.round(garBandH * this.dpr));
+      garComp.width = Math.max(1, Math.round(garTileW * bgDpr));
+      garComp.height = Math.max(1, Math.round(garBandH * bgDpr));
       const gc = garComp.getContext("2d");
-      gc.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      gc.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
       for (let p = 0; p < garPlanes.length; p++) {
-        gc.drawImage(garPlanes[p], 0, 0, w, garBandH);
+        gc.drawImage(garPlanes[p], 0, 0, garTileW, garBandH);
       }
       gc.globalCompositeOperation = "destination-in";
       const gMask = gc.createLinearGradient(0, 0, 0, garBandH);
@@ -338,8 +345,26 @@ export class LiquidStarrySky {
       gMask.addColorStop(0.28, "rgba(0,0,0,0.92)");
       gMask.addColorStop(1, "rgba(0,0,0,1)");
       gc.fillStyle = gMask;
-      gc.fillRect(0, 0, w, garBandH);
-      ctx.drawImage(garComp, 0, gy, w, garBandH);
+      gc.fillRect(0, 0, garTileW, garBandH);
+      if (w <= garTileW) {
+        ctx.drawImage(garComp, 0, gy, garTileW, garBandH);
+      } else {
+        const rem = w % garTileW;
+        const startX = rem > 0 ? -Math.round((garTileW - rem) * 0.5) : 0;
+        let gIdx = 0;
+        for (let x = startX; x < w; x += garTileW) {
+          if (gIdx % 2 === 1) {
+            ctx.save();
+            ctx.translate(x + garTileW, gy);
+            ctx.scale(-1, 1);
+            ctx.drawImage(garComp, 0, 0, garTileW, garBandH);
+            ctx.restore();
+          } else {
+            ctx.drawImage(garComp, x, gy, garTileW, garBandH);
+          }
+          gIdx++;
+        }
+      }
     }
 
     this.bgBaked = c;
@@ -351,9 +376,10 @@ export class LiquidStarrySky {
     const docEl = document.documentElement;
     this.bgW = Math.max(320, docEl.clientWidth || window.innerWidth || 1440);
     this.bgH = Math.max(window.innerHeight || 900, docEl.scrollHeight || 1400, document.body.offsetHeight || 1400);
-    this.bgCanvas.width = Math.round(this.bgW * this.dpr);
-    this.bgCanvas.height = Math.round(this.bgH * this.dpr);
-    this.bgCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.bgDpr = (this.bgW * this.bgH > 2200000) ? 1 : this.dpr;
+    this.bgCanvas.width = Math.round(this.bgW * this.bgDpr);
+    this.bgCanvas.height = Math.round(this.bgH * this.bgDpr);
+    this.bgCtx.setTransform(this.bgDpr, 0, 0, this.bgDpr, 0, 0);
 
     if (this.panCanvas && this.panCtx) {
       const rect = this.panCanvas.getBoundingClientRect();
@@ -467,7 +493,7 @@ export class LiquidStarrySky {
         lastX = -999;
         this.panPtr.inside = false;
         this.hoveredBody = null;
-        if (this.onBodyInspect) this.onBodyInspect("BroAmStuck · @broamstuck-cybr");
+        if (this.onBodyInspect) this.onBodyInspect("");
       });
 
       this.panCanvas.addEventListener("pointerdown", (ev) => {
@@ -720,7 +746,7 @@ export class LiquidStarrySky {
       if (this.onBodyInspect) this.onBodyInspect(hit.label);
     } else if (!hit && this.hoveredBody) {
       this.hoveredBody = null;
-      if (this.onBodyInspect) this.onBodyInspect("BroAmStuck · @broamstuck-cybr");
+      if (this.onBodyInspect) this.onBodyInspect("");
     }
   }
 

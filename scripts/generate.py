@@ -300,13 +300,13 @@ def lang_percentages(langs):
 
 
 def starry_matrix_svg(day_map, total_contribs, streaks):
-    width, height = 1200, 304
-    clip_defs, frame_nodes = nocturne_card(width, height, "mat", radius=16)
+    width, height = 1200, 492
+    clip_defs, frame_nodes = nocturne_card(width, height, "mat", radius=18)
     weeks52 = streaks["weeks52"]
     max_w = max(weeks52) if any(weeks52) else 1
 
     parts = [
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 304" width="1200" height="304" role="img" aria-label="52-Week Contribution Constellation under Van Gogh Starry Night">',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 492" width="1200" height="492" role="img" aria-label="Van Gogh Starry Night Observatory and 52-Week Contribution Constellation">',
         REDUCED_MOTION_STYLE,
         "<defs>",
     ]
@@ -314,6 +314,16 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
     parts.extend(clip_defs)
     parts.extend(
         [
+            '<clipPath id="mat-dome-clip"><rect x="16" y="16" width="1168" height="236" rx="10"/></clipPath>',
+            '<clipPath id="mat-well-clip"><rect x="16" y="290" width="1168" height="186" rx="10"/></clipPath>',
+            '<linearGradient id="mat-top-scrim" x1="0" y1="0" x2="0" y2="1">',
+            '<stop offset="0%" stop-color="#040916" stop-opacity="0.72"/>',
+            '<stop offset="100%" stop-color="#040916" stop-opacity="0"/>',
+            "</linearGradient>",
+            '<linearGradient id="mat-left-scrim" x1="0" y1="0" x2="1" y2="0">',
+            '<stop offset="0%" stop-color="#040916" stop-opacity="0.72"/>',
+            '<stop offset="100%" stop-color="#040916" stop-opacity="0"/>',
+            "</linearGradient>",
             '<linearGradient id="mat-water" x1="0" y1="0" x2="1" y2="0">',
             '<stop offset="0%%" stop-color="%s" stop-opacity="0"/>' % BORDER_WARM,
             '<stop offset="30%%" stop-color="%s" stop-opacity="0.52"/>' % CERULEAN,
@@ -326,26 +336,30 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#mat-clip)">')
 
+    parts.append('<g clip-path="url(#mat-dome-clip)">')
+    parts.append('<rect x="16" y="16" width="1168" height="236" fill="#061024"/>')
+    parts.append('<g transform="translate(16 16)">')
     parts.extend(
         van_gogh_starry_backdrop(
-            "mat",
-            width,
-            height,
+            "mat-pan",
+            1168,
+            236,
             avoid_boxes=[],
-            opacity_scale=0.76,
+            opacity_scale=0.96,
             glyph_stride=1,
-            stroke_limit=2400,
+            stroke_limit=2800,
             layer_key="panorama",
         )
     )
-    parts.extend(solar_system_orrery(cx=564.0, cy=150.0, scale_x=290.0, scale_y=64.0, tilt_deg=-9.5, opacity=0.46))
+    parts.extend(solar_system_orrery(cx=560.0, cy=118.0, scale_x=296.0, scale_y=56.0, tilt_deg=-9.5, opacity=0.72))
+    parts.append("</g>")
+    parts.append("</g>")
+    parts.append('<rect x="16" y="16" width="1168" height="236" rx="10" fill="none" stroke="%s" stroke-width="1"/>' % BORDER_WARM)
 
-    parts.append('<rect x="30" y="16" width="234" height="28" rx="8" fill="#050b18" fill-opacity="0.78" stroke="%s" stroke-width="0.9"/>' % BORDER_WARM)
-    parts.append('<rect x="984" y="16" width="190" height="28" rx="8" fill="#050b18" fill-opacity="0.78" stroke="%s" stroke-width="0.9"/>' % BORDER_WARM)
     parts.append(
         raw_text(
-            42,
-            35,
+            24,
+            277,
             '<tspan fill="%s" font-weight="700">%s</tspan><tspan fill="%s">&#160;contributions&#160;&#160;&#183;&#160;&#160;</tspan><tspan fill="%s" font-weight="600">%dd</tspan><tspan fill="%s">&#160;streak</tspan>'
             % (CREAM, "{:,}".format(total_contribs), INK_SECOND, SKY_SOFT, streaks["longest"], INK_SECOND),
             INK_PRIMARY,
@@ -357,16 +371,36 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         )
     )
 
-    parts.append(text(1022, 35, "Less", INK_MUTED, 10.0, "end", "500", "", FONT_DISPLAY))
-    for idx_l, (lx, pts_n, r_out, r_in, lcol) in enumerate((
-        (1038, 4, 3.0, 1.0, "#2c4875"),
-        (1056, 4, 4.2, 1.6, SKY_SOFT),
-        (1076, 6, 5.0, 2.0, EMERALD_MID),
-        (1098, 8, 5.8, 2.3, FIREFLY_GOLD),
-        (1122, 8, 6.8, 2.6, CADMIUM),
-    )):
-        parts.append('<path d="%s" fill="%s"/>' % (star_path(lx, 31, r_out, r_in, pts_n), lcol))
-    parts.append(text(1138, 35, "More", INK_MUTED, 10.0, "start", "500", "", FONT_DISPLAY))
+    parts.append(text(1028, 277, "Less", INK_MUTED, 10.2, "end", "500", "", FONT_DISPLAY))
+    for lx, pts_n, r_out, r_in, lcol in (
+        (1044, 4, 3.0, 1.0, "#2c4875"),
+        (1062, 4, 4.2, 1.6, SKY_SOFT),
+        (1082, 6, 5.0, 2.0, EMERALD_MID),
+        (1104, 8, 5.8, 2.3, FIREFLY_GOLD),
+        (1128, 8, 6.8, 2.6, CADMIUM),
+    ):
+        parts.append('<path d="%s" fill="%s"/>' % (star_path(lx, 273, r_out, r_in, pts_n), lcol))
+    parts.append(text(1144, 277, "More", INK_MUTED, 10.2, "start", "500", "", FONT_DISPLAY))
+
+    parts.append('<g clip-path="url(#mat-well-clip)">')
+    parts.append('<rect x="16" y="290" width="1168" height="186" fill="#040916"/>')
+    parts.append('<g transform="translate(16 290)">')
+    parts.extend(
+        van_gogh_starry_backdrop(
+            "mat-sky",
+            1168,
+            186,
+            avoid_boxes=[],
+            opacity_scale=0.80,
+            glyph_stride=1,
+            stroke_limit=1650,
+            layer_key="sky",
+        )
+    )
+    parts.append('<rect x="0" y="0" width="1168" height="186" fill="#040916" fill-opacity="0.58"/>')
+    parts.append('<rect x="0" y="0" width="1168" height="28" fill="url(#mat-top-scrim)"/>')
+    parts.append('<rect x="0" y="0" width="62" height="186" fill="url(#mat-left-scrim)"/>')
+    parts.append("</g>")
 
     ordered_dates = sorted(day_map.keys())
     today = datetime.date.fromisoformat(ordered_dates[-1]) if ordered_dates else datetime.date.today()
@@ -374,10 +408,10 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
     end_sunday = today - datetime.timedelta(days=days_since_sun)
     start_sunday = end_sunday - datetime.timedelta(weeks=51)
 
-    grid_x = 76.0
-    grid_y = 82.0
-    pitch_x = 21.1
-    pitch_y = 19.6
+    grid_x = 74.0
+    grid_y = 324.0
+    pitch_x = 21.0
+    pitch_y = 17.6
 
     month_names = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
     last_month = -1
@@ -390,11 +424,11 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
                 continue
             last_month = d.month
             if w - last_printed_w >= 3:
-                parts.append(text(grid_x + w * pitch_x, 63, month_names[d.month - 1], INK_SECOND, 10.2, "middle", "600", "", FONT_DISPLAY))
+                parts.append(text(grid_x + w * pitch_x, 308, month_names[d.month - 1], INK_SECOND, 10.2, "middle", "600", "", FONT_DISPLAY))
                 last_printed_w = w
 
     for row, lbl in ((1, "Mon"), (3, "Wed"), (5, "Fri")):
-        parts.append(text(58, grid_y + row * pitch_y + 3.6, lbl, INK_MUTED, 9.6, "end", "500"))
+        parts.append(text(56, grid_y + row * pitch_y + 3.5, lbl, INK_MUTED, 9.6, "end", "500"))
 
     coords = {}
     for w in range(52):
@@ -435,19 +469,19 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         elif c <= 10:
             parts.append('<path d="%s" fill="%s" stroke="%s" stroke-width="0.5"/>' % (star_path(cx, cy, 5.4, 2.1, 6), EMERALD_SOFT, IVORY_WARM))
         elif c <= 24:
-            parts.append('<circle cx="%s" cy="%s" r="6.6" fill="none" stroke="%s" stroke-width="0.95" stroke-dasharray="3 2.2" stroke-opacity="0.78"/>' % (num(cx, 1), num(cy, 1), CADMIUM))
-            parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.55"/>' % (star_path(cx, cy, 5.8, 2.2, 8), FIREFLY_GOLD))
+            parts.append('<circle cx="%s" cy="%s" r="6.4" fill="none" stroke="%s" stroke-width="0.95" stroke-dasharray="3 2.2" stroke-opacity="0.78"/>' % (num(cx, 1), num(cy, 1), CADMIUM))
+            parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.55"/>' % (star_path(cx, cy, 5.6, 2.1, 8), FIREFLY_GOLD))
         else:
             parts.append(
-                '<circle cx="%s" cy="%s" r="8.2" fill="none" stroke="%s" stroke-width="1.1" stroke-dasharray="3.5 2.2" stroke-opacity="0.88">'
+                '<circle cx="%s" cy="%s" r="7.8" fill="none" stroke="%s" stroke-width="1.1" stroke-dasharray="3.5 2.2" stroke-opacity="0.88">'
                 '<animateTransform attributeName="transform" type="rotate" from="0 %s %s" to="360 %s %s" dur="18s" repeatCount="indefinite"/>'
                 "</circle>"
                 % (num(cx, 1), num(cy, 1), CADMIUM, num(cx, 1), num(cy, 1), num(cx, 1), num(cy, 1))
             )
-            parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.7"/>' % (star_path(cx, cy, 7.2, 2.6, 8), CREAM))
+            parts.append('<path d="%s" fill="%s" stroke="#ffffff" stroke-width="0.7"/>' % (star_path(cx, cy, 6.8, 2.5, 8), CREAM))
 
-    water_y = 244.0
-    parts.append('<line x1="48" y1="%s" x2="1168" y2="%s" stroke="url(#mat-water)" stroke-width="1.15"/>' % (num(water_y), num(water_y)))
+    water_y = 447.0
+    parts.append('<line x1="44" y1="%s" x2="1168" y2="%s" stroke="url(#mat-water)" stroke-width="1.1"/>' % (num(water_y), num(water_y)))
     for w in range(52):
         val = weeks52[w]
         if val <= 0:
@@ -456,8 +490,10 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
         wx = grid_x + w * pitch_x
         glyph_str = "≈~≈" if norm > 0.55 else ("~~" if norm > 0.25 else "~")
         col = CADMIUM if norm > 0.45 else SKY_SOFT
-        parts.append(text(wx, water_y + 16 + (w % 2) * 6, glyph_str, col, 9.6, "middle", "700", ' opacity="%s"' % num(0.38 + norm * 0.52, 2)))
+        parts.append(text(wx, water_y + 15 + (w % 2) * 5, glyph_str, col, 9.4, "middle", "700", ' opacity="%s"' % num(0.42 + norm * 0.50, 2)))
 
+    parts.append("</g>")
+    parts.append('<rect x="16" y="290" width="1168" height="186" rx="10" fill="none" stroke="%s" stroke-width="1"/>' % BORDER_WARM)
     parts.append("</g>")
     parts.append("</svg>")
     return "\n".join(parts)
@@ -611,21 +647,18 @@ def render_stack_crystal(langs, lang_repos, lang_stars):
         col_main, _ = LANG_PALETTE.get(axis, (CREAM, IVORY))
         pct = pct_map.get(axis, 0)
         pct_str = "%d%%" % pct if pct > 0 else "<1%"
-        b_comp = compact(lang_map.get(axis, 0))
-        r_cnt = lang_repos.get(axis, 0)
-        sub_tag = "%s · %dr" % (b_comp, r_cnt)
 
         if i == 0:
-            lx, ly, anchor = mx, uy - 18.0, "middle"
+            lx, ly, anchor = mx, uy - 14.0, "middle"
         elif i in (1, 2):
             lx = max(mx + 12.0, cx + 106.0)
-            ly = my + (-12.0 if i == 1 else 12.0)
+            ly = my + (-8.0 if i == 1 else 14.0)
             anchor = "start"
         elif i == 3:
             lx, ly, anchor = bx, by + 20.0, "middle"
         else:
             lx = min(mx - 12.0, cx - 106.0)
-            ly = my + (12.0 if i == 4 else -12.0)
+            ly = my + (14.0 if i == 4 else -8.0)
             anchor = "end"
 
         elems.append(
@@ -635,12 +668,11 @@ def render_stack_crystal(langs, lang_repos, lang_stars):
                 '<tspan fill="%s" font-weight="700">%s</tspan><tspan fill="%s" font-weight="600">&#160;%s</tspan>'
                 % (col_main, esc(axis), INK_PRIMARY if pct >= 5 else INK_SECOND, esc(pct_str)),
                 INK_PRIMARY,
-                10.8,
+                11.0,
                 anchor,
                 "600",
             )
         )
-        elems.append(text(lx, ly + 12.0, sub_tag, INK_MUTED, 8.8, anchor, "500"))
 
     return elems
 
@@ -664,28 +696,28 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     ]
     parts.extend(nocturne_defs("core"))
     parts.extend(clip_defs)
+    parts.append('<clipPath id="core-left-clip"><rect x="1" y="1" width="483" height="562"/></clipPath>')
     parts.append('<clipPath id="core-avatar-clip"><circle cx="246" cy="252" r="204"/></clipPath>')
     parts.append("</defs>")
     parts.extend(frame_nodes)
     parts.append('<g clip-path="url(#core-clip)">')
 
     acx, acy, ar = 246.0, 252.0, 204.0
-    avoid = [
-        (170, 474, 152, 58),
-        (492, 22, 688, 524),
-    ]
+    parts.append('<g clip-path="url(#core-left-clip)">')
     parts.extend(
         van_gogh_starry_backdrop(
             "core",
-            width,
+            484,
             height,
-            avoid_boxes=avoid,
-            opacity_scale=0.58,
+            avoid_boxes=[],
+            opacity_scale=0.68,
             glyph_stride=1,
-            stroke_limit=1350,
+            stroke_limit=1200,
             layer_key="sky",
         )
     )
+    parts.append('<rect x="1" y="1" width="483" height="562" fill="#040916" fill-opacity="0.34"/>')
+    parts.append("</g>")
 
     parts.append('<circle cx="%s" cy="%s" r="%s" fill="#060d1c" stroke="%s" stroke-width="1.35"/>' % (num(acx), num(acy), num(ar + 5), BORDER_WARM))
     for deg in range(0, 360, 15):
@@ -786,8 +818,9 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
     parts.append("</g>")
     parts.append('<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="1.35" stroke-opacity="0.62"/>' % (num(acx), num(acy), num(ar), CREAM))
 
-    parts.append(text(acx, 496, DISPLAY, INK_PRIMARY, 21.0, "middle", "700", ' letter-spacing="-0.2"', FONT_DISPLAY))
-    parts.append(text(acx, 518, "@%s" % USERNAME, INK_MUTED, 11.2, "middle", "500"))
+    parts.append('<rect x="168" y="473" width="156" height="54" rx="10" fill="#050b18" fill-opacity="0.82" stroke="%s" stroke-width="0.85"/>' % BORDER_WARM)
+    parts.append(text(acx, 497, DISPLAY, INK_PRIMARY, 20.5, "middle", "700", ' letter-spacing="-0.2"', FONT_DISPLAY))
+    parts.append(text(acx, 517, "@%s" % USERNAME, INK_MUTED, 11.0, "middle", "500"))
 
     parts.append('<line x1="484" y1="32" x2="484" y2="532" stroke="%s" stroke-width="1"/>' % BORDER_SUBTLE)
 
@@ -927,7 +960,7 @@ def build_telemetry_payload(data, streaks):
             "summary": "Twin-pylon catenary suspension viaduct.",
             "repoUrl": "https://github.com/%s/F-Forum_v2" % USERNAME,
             "liveUrl": "https://github.com/%s/F-Forum_v2" % USERNAME,
-            "domain": "v2-bridge",
+            "domain": "",
             "lang": (data["repo_map"].get("F-Forum_v2") or {}).get("lang") or "TypeScript",
             "stars": int((data["repo_map"].get("F-Forum_v2") or {}).get("stars") or 1),
             "accent": SKY_SOFT,

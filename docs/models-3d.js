@@ -158,10 +158,13 @@ export class PortraitStage {
     const planes = this.data.planes || [];
     const rowStep = diam / rows;
     const colStep = diam / cols;
-    const fontSz = Math.max(5.2, diam / (cols * 0.598));
+    const monoFamily = "'JetBrains Mono', ui-monospace, monospace";
+    ctxs[0].font = `700 20px ${monoFamily}`;
+    const unitAdv = (ctxs[0].measureText("MMMMMMMMMM").width / 200) || 0.6;
+    const fontSz = Math.max(2.0, colStep / unitAdv);
 
     ctxs.forEach((lc) => {
-      lc.font = `700 ${fontSz.toFixed(2)}px 'JetBrains Mono', ui-monospace, monospace`;
+      lc.font = `700 ${fontSz.toFixed(3)}px ${monoFamily}`;
       lc.textBaseline = "alphabetic";
       lc.globalAlpha = 0.98;
     });
@@ -831,8 +834,11 @@ export class Forum3DStage {
         lc.stroke();
       }
       const grid = this.vgSky.grid || [];
-      const fSz = Math.max(3.6, this.w / (cols * 0.60));
-      lc.font = `700 ${fSz.toFixed(2)}px 'JetBrains Mono', ui-monospace, monospace`;
+      const monoFamily = "'JetBrains Mono', ui-monospace, monospace";
+      lc.font = `700 20px ${monoFamily}`;
+      const unitAdv = (lc.measureText("MMMMMMMMMM").width / 200) || 0.6;
+      const fSz = Math.max(1.6, cStep / unitAdv);
+      lc.font = `700 ${fSz.toFixed(3)}px ${monoFamily}`;
       lc.globalAlpha = 0.54;
       for (let r = 0; r < grid.length; r++) {
         let cur = 0;

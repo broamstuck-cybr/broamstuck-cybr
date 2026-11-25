@@ -205,17 +205,6 @@ def build_v3_villa():
     faces.append({"pts": [[-24, 17.6, -8], [-24, 17.6, 6], [-16, 22.8, -1]], "fill": "#1e40af", "stroke": "#fde047", "alpha": 0.76, "emissive": True, "part": 3})
     faces.append({"pts": [[2, 17.6, -8], [2, 17.6, 6], [-6, 22.8, -1]], "fill": "#1e40af", "stroke": "#fde047", "alpha": 0.76, "emissive": True, "part": 3})
 
-    for i in range(4):
-        a = -0.35 + i * 0.75
-        px, pz = math.cos(a) * 44.0, math.sin(a) * 28.0
-        tx, tz = -math.sin(a) * 6.4, math.cos(a) * 6.4
-        py = 8.0 + (i % 2) * 4.5
-        col = "#6ee7b7" if i % 2 == 0 else "#7dd3fc"
-        faces.append({
-            "pts": [[round(px - tx, 2), round(py, 2), round(pz - tz, 2)], [round(px + tx, 2), round(py, 2), round(pz + tz, 2)], [round(px + tx, 2), round(py + 7.6, 2), round(pz + tz, 2)], [round(px - tx, 2), round(py + 7.6, 2), round(pz - tz, 2)]],
-            "fill": "#0f2d46", "stroke": col, "alpha": 0.62, "emissive": True, "part": 3,
-        })
-
     return {"faces": faces, "lines": lines, "transit": False, "lanterns": False}
 
 

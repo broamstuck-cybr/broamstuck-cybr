@@ -18,12 +18,6 @@
 
 <p align="center">
   <a href="https://broamstuck-cybr.github.io/broamstuck-cybr/"><strong>Interactive Observatory</strong></a>
-  &nbsp;&middot;&nbsp;
-  <a href="https://fforum3.vercel.app">F-Forum v3</a>
-  &nbsp;&middot;&nbsp;
-  <a href="https://github.com/broamstuck-cybr/F-Forum_v2">F-Forum v2</a>
-  &nbsp;&middot;&nbsp;
-  <a href="https://f-forum.vercel.app">F-Forum v1</a>
 </p>
 
 </div>

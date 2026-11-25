@@ -189,7 +189,7 @@ def render_flagship_cards(repo_map):
             "F-Forum_v2",
             "F-Forum v2",
             "Twin-pylon catenary suspension viaduct",
-            "v2-bridge",
+            "",
             SKY_SOFT,
             _render_blender_model(models.get("v2", {}), yaw_deg=25.0, pitch_deg=19.0, fov=236.0, cy=96.0),
         ),

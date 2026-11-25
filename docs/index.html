@@ -17,8 +17,8 @@
     <header class="sky-observatory" aria-label="Interactive Starry Night, Solar System, Provence Cypresses and Sunflowers Sky">
       <div class="sky-dome">
         <canvas id="panorama-canvas" role="img" aria-label="Interactive 4K calligraphic synthesis of Van Gogh Starry Night, Solar System orbits, Provence cypresses and Sunflowers. Move or drag pointer to flow and gaze."></canvas>
-        <div class="sky-hud">
-          <span id="sky-readout" class="sky-readout" aria-live="polite">BroAmStuck &middot; @broamstuck-cybr</span>
+        <div id="sky-hud" class="sky-hud" hidden>
+          <span id="sky-readout" class="sky-readout" aria-live="polite"></span>
         </div>
       </div>
     </header>
@@ -26,7 +26,7 @@
     <section class="board" aria-labelledby="matrix-heading">
       <div class="board-head">
         <h2 id="matrix-heading" class="board-stat">
-          <strong id="mat-total">1,002</strong> contributions &middot; <strong id="mat-streak">20d</strong> streak
+          <strong id="mat-total">1,003</strong> contributions &middot; <strong id="mat-streak">20d</strong> streak
         </h2>
         <div class="matrix-meta">
           <span id="matrix-inspector" class="matrix-inspector" aria-live="polite"></span>
@@ -74,7 +74,7 @@
                 <span class="metric-lbl">Source</span>
               </button>
               <button type="button" class="metric-card" data-metric="commits">
-                <span id="val-commits" class="metric-val">967</span>
+                <span id="val-commits" class="metric-val">968</span>
                 <span class="metric-lbl">Commits</span>
               </button>
               <button type="button" class="metric-card" data-metric="stars">
@@ -87,7 +87,7 @@
                 <span class="metric-lbl">Stars</span>
               </button>
               <button type="button" class="metric-card" data-metric="contribs">
-                <span id="val-contribs" class="metric-val metric-val--ok">1,002</span>
+                <span id="val-contribs" class="metric-val metric-val--ok">1,003</span>
                 <span class="metric-lbl">Total</span>
               </button>
             </div>
@@ -143,7 +143,6 @@
           <div class="forum-body">
             <div class="forum-title-row">
               <h3 class="forum-title">F-Forum v2</h3>
-              <span class="forum-domain">v2-bridge</span>
             </div>
             <p class="forum-desc">Twin-pylon catenary suspension viaduct.</p>
           </div>
