@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-11-25T14:21:00Z",
+  "updatedAt": "2026-11-26T07:50:58Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
-    "bytes": 81292285,
-    "bytesCompact": "81.3M",
-    "commits": 972,
+    "bytes": 81356439,
+    "bytesCompact": "81.4M",
+    "commits": 974,
     "stars": 21,
-    "contributions": 1007,
+    "contributions": 1009,
     "repos": 10
   },
   "streaks": {
     "longest": 20,
-    "current": 10,
+    "current": 11,
     "peak": 92,
     "weeks52": [
       0,
@@ -66,7 +66,7 @@
       8,
       28,
       69,
-      48
+      50
     ]
   },
   "days": {
@@ -437,15 +437,16 @@
     "2026-11-22": 14,
     "2026-11-23": 9,
     "2026-11-24": 20,
-    "2026-11-25": 5
+    "2026-11-25": 6,
+    "2026-11-26": 1
   },
   "langs5d": [
     {
       "name": "HTML",
       "bytes": 61480003,
       "bytesCompact": "61.5M",
-      "percent": 76,
-      "percentExact": 75.63,
+      "percent": 75,
+      "percentExact": 75.57,
       "repos": 4,
       "d2Volume": 0.864,
       "d3Breadth": 0.667,
@@ -458,8 +459,8 @@
       "name": "TypeScript",
       "bytes": 9437684,
       "bytesCompact": "9.4M",
-      "percent": 11,
-      "percentExact": 11.61,
+      "percent": 12,
+      "percentExact": 11.6,
       "repos": 3,
       "d2Volume": 0.737,
       "d3Breadth": 0.5,
@@ -498,12 +499,12 @@
     },
     {
       "name": "Python",
-      "bytes": 581110,
-      "bytesCompact": "581.1K",
+      "bytes": 645264,
+      "bytesCompact": "645.3K",
       "percent": 1,
-      "percentExact": 0.71,
+      "percentExact": 0.79,
       "repos": 4,
-      "d2Volume": 0.705,
+      "d2Volume": 0.709,
       "d3Breadth": 0.667,
       "d4Gravity": 0.65,
       "d5Velocity": 0.76,
@@ -526,6 +527,20 @@
     }
   ],
   "events": [
+    {
+      "sha": "089df2c",
+      "repo": "broamstuck-cybr",
+      "message": "feat(profile): redraw outer SVG portrait and Van Gogh canvases with 60fps batched calligraphic glyphs",
+      "time": "03:43",
+      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/089df2c201cfa951da2257949e2535a3d5d968ae"
+    },
+    {
+      "sha": "99a0bed",
+      "repo": "broamstuck-cybr",
+      "message": "feat(profile): ship 4K pure-vector portrait, 12x SVG DOM compaction, +30% 2D full-screen roaming ecosystem",
+      "time": "14:51",
+      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/99a0bedf4d1c74a152e3d0e04ba6091dd5460318"
+    },
     {
       "sha": "d8bc487",
       "repo": "broamstuck-cybr",
@@ -567,20 +582,6 @@
       "message": "feat(profile): build English Starry Night, Milky Way & Solar Orrery observatory, 5D astrolabe, 156x86 portrait & 360 3D F-Forum stage",
       "time": "16:28",
       "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/048392cadf85080259e3b897ef49330855625006"
-    },
-    {
-      "sha": "a2e91d7",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): craft nocturne firefly constellation, HD character portrait & 3D stack radar",
-      "time": "15:29",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/a2e91d7607f26ed6401be5da2e8195328c6c3147"
-    },
-    {
-      "sha": "58a0400",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): rebuild HD obsidian-telemetry architecture with isometric clickable cards",
-      "time": "14:16",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/58a04001c94e8f9cc6c1f7f48087a83ee0a840ea"
     }
   ],
   "forums": [
