@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T14:21:00Z",
+  "updatedAt": "2026-11-26T03:40:30Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
@@ -449,7 +449,7 @@
       "repos": 4,
       "d2Volume": 0.864,
       "d3Breadth": 0.667,
-      "d4Gravity": 0.65,
+      "d4Gravity": 0.69,
       "d5Velocity": 1.0,
       "color": "#fb923c",
       "highlight": "#ffedd5"
@@ -463,7 +463,7 @@
       "repos": 3,
       "d2Volume": 0.737,
       "d3Breadth": 0.5,
-      "d4Gravity": 0.596,
+      "d4Gravity": 0.587,
       "d5Velocity": 0.728,
       "color": "#38bdf8",
       "highlight": "#e0f2fe"
@@ -491,7 +491,7 @@
       "repos": 4,
       "d2Volume": 0.758,
       "d3Breadth": 0.667,
-      "d4Gravity": 0.65,
+      "d4Gravity": 0.69,
       "d5Velocity": 0.769,
       "color": "#2dd4bf",
       "highlight": "#ccfbf1"
@@ -505,7 +505,7 @@
       "repos": 4,
       "d2Volume": 0.705,
       "d3Breadth": 0.667,
-      "d4Gravity": 0.65,
+      "d4Gravity": 0.69,
       "d5Velocity": 0.76,
       "color": "#4ade80",
       "highlight": "#dcfce7"
@@ -519,13 +519,20 @@
       "repos": 1,
       "d2Volume": 0.283,
       "d3Breadth": 0.167,
-      "d4Gravity": 0.434,
+      "d4Gravity": 0.483,
       "d5Velocity": 0.549,
       "color": "#a5b4fc",
       "highlight": "#e0e7ff"
     }
   ],
   "events": [
+    {
+      "sha": "99a0bed",
+      "repo": "broamstuck-cybr",
+      "message": "feat(profile): ship 4K pure-vector portrait, 12x SVG DOM compaction, +30% 2D full-screen roaming ecosystem",
+      "time": "14:51",
+      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/99a0bedf4d1c74a152e3d0e04ba6091dd5460318"
+    },
     {
       "sha": "d8bc487",
       "repo": "broamstuck-cybr",
@@ -574,13 +581,6 @@
       "message": "feat(profile): craft nocturne firefly constellation, HD character portrait & 3D stack radar",
       "time": "15:29",
       "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/a2e91d7607f26ed6401be5da2e8195328c6c3147"
-    },
-    {
-      "sha": "58a0400",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): rebuild HD obsidian-telemetry architecture with isometric clickable cards",
-      "time": "14:16",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/58a04001c94e8f9cc6c1f7f48087a83ee0a840ea"
     }
   ],
   "forums": [

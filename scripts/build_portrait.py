@@ -3,8 +3,20 @@ import argparse
 import json
 import math
 import os
-import numpy as np
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
+import sys
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+
+from theme import glyph_rel_path
+
+try:
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
+except ImportError:
+    np = None
+    Image = ImageDraw = ImageEnhance = ImageFilter = None
 
 COORD_SZ = 2000
 
@@ -1180,7 +1192,324 @@ def build_subject_plane(arr_hi, hair_mask, shirt_mask, skin_mask):
     return subject_polys, subject_strokes
 
 
-# WHY: Emits <320 pure-vector color-batched <path> elements with zero <image> or <tspan> tags for GitHub CSP and 60fps Skia caching.
+def _shade_under_hex(hex_col, lname):
+    h = hex_col.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    if lname == "subject_polys":
+        if r > g + 16 and r > 86:
+            nr = min(255, max(128, int(round(r * 0.88 + 14.0))))
+            ng = min(255, max(30, int(round(g * 0.66 + 4.0))))
+            nb = min(255, max(44, int(round(b * 0.68 + 4.0))))
+            return "#%02x%02x%02x" % (nr, ng, nb)
+        if r < 72 and b < 116:
+            return "#050b18"
+    if lname == "rail_polys":
+        return "#%02x%02x%02x" % (
+            min(255, max(0, int(round(r * 0.62)))),
+            min(255, max(0, int(round(g * 0.66)))),
+            min(255, max(0, int(round(b * 0.72)))),
+        )
+    return "#%02x%02x%02x" % (
+        min(255, max(0, int(round(r * 0.74)))),
+        min(255, max(0, int(round(g * 0.74)))),
+        min(255, max(0, int(round(b * 0.78)))),
+    )
+
+
+def build_portrait_glyph_batches(
+    arr_hi,
+    hair_hi,
+    shirt_hi,
+    skin_hi,
+    sky_sm,
+    in_cyp,
+    styled_meadow,
+    hy_m,
+    yellow_armor,
+    plum_ribbon,
+    dark_mural,
+    x0_map,
+    y0_map,
+    sx_w,
+    sy_w,
+):
+    h_hi, w_hi, _ = arr_hi.shape
+    sh_h2, sh_w2 = h_hi // 2, w_hi // 2
+    arr_h = arr_hi[::2, ::2][:sh_h2, :sh_w2]
+    shirt_m2 = shirt_hi[::2, ::2][:sh_h2, :sh_w2]
+    skin_m2 = skin_hi[::2, ::2][:sh_h2, :sh_w2]
+    hair_m2 = hair_hi[::2, ::2][:sh_h2, :sh_w2]
+
+    yy_h, xx_h = np.mgrid[0:sh_h2, 0:sh_w2]
+    nx_h = (xx_h + 0.5) / float(sh_w2)
+    ny_h = (yy_h + 0.5) / float(sh_h2)
+
+    shirt_ext = extrapolate_masked_rgb(arr_h, shirt_m2, iterations=10)
+    shirt_sm = bilateral_smooth(shirt_ext, spatial_sigma=2.0, range_sigma=18.0, radius=2, passes=2)
+    blur_sh = np.asarray(
+        Image.fromarray(np.clip(shirt_sm, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(radius=5.0)),
+        dtype=np.float32,
+    )
+    sr_s, sg_s, sb_s = shirt_sm[:, :, 0], shirt_sm[:, :, 1], shirt_sm[:, :, 2]
+    fold_diff = np.clip(
+        (0.299 * (sr_s - blur_sh[:, :, 0]) + 0.587 * (sg_s - blur_sh[:, :, 1]) + 0.114 * (sb_s - blur_sh[:, :, 2])) / 255.0,
+        -0.14,
+        0.16,
+    )
+    collar_hi = np.exp(-(((ny_h - 0.626) / 0.011) ** 2)) * (1.0 - smooth_up(0.032, 0.056, np.abs(nx_h - 0.500))) * 16.0
+    yoke_seam = np.exp(-(((ny_h - 0.684) / 0.008) ** 2)) * (1.0 - smooth_up(0.065, 0.115, np.abs(nx_h - 0.502))) * 13.0
+    moon_rim = smooth_up(0.055, 0.145, nx_h - 0.500) * (1.0 - smooth_up(0.64, 0.84, ny_h)) * 16.0
+    cr_sh = np.clip(sr_s * 1.05 + 10.0 + fold_diff * 98.0 + collar_hi + yoke_seam + moon_rim, 152.0, 254.0)
+
+    skin_ext = extrapolate_masked_rgb(arr_h, skin_m2, iterations=10)
+    skin_sm = bilateral_smooth(skin_ext, spatial_sigma=1.8, range_sigma=18.0, radius=2, passes=2)
+    sk_lum = 0.299 * skin_sm[:, :, 0] + 0.587 * skin_sm[:, :, 1] + 0.114 * skin_sm[:, :, 2]
+
+    wdx = nx_h - 0.496
+    wdy = (ny_h - 0.495) * 1.10
+    wr = np.hypot(wdx, wdy)
+    wth = np.arctan2(wdy, wdx)
+    lock_wave = 0.62 * (0.5 + 0.5 * np.sin(wth * 12.0 + wr * 42.0)) + 0.38 * (0.5 + 0.5 * np.cos(wth * 21.0 - wr * 26.0))
+    radial_h = np.hypot((nx_h - 0.4945) / 0.064, (ny_h - 0.533) / 0.072)
+    crown_rim = smooth_up(0.54, 0.98, radial_h) * (1.0 - smooth_up(0.468, 0.542, ny_h))
+    nape_shadow = smooth_up(0.555, 0.605, ny_h)
+    moon_side = smooth_up(-0.20, 0.75, (nx_h - 0.495) / 0.064)
+
+    gh, gw, _ = sky_sm.shape
+    sky_lum = 0.299 * sky_sm[:, :, 0] + 0.587 * sky_sm[:, :, 1] + 0.114 * sky_sm[:, :, 2]
+    mead_lum = 0.299 * styled_meadow[:, :, 0] + 0.587 * styled_meadow[:, :, 1] + 0.114 * styled_meadow[:, :, 2]
+
+    p_cols, p_rows = 88, 56
+    cw_u = float(COORD_SZ) / float(p_cols)
+    rh_u = float(COORD_SZ) / float(p_rows)
+    vp_x, vp_y = 1000.0, -2300.0
+    bar_centers_top = [-6.0 + i * 124.2 for i in range(15)]
+
+    fine_map = {}
+    bold_map = {}
+
+    for tr in range(p_rows):
+        uy = (tr + 0.5) * rh_u
+        ny = uy / float(COORD_SZ)
+        hy_i = min(h_hi - 1, max(0, int(ny * h_hi)))
+        hy2 = min(sh_h2 - 1, max(0, hy_i // 2))
+        wy = min(gh - 1, max(0, int((uy - y0_map) / sy_w)))
+        wy_m = max(0, wy - 1)
+        wy_p = min(gh - 1, wy + 1)
+
+        for tc in range(p_cols):
+            ux = (tc + 0.5) * cw_u
+            if (ux - 1000.0) ** 2 + (uy - 1000.0) ** 2 > 994.0 ** 2:
+                continue
+            nx = ux / float(COORD_SZ)
+            hx_i = min(w_hi - 1, max(0, int(nx * w_hi)))
+            hx2 = min(sh_w2 - 1, max(0, hx_i // 2))
+            wx = min(gw - 1, max(0, int((ux - x0_map) / sx_w)))
+            wx_m = max(0, wx - 1)
+            wx_p = min(gw - 1, wx + 1)
+            h = (tr * 43 + tc * 79) & 63
+            is_bold = False
+
+            if shirt_hi[hy_i, hx_i]:
+                cr_v = float(cr_sh[hy2, hx2])
+                fd_v = float(fold_diff[hy2, hx2])
+                gx_sh = float(cr_sh[hy2, min(sh_w2 - 1, hx2 + 1)] - cr_sh[hy2, max(0, hx2 - 1)])
+                gy_sh = float(cr_sh[min(sh_h2 - 1, hy2 + 1), hx2] - cr_sh[max(0, hy2 - 1), hx2])
+                if abs(ny - 0.626) <= 0.010 and abs(nx - 0.500) <= 0.050:
+                    ch_p, col_p, is_bold = "=", "#ffe4e6", True
+                elif abs(ny - 0.684) <= 0.008 and abs(nx - 0.502) <= 0.110:
+                    ch_p, col_p, is_bold = ("=" if tc % 2 == 0 else "-"), "#fecdd3", True
+                elif ny < 0.654 and cr_v >= 232.0:
+                    col_p = "#ffe4e6" if cr_v >= 242.0 else "#fecdd3"
+                    ch_p = ("*", "+", "=", "~", "/", "\\")[h % 6]
+                    is_bold = True
+                elif cr_v >= 224.0 or fd_v >= 0.048:
+                    col_p = "#fecdd3" if cr_v >= 236.0 else "#fda4af"
+                    ch_p = ("~", "=", "/", "\\", "(", ")", "+")[h % 7]
+                elif cr_v >= 192.0 and fd_v > -0.028:
+                    col_p = "#fda4af" if cr_v >= 210.0 else "#fb7185"
+                    if abs(gx_sh) > abs(gy_sh) * 1.25:
+                        ch_p = ("|", "(", ")", "/", "\\", "S")[h % 6]
+                    else:
+                        ch_p = ("~", "/", "\\", "(", ")", "S", "C")[h % 7]
+                elif cr_v >= 168.0 and fd_v > -0.052:
+                    col_p = "#f43f5e"
+                    ch_p = ("|", "/", "\\", "(", ")", "~", "C")[h % 7]
+                else:
+                    col_p = "#e11d48" if fd_v > -0.080 else "#be123c"
+                    ch_p = ("|", "/", "\\", "#", "%")[h % 5]
+
+            elif skin_hi[hy_i, hx_i]:
+                sl_v = float(sk_lum[hy2, hx2])
+                col_p = "#ffedd5" if sl_v > 196.0 else ("#fed7aa" if sl_v > 172.0 else ("#fdba74" if sl_v > 148.0 else "#fb923c"))
+                ch_p = ("~", "(", ")", "/", "\\", ":")[h % 6]
+
+            elif hair_hi[hy_i, hx_i] or hair_m2[hy2, hx2]:
+                dx_w, dy_w = nx - 0.495, ny - 0.502
+                if math.hypot(dx_w, dy_w) < 0.017:
+                    ch_p = "@" if h % 2 == 0 else "*"
+                elif abs(dx_w) < abs(dy_w) * 0.48:
+                    ch_p = ("|", "(", ")", "S")[h % 4]
+                elif abs(dy_w) < abs(dx_w) * 0.45:
+                    ch_p = ("~", "(", ")", "/")[h % 4]
+                elif dx_w * dy_w > 0.0:
+                    ch_p = ("\\", "(", ")", "~")[h % 4]
+                else:
+                    ch_p = ("/", "(", ")", "~")[h % 4]
+                cr_rim = float(crown_rim[hy2, hx2])
+                lw_v = float(lock_wave[hy2, hx2])
+                if cr_rim > 0.34:
+                    col_p = "#60a5fa" if float(moon_side[hy2, hx2]) > 0.52 else "#38bdf8"
+                    is_bold = True
+                elif lw_v > 0.60 and float(nape_shadow[hy2, hx2]) < 0.52:
+                    col_p = "#3b5998" if h % 2 == 0 else "#334155"
+                else:
+                    col_p = "#1e293b" if (tr + tc) % 2 == 0 else "#0f172a"
+
+            else:
+                in_rail = False
+                if 1428.0 <= uy <= 1509.0:
+                    in_rail = True
+                    if uy <= 1456.0:
+                        ch_p = "=" if tc % 3 != 0 else "-"
+                        col_p = "#f8fafc" if uy <= 1444.0 else "#bae6fd"
+                        is_bold = True
+                    else:
+                        ch_p = "=" if tc % 2 == 0 else "-"
+                        col_p = "#38bdf8" if uy <= 1484.0 else "#0284c7"
+                elif 1640.0 <= uy <= 1709.0:
+                    in_rail = True
+                    if uy <= 1666.0:
+                        ch_p = "=" if tc % 3 != 0 else "-"
+                        col_p = "#f8fafc" if uy <= 1654.0 else "#bae6fd"
+                        is_bold = True
+                    else:
+                        ch_p = "=" if tc % 2 == 0 else "-"
+                        col_p = "#38bdf8" if uy <= 1688.0 else "#0284c7"
+                elif uy >= 1906.0:
+                    in_rail = True
+                    if 1934.0 <= uy <= 1960.0:
+                        ch_p, col_p, is_bold = "=", "#e0f2fe", True
+                    else:
+                        ch_p = ("#", "+", "=", "-")[h % 4]
+                        col_p = "#38bdf8" if tr % 2 == 0 else "#0284c7"
+                elif 1496.0 <= uy <= 1924.0:
+                    if 1843.0 <= ux <= 1948.0:
+                        in_rail = True
+                        ch_p = "+" if tr % 4 == 0 else "|"
+                        col_p = "#bae6fd" if ux < 1872.0 else ("#38bdf8" if ux < 1916.0 else "#0284c7")
+                    else:
+                        for xc_top in bar_centers_top:
+                            x_bar = vp_x + ((xc_top - vp_x) / (1530.0 - vp_y)) * (uy - vp_y)
+                            if abs(ux - x_bar) <= 13.8:
+                                in_rail = True
+                                ch_p = "|" if tr % 4 != 0 else "+"
+                                col_p = "#bae6fd" if abs(ux - x_bar) <= 4.6 else "#38bdf8"
+                                break
+
+                if not in_rail:
+                    if ny >= float(hy_m[wy, wx]) - 0.004:
+                        mr_v, mg_v, mb_v = styled_meadow[wy, wx]
+                        ya_v = float(yellow_armor[wy, wx])
+                        pr_v = float(plum_ribbon[wy, wx])
+                        dm_v = float(dark_mural[wy, wx])
+                        ml_v = float(mead_lum[wy, wx])
+                        gx_m = float(mead_lum[wy, wx_p] - mead_lum[wy, wx_m])
+                        gy_m = float(mead_lum[wy_p, wx] - mead_lum[wy_m, wx])
+                        if ny < float(hy_m[wy, wx]) + 0.022:
+                            ch_p = ("~", "-", ":")[h % 3]
+                            col_p = "#5eead4" if (mr_v + mg_v) > 138.0 else "#38bdf8"
+                        elif nx <= 0.455 and (ya_v > 0.34 or (mr_v > 172.0 and mg_v > 158.0 and (mr_v - mb_v) > 42.0)):
+                            ch_p = ("#", "%", "*", "+", "@", "O")[h % 6]
+                            col_p = "#fde047" if mr_v > 206.0 else "#facc15"
+                            is_bold = True
+                        elif 0.10 <= nx <= 0.186 and 0.60 <= ny <= 0.696 and mr_v > mb_v + 18.0:
+                            ch_p = ("/", "\\", "(", ")", "#", "+", "~")[h % 7]
+                            col_p = "#f59e0b" if mr_v > 132.0 else "#15803d"
+                        elif nx >= 0.50 and (pr_v > 0.20 or (mr_v > mg_v * 0.96 and mr_v < 168.0)):
+                            ch_p = ("~", "/", "\\", "(", ")", "S", "C", "#")[h % 8]
+                            col_p = "#fb7185" if mr_v > 124.0 else ("#e11d48" if mr_v > 92.0 else "#be123c")
+                        elif nx <= 0.465 and (dm_v > 0.34 or ml_v < 96.0):
+                            ch_p = ("/", "\\", "(", ")", "S", "C", "~", "#")[h % 8]
+                            col_p = "#16a34a" if mg_v > 80.0 else "#15803d"
+                        elif ml_v > 162.0:
+                            col_p = "#bef264" if ml_v > 188.0 else "#a3e635"
+                            ch_p = ("~", "≈", "+", "=", "/", "\\")[h % 6]
+                        else:
+                            col_p = "#4ade80" if ml_v > 122.0 else "#22c55e"
+                            if abs(gx_m) > abs(gy_m) * 1.3:
+                                ch_p = ("/", "\\", "(", ")", "S")[h % 5]
+                            else:
+                                ch_p = ("~", "=", "/", "\\", "(", ")", ":")[h % 7]
+                    else:
+                        sr_k, sg_k, sb_k = sky_sm[wy, wx]
+                        sl_k = float(sky_lum[wy, wx])
+                        gx_s = float(sky_lum[wy, wx_p] - sky_lum[wy, wx_m])
+                        gy_s = float(sky_lum[wy_p, wx] - sky_lum[wy_m, wx])
+                        tx_s, ty_s = -gy_s, gx_s
+                        dm_moon = math.hypot(ux - 1658.0, uy - 292.0)
+                        if dm_moon <= 44.0:
+                            if math.hypot(ux - 1636.0, uy - 278.0) > 28.0:
+                                ch_p, col_p, is_bold = ("@", "*", "O", "(", ")")[h % 5], "#fefce8", True
+                            else:
+                                ch_p, col_p, is_bold = ("(", "╭", "╰")[h % 3], "#38bdf8", False
+                        elif dm_moon <= 92.0:
+                            dx_m, dy_m = ux - 1658.0, uy - 292.0
+                            if abs(dy_m) > abs(dx_m) * 1.25:
+                                ch_p = ("~", "≈", "*")[h % 3]
+                            elif abs(dx_m) > abs(dy_m) * 1.25:
+                                ch_p = ("(", ")", "*")[h % 3]
+                            elif dx_m * dy_m < 0.0:
+                                ch_p = ("/", "╭", "╯")[h % 3]
+                            else:
+                                ch_p = ("\\", "╮", "╰")[h % 3]
+                            col_p = "#fde047" if dm_moon < 68.0 else ("#fde68a" if sl_k > 136.0 else "#7dd3fc")
+                            is_bold = dm_moon < 68.0
+                        elif in_cyp[wy, wx]:
+                            ch_p = ("|", "/", "\\", "(", ")", "S", "^")[h % 7]
+                            col_p = "#34d399" if sg_k > 86.0 else "#10b981"
+                        elif sl_k > 168.0:
+                            ch_p = ("@", "*", "+", "O", "°", "╭", "╮", "~")[h % 8]
+                            col_p = "#fefce8" if sl_k > 204.0 else ("#fde047" if sr_k > sb_k * 0.88 else "#bae6fd")
+                            is_bold = True
+                        else:
+                            if math.hypot(tx_s, ty_s) > 4.2:
+                                if abs(tx_s) > abs(ty_s) * 1.55:
+                                    ch_p = ("~", "≈", "=", "S")[h % 4]
+                                elif abs(ty_s) > abs(tx_s) * 1.45:
+                                    ch_p = ("(", ")", "|", "C")[h % 4]
+                                elif tx_s * ty_s < 0.0:
+                                    ch_p = ("/", "╭", "╯", "(")[h % 4]
+                                else:
+                                    ch_p = ("\\", "╮", "╰", ")")[h % 4]
+                            else:
+                                ch_p = ("~", "≈", "(", ")", "S", "C", ":")[h % 7]
+                            if sr_k > sb_k * 0.90 and sl_k > 124.0:
+                                col_p = "#fde68a"
+                            elif sl_k > 132.0:
+                                col_p = "#7dd3fc"
+                            elif sl_k > 92.0:
+                                col_p = "#60a5fa"
+                            elif sl_k > 58.0:
+                                col_p = "#3b82f6"
+                            else:
+                                col_p = "#2563eb"
+
+            g_seg = glyph_rel_path(ch_p, ux, uy, cw_u, rh_u, prec=0)
+            if is_bold:
+                bold_map.setdefault(col_p, []).append(g_seg)
+            else:
+                fine_map.setdefault(col_p, []).append(g_seg)
+
+    batches = []
+    for col_p, segs in fine_map.items():
+        batches.append({"stroke": col_p, "width": 5.3, "d": "".join(segs)})
+    for col_p, segs in bold_map.items():
+        batches.append({"stroke": col_p, "width": 6.5, "d": "".join(segs)})
+    return batches
+
+
+# WHY: Layer 1 seamless 4-plane oil underpainting + Layer 2 <=42 batched 4K calligraphic glyph <path>s render crisp characters at 60fps.
 def render_portrait_svg(portrait_hd, acx, acy, ar):
     diam = float(ar) * 2.0
     x_left = float(acx) - float(ar)
@@ -1190,6 +1519,7 @@ def render_portrait_svg(portrait_hd, acx, acy, ar):
     clip_id = "p4k-clip-%d-%d" % (int(round(acx)), int(round(acy)))
     bg_fill = (portrait_hd or {}).get("bg_fill") or "#081833"
     vl = (portrait_hd or {}).get("vector_layers") or {}
+    glyph_batches = (portrait_hd or {}).get("svg_glyph_batches") or []
 
     parts = [
         '<clipPath id="%s"><circle cx="%.2f" cy="%.2f" r="%.2f"/></clipPath>' % (clip_id, acx, acy, ar),
@@ -1198,21 +1528,14 @@ def render_portrait_svg(portrait_hd, acx, acy, ar):
         '<path fill="%s" d="M-80,-80H2080V2080H-80Z"/>' % bg_fill,
     ]
 
-    for lname, lkind in (
-        ("sky_polys", "poly"),
-        ("sky_strokes", "stroke"),
-        ("meadow_polys", "poly"),
-        ("meadow_strokes", "stroke"),
-        ("rail_polys", "poly"),
-        ("subject_polys", "poly"),
-        ("subject_strokes", "stroke"),
-    ):
-        for it in vl.get(lname) or []:
-            d = it.get("d") or ""
-            if not d:
-                continue
-            if lkind == "poly":
-                fill = it["fill"]
+    if glyph_batches:
+        parts.append('<g opacity="0.68">')
+        for lname in ("sky_polys", "meadow_polys", "rail_polys", "subject_polys"):
+            for it in vl.get(lname) or []:
+                d = it.get("d") or ""
+                if not d:
+                    continue
+                fill = _shade_under_hex(it["fill"], lname)
                 op = float(it.get("opacity", 1.0))
                 rule = it.get("rule") or "nonzero"
                 seam = float(it.get("seam") or 0.0)
@@ -1224,21 +1547,55 @@ def render_portrait_svg(portrait_hd, acx, acy, ar):
                 if seam > 0.0:
                     attrs.append('stroke="%s" stroke-width="%.1f" stroke-linejoin="round"' % (fill, seam))
                 parts.append('<path %s d="%s"/>' % (" ".join(attrs), d))
-            else:
-                scol = it["stroke"]
-                sw = float(it.get("width", 3.0))
-                sop = float(it.get("opacity", 0.8))
-                cap = it.get("cap") or "round"
-                attrs = [
-                    'fill="none"',
-                    'stroke="%s"' % scol,
-                    'stroke-width="%.1f"' % sw,
-                    'stroke-linecap="%s"' % cap,
-                    'stroke-linejoin="round"',
-                ]
-                if sop < 0.995:
-                    attrs.append('stroke-opacity="%.2f"' % sop)
-                parts.append('<path %s d="%s"/>' % (" ".join(attrs), d))
+        parts.append("</g>")
+        parts.append('<g fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.98">')
+        for gb in glyph_batches:
+            d = gb.get("d") or ""
+            if d:
+                parts.append('<path stroke="%s" stroke-width="%.1f" d="%s"/>' % (gb["stroke"], float(gb.get("width", 5.3)), d))
+        parts.append("</g>")
+    else:
+        for lname, lkind in (
+            ("sky_polys", "poly"),
+            ("sky_strokes", "stroke"),
+            ("meadow_polys", "poly"),
+            ("meadow_strokes", "stroke"),
+            ("rail_polys", "poly"),
+            ("subject_polys", "poly"),
+            ("subject_strokes", "stroke"),
+        ):
+            for it in vl.get(lname) or []:
+                d = it.get("d") or ""
+                if not d:
+                    continue
+                if lkind == "poly":
+                    fill = it["fill"]
+                    op = float(it.get("opacity", 1.0))
+                    rule = it.get("rule") or "nonzero"
+                    seam = float(it.get("seam") or 0.0)
+                    attrs = ['fill="%s"' % fill]
+                    if op < 0.995:
+                        attrs.append('fill-opacity="%.2f"' % op)
+                    if rule == "evenodd":
+                        attrs.append('fill-rule="evenodd"')
+                    if seam > 0.0:
+                        attrs.append('stroke="%s" stroke-width="%.1f" stroke-linejoin="round"' % (fill, seam))
+                    parts.append('<path %s d="%s"/>' % (" ".join(attrs), d))
+                else:
+                    scol = it["stroke"]
+                    sw = float(it.get("width", 3.0))
+                    sop = float(it.get("opacity", 0.8))
+                    cap = it.get("cap") or "round"
+                    attrs = [
+                        'fill="none"',
+                        'stroke="%s"' % scol,
+                        'stroke-width="%.1f"' % sw,
+                        'stroke-linecap="%s"' % cap,
+                        'stroke-linejoin="round"',
+                    ]
+                    if sop < 0.995:
+                        attrs.append('stroke-opacity="%.2f"' % sop)
+                    parts.append('<path %s d="%s"/>' % (" ".join(attrs), d))
 
     parts.append("</g>")
     parts.append("</g>")
@@ -1412,6 +1769,23 @@ def build_portrait(src_path, out_path, starry_path=None, sunflowers_path=None, p
 
     rail_polys = build_railing_polys()
     subject_polys, subject_strokes = build_subject_plane(arr_hi, hair_hi, shirt_hi, skin_hi)
+    svg_glyph_batches = build_portrait_glyph_batches(
+        arr_hi,
+        hair_hi,
+        shirt_hi,
+        skin_hi,
+        sky_sm,
+        in_cyp,
+        styled_meadow,
+        hy_m,
+        yellow_armor,
+        plum_ribbon,
+        dark_mural,
+        x0_map,
+        y0_map,
+        sx_w,
+        sy_w,
+    )
 
     payload = {
         "version": 2,
@@ -1426,6 +1800,7 @@ def build_portrait(src_path, out_path, starry_path=None, sunflowers_path=None, p
             "subject_polys": subject_polys,
             "subject_strokes": subject_strokes,
         },
+        "svg_glyph_batches": svg_glyph_batches,
         "planes": [
             {"plane": 0, "name": "sky", "layers": ["sky_polys", "sky_strokes"]},
             {"plane": 1, "name": "meadow", "layers": ["meadow_polys", "meadow_strokes"]},

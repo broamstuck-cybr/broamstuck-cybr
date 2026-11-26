@@ -451,13 +451,14 @@ def starry_matrix_svg(day_map, total_contribs, streaks):
             1168,
             186,
             avoid_boxes=[],
-            opacity_scale=0.80,
+            opacity_scale=0.88,
             glyph_stride=1,
             stroke_limit=920,
             layer_key="sky",
+            dim_boxes=[(44, 18, 1112, 134, 0.34)],
         )
     )
-    parts.append('<rect x="0" y="0" width="1168" height="186" fill="#040916" fill-opacity="0.62"/>')
+    parts.append('<rect x="0" y="0" width="1168" height="186" fill="#040916" fill-opacity="0.18"/>')
     parts.append('<rect x="0" y="0" width="1168" height="28" fill="url(#mat-top-scrim)"/>')
     parts.append('<rect x="0" y="0" width="62" height="186" fill="url(#mat-left-scrim)"/>')
     parts.append("</g>")
@@ -824,13 +825,15 @@ def core_stage_svg(portrait_hd, langs, lang_repos, lang_stars, chars, commits, s
             484,
             height,
             avoid_boxes=[],
-            opacity_scale=0.74,
+            opacity_scale=0.95,
             glyph_stride=1,
             stroke_limit=1200,
             layer_key="sky",
+            dim_boxes=[(162, 468, 168, 64, 0.38)],
+            occlude_circle=(acx, acy, ar - 2.0),
         )
     )
-    parts.append('<rect x="1" y="1" width="483" height="562" fill="#040916" fill-opacity="0.22"/>')
+    parts.append('<rect x="1" y="1" width="483" height="562" fill="#040916" fill-opacity="0.06"/>')
     parts.extend(
         render_day_night_cycle(
             "core",
