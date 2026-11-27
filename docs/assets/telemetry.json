@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-11-26T07:50:58Z",
+  "updatedAt": "2026-11-27T07:50:52Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
-    "bytes": 81356439,
-    "bytesCompact": "81.4M",
-    "commits": 974,
+    "bytes": 80652106,
+    "bytesCompact": "80.7M",
+    "commits": 994,
     "stars": 21,
-    "contributions": 1009,
-    "repos": 10
+    "contributions": 1030,
+    "repos": 11
   },
   "streaks": {
     "longest": 20,
-    "current": 11,
+    "current": 12,
     "peak": 92,
     "weeks52": [
       0,
@@ -66,7 +66,7 @@
       8,
       28,
       69,
-      50
+      71
     ]
   },
   "days": {
@@ -438,15 +438,16 @@
     "2026-11-23": 9,
     "2026-11-24": 20,
     "2026-11-25": 6,
-    "2026-11-26": 1
+    "2026-11-26": 18,
+    "2026-11-27": 4
   },
   "langs5d": [
     {
       "name": "HTML",
-      "bytes": 61480003,
+      "bytes": 61480107,
       "bytesCompact": "61.5M",
-      "percent": 75,
-      "percentExact": 75.57,
+      "percent": 76,
+      "percentExact": 76.23,
       "repos": 4,
       "d2Volume": 0.864,
       "d3Breadth": 0.667,
@@ -457,40 +458,40 @@
     },
     {
       "name": "TypeScript",
-      "bytes": 9437684,
-      "bytesCompact": "9.4M",
+      "bytes": 9695019,
+      "bytesCompact": "9.7M",
       "percent": 12,
-      "percentExact": 11.6,
+      "percentExact": 12.02,
       "repos": 3,
-      "d2Volume": 0.737,
+      "d2Volume": 0.738,
       "d3Breadth": 0.5,
       "d4Gravity": 0.596,
-      "d5Velocity": 0.728,
+      "d5Velocity": 0.73,
       "color": "#38bdf8",
       "highlight": "#e0f2fe"
     },
     {
       "name": "JavaScript",
-      "bytes": 7058906,
-      "bytesCompact": "7.1M",
-      "percent": 9,
-      "percentExact": 8.68,
+      "bytes": 6201302,
+      "bytesCompact": "6.2M",
+      "percent": 8,
+      "percentExact": 7.69,
       "repos": 6,
-      "d2Volume": 0.917,
+      "d2Volume": 0.913,
       "d3Breadth": 1.0,
       "d4Gravity": 1.0,
-      "d5Velocity": 0.926,
+      "d5Velocity": 0.923,
       "color": "#fbbf24",
       "highlight": "#fef9c3"
     },
     {
       "name": "CSS",
-      "bytes": 2733950,
-      "bytesCompact": "2.7M",
+      "bytes": 2629782,
+      "bytesCompact": "2.6M",
       "percent": 3,
-      "percentExact": 3.36,
+      "percentExact": 3.26,
       "repos": 4,
-      "d2Volume": 0.758,
+      "d2Volume": 0.757,
       "d3Breadth": 0.667,
       "d4Gravity": 0.65,
       "d5Velocity": 0.769,
@@ -502,7 +503,7 @@
       "bytes": 645264,
       "bytesCompact": "645.3K",
       "percent": 1,
-      "percentExact": 0.79,
+      "percentExact": 0.8,
       "repos": 4,
       "d2Volume": 0.709,
       "d3Breadth": 0.667,
@@ -528,60 +529,60 @@
   ],
   "events": [
     {
-      "sha": "089df2c",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): redraw outer SVG portrait and Van Gogh canvases with 60fps batched calligraphic glyphs",
-      "time": "03:43",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/089df2c201cfa951da2257949e2535a3d5d968ae"
+      "sha": "ea27b17",
+      "repo": "f_forumv3",
+      "message": "fix(theme): make light mode genuinely bright across all routes, presets, and toggles",
+      "time": "06:13",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/ea27b1731b322019be3de245bc3fcedd14555c86"
     },
     {
-      "sha": "99a0bed",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): ship 4K pure-vector portrait, 12x SVG DOM compaction, +30% 2D full-screen roaming ecosystem",
-      "time": "14:51",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/99a0bedf4d1c74a152e3d0e04ba6091dd5460318"
+      "sha": "a3f4119",
+      "repo": "f_forumv3",
+      "message": "perf(theme): switch global theme backdrop to static 13KB poster & CSS mesh (remove dual video & canvas rAF loops)",
+      "time": "05:51",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/a3f41191d6ef81389f1acb1ce14589f05b699591"
     },
     {
-      "sha": "d8bc487",
-      "repo": "broamstuck-cybr",
-      "message": "feat: 11-animal ecosystem, 25 animations, 32 props, fireflies, 60s day-night cycle, 4 meteors/10s",
-      "time": "11:47",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/d8bc48767c7b565026f10a052c822a164634e0e0"
+      "sha": "50e27d1",
+      "repo": "f_forumv3",
+      "message": "polish(ui,copy): fix layout alignment, awkward Vietnamese wrapping, and verbose copy across 390/768/1440px",
+      "time": "05:37",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/50e27d11729c5bb17ee1303ce1619004af13219c"
     },
     {
-      "sha": "bacf265",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): add pixel butterflies, meadow flora, and natural dog interactions",
-      "time": "10:01",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/bacf2652c9a98265d8553aea7d875e582507643f"
+      "sha": "5a59502",
+      "repo": "f_forumv3",
+      "message": "feat(v4): purify 5,994 free vault, rebuild Arena Workspace, 5-step onboarding, 15 Agent showcases, 58 motion techniques & Community Remix",
+      "time": "05:17",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/5a59502c44d9fef5b304993052c8061eddd3d2c7"
     },
     {
-      "sha": "7644813",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): add 2.5D roaming pixel dog companion and lift Van Gogh impasto luminosity",
-      "time": "08:45",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/7644813ad7b3d4f3417d569306323204473d1ab9"
+      "sha": "4962504",
+      "repo": "Edunext_fe",
+      "message": "fix(ui): v1.6.3 \u2014 d\u00f2ng tr\u1ea1ng th\u00e1i kho \u0111\u1ec1 m\u1ed9t d\u00f2ng, kh\u00f4ng tr\u00e0n",
+      "time": "10:15",
+      "url": "https://github.com/broamstuck-cybr/Edunext_fe/commit/4962504e9deb05fb40ee7393f9a64acd08817b6e"
     },
     {
-      "sha": "7c0dcf9",
-      "repo": "broamstuck-cybr",
-      "message": "fix(profile): restore 3-layer SVG oil underpainting, separate matrix dome, refine sky tiling & font metrics",
-      "time": "06:07",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/7c0dcf96cf9922c59344b41867f6d6ccf0796ff0"
+      "sha": "ff919e8",
+      "repo": "f_forumv3",
+      "message": "fix(authenticity): purge all fabricated demos (GlacierBookShelf, homeMotionShowcases, ThreeUIPreview, BackgroundLab) & verify 7,662 Source of Knowledge resources",
+      "time": "10:10",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/ff919e810dad2a81167410f56b732bc6c2e4cbf8"
     },
     {
-      "sha": "4156da9",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): craft 4K calligraphic Van Gogh observatory, Blender 3D stages & streamlined console",
-      "time": "05:28",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/4156da9734bcdff920dccf156fbde828ea683934"
+      "sha": "dad79e1",
+      "repo": "Edunext_fe",
+      "message": "fix(bas): v1.6.2 \u2014 gi\u1eef nh\u1ecbp khi chuy\u1ec3n tab, kh\u00f4ng \u0111\u1ee9ng khi c\u00f3 c\u00e2u h\u1ecfi",
+      "time": "10:09",
+      "url": "https://github.com/broamstuck-cybr/Edunext_fe/commit/dad79e1dd9d6fec8371e1e1bce031b5d1f50292d"
     },
     {
-      "sha": "048392c",
-      "repo": "broamstuck-cybr",
-      "message": "feat(profile): build English Starry Night, Milky Way & Solar Orrery observatory, 5D astrolabe, 156x86 portrait & 360 3D F-Forum stage",
-      "time": "16:28",
-      "url": "https://github.com/broamstuck-cybr/broamstuck-cybr/commit/048392cadf85080259e3b897ef49330855625006"
+      "sha": "0a50e9c",
+      "repo": "Edunext_fe",
+      "message": "fix(bas): v1.6.1 \u2014 qu\u00e9t kho \u0111\u1ec1 ch\u1ea1y n\u1ec1n \u0111\u1ed9c l\u1eadp v\u1edbi l\u1edbp li\u00ean l\u1ea1c",
+      "time": "10:03",
+      "url": "https://github.com/broamstuck-cybr/Edunext_fe/commit/0a50e9cbf532a2df43623da8d8c9819dc0c93c45"
     }
   ],
   "forums": [
