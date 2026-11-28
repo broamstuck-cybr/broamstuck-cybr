@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-11-27T07:50:52Z",
+  "updatedAt": "2026-11-28T07:19:48Z",
   "username": "broamstuck-cybr",
   "display": "BroAmStuck",
   "metrics": {
-    "bytes": 80652106,
-    "bytesCompact": "80.7M",
-    "commits": 994,
+    "bytes": 83868080,
+    "bytesCompact": "83.9M",
+    "commits": 1021,
     "stars": 21,
-    "contributions": 1030,
-    "repos": 11
+    "contributions": 1059,
+    "repos": 13
   },
   "streaks": {
     "longest": 20,
-    "current": 12,
+    "current": 13,
     "peak": 92,
     "weeks52": [
       0,
@@ -66,7 +66,7 @@
       8,
       28,
       69,
-      71
+      100
     ]
   },
   "days": {
@@ -439,17 +439,18 @@
     "2026-11-24": 20,
     "2026-11-25": 6,
     "2026-11-26": 18,
-    "2026-11-27": 4
+    "2026-11-27": 12,
+    "2026-11-28": 21
   },
   "langs5d": [
     {
       "name": "HTML",
-      "bytes": 61480107,
+      "bytes": 61496409,
       "bytesCompact": "61.5M",
-      "percent": 76,
-      "percentExact": 76.23,
+      "percent": 73,
+      "percentExact": 73.33,
       "repos": 4,
-      "d2Volume": 0.864,
+      "d2Volume": 0.863,
       "d3Breadth": 0.667,
       "d4Gravity": 0.65,
       "d5Velocity": 1.0,
@@ -458,10 +459,10 @@
     },
     {
       "name": "TypeScript",
-      "bytes": 9695019,
-      "bytesCompact": "9.7M",
+      "bytes": 10151155,
+      "bytesCompact": "10.2M",
       "percent": 12,
-      "percentExact": 12.02,
+      "percentExact": 12.1,
       "repos": 3,
       "d2Volume": 0.738,
       "d3Breadth": 0.5,
@@ -472,24 +473,24 @@
     },
     {
       "name": "JavaScript",
-      "bytes": 6201302,
+      "bytes": 6217941,
       "bytesCompact": "6.2M",
       "percent": 8,
-      "percentExact": 7.69,
+      "percentExact": 7.41,
       "repos": 6,
-      "d2Volume": 0.913,
+      "d2Volume": 0.912,
       "d3Breadth": 1.0,
       "d4Gravity": 1.0,
-      "d5Velocity": 0.923,
+      "d5Velocity": 0.922,
       "color": "#fbbf24",
       "highlight": "#fef9c3"
     },
     {
       "name": "CSS",
-      "bytes": 2629782,
-      "bytesCompact": "2.6M",
+      "bytes": 2727466,
+      "bytesCompact": "2.7M",
       "percent": 3,
-      "percentExact": 3.26,
+      "percentExact": 3.25,
       "repos": 4,
       "d2Volume": 0.757,
       "d3Breadth": 0.667,
@@ -500,89 +501,89 @@
     },
     {
       "name": "Python",
-      "bytes": 645264,
-      "bytesCompact": "645.3K",
+      "bytes": 948920,
+      "bytesCompact": "948.9K",
       "percent": 1,
-      "percentExact": 0.8,
-      "repos": 4,
-      "d2Volume": 0.709,
-      "d3Breadth": 0.667,
-      "d4Gravity": 0.65,
-      "d5Velocity": 0.76,
+      "percentExact": 1.13,
+      "repos": 5,
+      "d2Volume": 0.784,
+      "d3Breadth": 0.833,
+      "d4Gravity": 0.677,
+      "d5Velocity": 0.831,
       "color": "#4ade80",
       "highlight": "#dcfce7"
     },
     {
       "name": "Shell",
-      "bytes": 632,
-      "bytesCompact": "632",
+      "bytes": 14094,
+      "bytesCompact": "14.1K",
       "percent": 0,
-      "percentExact": 0.0,
-      "repos": 1,
-      "d2Volume": 0.283,
-      "d3Breadth": 0.167,
-      "d4Gravity": 0.434,
-      "d5Velocity": 0.549,
+      "percentExact": 0.02,
+      "repos": 3,
+      "d2Volume": 0.515,
+      "d3Breadth": 0.5,
+      "d4Gravity": 0.488,
+      "d5Velocity": 0.688,
       "color": "#a5b4fc",
       "highlight": "#e0e7ff"
     }
   ],
   "events": [
     {
-      "sha": "ea27b17",
+      "sha": "6b8f418",
       "repo": "f_forumv3",
-      "message": "fix(theme): make light mode genuinely bright across all routes, presets, and toggles",
-      "time": "06:13",
-      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/ea27b1731b322019be3de245bc3fcedd14555c86"
+      "message": "feat(home): add interactive 3D mini chibi cat-bot perched on Home prompt composer",
+      "time": "06:44",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/6b8f4187e8ccc87a0d27213d9c278802fa86ed78"
     },
     {
-      "sha": "a3f4119",
+      "sha": "b698942",
       "repo": "f_forumv3",
-      "message": "perf(theme): switch global theme backdrop to static 13KB poster & CSS mesh (remove dual video & canvas rAF loops)",
-      "time": "05:51",
-      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/a3f41191d6ef81389f1acb1ce14589f05b699591"
+      "message": "feat(workspace): real bespoke AI multi-file streaming, prompt prefill, split persistence, sandbox storage shim & console auto-fix",
+      "time": "05:58",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/b69894241e5fe5ec3c9636a2041dc2d07c219ea1"
     },
     {
-      "sha": "50e27d1",
+      "sha": "aaf223b",
       "repo": "f_forumv3",
-      "message": "polish(ui,copy): fix layout alignment, awkward Vietnamese wrapping, and verbose copy across 390/768/1440px",
-      "time": "05:37",
-      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/50e27d11729c5bb17ee1303ce1619004af13219c"
+      "message": "feat(theme): refine Light Mode 60-30-10 warm ivory palette, fix bookshelf colors and Iris stage seam",
+      "time": "04:49",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/aaf223b99a4549f129fd17c898d1e3abdd63b634"
     },
     {
-      "sha": "5a59502",
+      "sha": "0b7156c",
+      "repo": "Roblox-Rival-Remake",
+      "message": "chore: add headless Roblox Open Cloud place publisher script",
+      "time": "04:41",
+      "url": "https://github.com/broamstuck-cybr/Roblox-Rival-Remake/commit/0b7156c4f64ab7f66222146eac21601f6f02a11f"
+    },
+    {
+      "sha": "45f45ae",
+      "repo": "Roblox-RISEVAlS",
+      "message": "fix: resolve Studio F5 boot crash, modal cursor lock, RIVALS gunplay parity, and verified audio SFX",
+      "time": "04:25",
+      "url": "https://github.com/broamstuck-cybr/Roblox-RISEVAlS/commit/45f45aec4422b6583ac990ac93a81921d93dcb4e"
+    },
+    {
+      "sha": "324ae02",
+      "repo": "Roblox-Rival-Remake",
+      "message": "fix: harden Studio F5 runtime, 1:1 RIVALS shooting/ADS/movement, solo 1v1 bot duels, and audio",
+      "time": "04:25",
+      "url": "https://github.com/broamstuck-cybr/Roblox-Rival-Remake/commit/324ae02bc81c134ebd4d0f384915712c75a23577"
+    },
+    {
+      "sha": "281b047",
       "repo": "f_forumv3",
-      "message": "feat(v4): purify 5,994 free vault, rebuild Arena Workspace, 5-step onboarding, 15 Agent showcases, 58 motion techniques & Community Remix",
-      "time": "05:17",
-      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/5a59502c44d9fef5b304993052c8061eddd3d2c7"
+      "message": "feat(workspace): add randomized visual landing page gallery to chat workspace",
+      "time": "04:06",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/281b047dcab3be5eefde7ee397b932422c4497a5"
     },
     {
-      "sha": "4962504",
-      "repo": "Edunext_fe",
-      "message": "fix(ui): v1.6.3 \u2014 d\u00f2ng tr\u1ea1ng th\u00e1i kho \u0111\u1ec1 m\u1ed9t d\u00f2ng, kh\u00f4ng tr\u00e0n",
-      "time": "10:15",
-      "url": "https://github.com/broamstuck-cybr/Edunext_fe/commit/4962504e9deb05fb40ee7393f9a64acd08817b6e"
-    },
-    {
-      "sha": "ff919e8",
+      "sha": "139d96e",
       "repo": "f_forumv3",
-      "message": "fix(authenticity): purge all fabricated demos (GlacierBookShelf, homeMotionShowcases, ThreeUIPreview, BackgroundLab) & verify 7,662 Source of Knowledge resources",
-      "time": "10:10",
-      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/ff919e810dad2a81167410f56b732bc6c2e4cbf8"
-    },
-    {
-      "sha": "dad79e1",
-      "repo": "Edunext_fe",
-      "message": "fix(bas): v1.6.2 \u2014 gi\u1eef nh\u1ecbp khi chuy\u1ec3n tab, kh\u00f4ng \u0111\u1ee9ng khi c\u00f3 c\u00e2u h\u1ecfi",
-      "time": "10:09",
-      "url": "https://github.com/broamstuck-cybr/Edunext_fe/commit/dad79e1dd9d6fec8371e1e1bce031b5d1f50292d"
-    },
-    {
-      "sha": "0a50e9c",
-      "repo": "Edunext_fe",
-      "message": "fix(bas): v1.6.1 \u2014 qu\u00e9t kho \u0111\u1ec1 ch\u1ea1y n\u1ec1n \u0111\u1ed9c l\u1eadp v\u1edbi l\u1edbp li\u00ean l\u1ea1c",
-      "time": "10:03",
-      "url": "https://github.com/broamstuck-cybr/Edunext_fe/commit/0a50e9cbf532a2df43623da8d8c9819dc0c93c45"
+      "message": "feat(workspace): redesign 15 m\u1eabu demo drawer with concise copy and 15 real WebP demo previews",
+      "time": "03:45",
+      "url": "https://github.com/broamstuck-cybr/f_forumv3/commit/139d96e3b50d312bd2af0aa11065f4282483bce1"
     }
   ],
   "forums": [
